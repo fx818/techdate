@@ -1,0 +1,52 @@
+{
+  "ai": {
+    "hn_tags": ["machine-learning", "artificial-intelligence", "deep-learning"],
+    "hn_query": "AI OR LLM OR GPT OR neural",
+    "devto_tags": ["ai", "machinelearning", "deeplearning"]
+  },
+  "llms": {
+    "hn_tags": ["llm", "gpt", "language-model"],
+    "hn_query": "LLM OR GPT OR Claude OR Gemini OR language model",
+    "devto_tags": ["llm", "gpt4", "openai"]
+  },
+  "webdev": {
+    "hn_tags": ["web", "javascript", "react", "css"],
+    "hn_query": "React OR Next.js OR web development OR frontend",
+    "devto_tags": ["webdev", "javascript", "react", "css"]
+  },
+  "devops": {
+    "hn_tags": ["devops", "docker", "kubernetes", "ci-cd"],
+    "hn_query": "DevOps OR Docker OR Kubernetes OR CI/CD",
+    "devto_tags": ["devops", "docker", "kubernetes"]
+  },
+  "mobile": {
+    "hn_tags": ["ios", "android", "mobile"],
+    "hn_query": "iOS OR Android OR React Native OR Flutter",
+    "devto_tags": ["android", "ios", "flutter", "reactnative"]
+  },
+  "cloud": {
+    "hn_tags": ["aws", "gcp", "azure", "cloud"],
+    "hn_query": "AWS OR GCP OR Azure OR cloud computing",
+    "devto_tags": ["aws", "cloud", "azure", "googlecloud"]
+  },
+  "cybersecurity": {
+    "hn_tags": ["security", "hacking", "cryptography"],
+    "hn_query": "security OR vulnerability OR CVE OR hacking",
+    "devto_tags": ["security", "cybersecurity", "hacking"]
+  },
+  "opensource": {
+    "hn_tags": ["open-source", "github"],
+    "hn_query": "open source OR GitHub OR OSS",
+    "devto_tags": ["opensource", "github"]
+  },
+  "startups": {
+    "hn_tags": ["startup", "entrepreneurship"],
+    "hn_query": "startup OR founder OR YC OR seed round",
+    "devto_tags": ["startup", "entrepreneurship", "business"]
+  },
+  "databases": {
+    "hn_tags": ["database", "postgresql", "sql", "nosql"],
+    "hn_query": "database OR PostgreSQL OR MySQL OR MongoDB",
+    "devto_tags": ["database", "sql", "postgres", "mongodb"]
+  }
+}
