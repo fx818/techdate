@@ -62,7 +62,7 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId: s
         </button>
       </div>
 
-      {showComments && <CommentSection postId={post.id} currentUserId={currentUserId} />}
+      {showComments && <CommentSection postId={post.id} />}
     </div>
   )
 }

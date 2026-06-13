@@ -9,7 +9,7 @@ interface Comment {
   users: { name: string }
 }
 
-export default function CommentSection({ postId, currentUserId }: { postId: string; currentUserId: string }) {
+export default function CommentSection({ postId }: { postId: string }) {
   const [comments, setComments] = useState<Comment[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,22 +18,26 @@ export default function CommentSection({ postId, currentUserId }: { postId: stri
     fetch(`/api/posts/${postId}/comments`)
       .then(r => r.json())
       .then(d => setComments(d.comments ?? []))
+      .catch(() => {})
   }, [postId])
 
   async function submit() {
     if (!text.trim()) return
     setLoading(true)
-    const res = await fetch(`/api/posts/${postId}/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: text }),
-    })
-    const data = await res.json()
-    if (data.comment) {
-      setComments(prev => [...prev, { ...data.comment, users: { name: 'You' } }])
-      setText('')
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: text }),
+      })
+      const data = await res.json()
+      if (data.comment) {
+        setComments(prev => [...prev, { ...data.comment, users: { name: 'You' } }])
+        setText('')
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

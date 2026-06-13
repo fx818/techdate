@@ -15,16 +15,19 @@ export function CreatePost({ userGenres, onCreated }: { userGenres: string[]; on
   async function submit() {
     if (!title.trim() || !genre) return
     setLoading(true)
-    await fetch('/api/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content, genre }),
-    })
-    setTitle('')
-    setContent('')
-    setOpen(false)
-    setLoading(false)
-    onCreated()
+    try {
+      await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, genre }),
+      })
+      setTitle('')
+      setContent('')
+      setOpen(false)
+      onCreated()
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!open) {
