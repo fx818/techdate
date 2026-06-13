@@ -43,12 +43,27 @@ export async function POST(request: Request) {
 
     if (theirSwipe) {
       const [u1, u2] = [user.id, swiped_id].sort()
-      const { data: match } = await (supabase as any).from('matches').insert({
-        user1_id: u1,
-        user2_id: u2,
-      }).select().single()
+      let matchId: string | null = null
+      const { data: insertedMatch, error: matchInsertError } = await (supabase as any)
+        .from('matches')
+        .insert({ user1_id: u1, user2_id: u2 })
+        .select('id')
+        .single()
 
-      return NextResponse.json({ match: true, matchId: match?.id })
+      if (matchInsertError) {
+        // Unique constraint: match already exists — fetch it
+        const { data: existingMatch } = await (supabase as any)
+          .from('matches')
+          .select('id')
+          .eq('user1_id', u1)
+          .eq('user2_id', u2)
+          .single()
+        matchId = existingMatch?.id ?? null
+      } else {
+        matchId = insertedMatch?.id ?? null
+      }
+
+      return NextResponse.json({ match: true, matchId })
     }
   }
 
