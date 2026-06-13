@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TechDate
 
-## Getting Started
+A platform for tech professionals to discuss tech news, earn XP through engagement, and connect with others who share their interests.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Clone the repo
+2. Copy `.env.example` to `.env.local` and fill in values
+3. `npm install`
+4. Run Supabase migrations: `supabase db push` (or run SQL files in `supabase/migrations/` manually)
+5. `npm run dev`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (used by Gideon) |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
+| `NEXT_PUBLIC_APP_URL` | App URL (e.g. `https://your-app.vercel.app`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy to Vercel
 
-## Learn More
+1. Push to GitHub
+2. Import project in Vercel
+3. Add all environment variables from `.env.example`
+4. Deploy
 
-To learn more about Next.js, take a look at the following resources:
+## Gideon Agent
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Gideon auto-fetches tech content from HackerNews and dev.to every 4 hours via GitHub Actions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Set these GitHub Actions secrets in your repo settings:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend:** Next.js 14 (App Router) + Tailwind CSS
+- **Backend + Auth + DB:** Supabase
+- **Cache:** Upstash Redis (daily swipe counting)
+- **Content:** Gideon agent (GitHub Actions cron)
