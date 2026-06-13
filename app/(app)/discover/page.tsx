@@ -9,7 +9,7 @@ export default async function DiscoverPage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('dating_unlocked, xp')
+    .select('dating_unlocked, xp, city, gender, preference, interest_vector')
     .eq('id', user.id)
     .single()
 
@@ -23,23 +23,16 @@ export default async function DiscoverPage() {
     )
   }
 
-  // Fetch candidates directly (same logic as /api/candidates but inline)
-  const { data: userProfile } = await (supabase as any)
-    .from('users')
-    .select('city, gender, preference, xp, interest_vector')
-    .eq('id', user.id)
-    .single()
-
   let candidates: any[] = []
-  if (userProfile) {
-    const genderFilter = userProfile.preference === 'everyone'
+  try {
+    const genderFilter = profile.preference === 'everyone'
       ? ['male', 'female', 'non_binary']
-      : [userProfile.preference]
+      : [profile.preference]
 
     const { data: rawCandidates } = await (supabase as any)
       .from('users')
       .select('id, interest_vector, xp, last_active, name, photo_url, city, genres, bio')
-      .eq('city', userProfile.city)
+      .eq('city', profile.city)
       .in('gender', genderFilter)
       .neq('id', user.id)
       .limit(50)
@@ -48,16 +41,20 @@ export default async function DiscoverPage() {
       const { rankCandidates } = await import('@/lib/matching/candidates')
       const userCandidate = {
         id: user.id,
-        interest_vector: userProfile.interest_vector,
-        xp: userProfile.xp,
+        interest_vector: profile.interest_vector,
+        xp: profile.xp,
         last_active: new Date(),
       }
       const ranked = rankCandidates(userCandidate, rawCandidates.map((c: any) => ({
         ...c,
         last_active: new Date(c.last_active),
       })))
-      candidates = ranked.slice(0, 20).map((c: any) => rawCandidates.find((r: any) => r.id === c.id))
+      candidates = ranked.slice(0, 20)
+        .map((c: any) => rawCandidates.find((r: any) => r.id === c.id))
+        .filter(Boolean)
     }
+  } catch {
+    candidates = []
   }
 
   return (

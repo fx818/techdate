@@ -1,15 +1,6 @@
 import { XpBadge } from '@/components/ui/XpBadge'
 import { GENRES } from '@/lib/genres'
-
-interface DatingProfile {
-  id: string
-  name: string
-  photo_url: string | null
-  city: string
-  genres: string[]
-  xp: number
-  bio: string | null
-}
+import { DatingProfile } from '@/types/dating'
 
 export function ProfileCard({ profile }: { profile: DatingProfile }) {
   const genreLabels = GENRES.filter(g => profile.genres.includes(g.id)).map(g => g.label)

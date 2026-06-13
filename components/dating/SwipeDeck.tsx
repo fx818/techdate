@@ -4,16 +4,7 @@ import { useState } from 'react'
 import { X, Heart } from 'lucide-react'
 import { ProfileCard } from './ProfileCard'
 import { MatchModal } from './MatchModal'
-
-interface DatingProfile {
-  id: string
-  name: string
-  photo_url: string | null
-  city: string
-  genres: string[]
-  xp: number
-  bio: string | null
-}
+import { DatingProfile } from '@/types/dating'
 
 export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProfile[] }) {
   const [candidates, setCandidates] = useState(initialCandidates)
