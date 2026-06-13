@@ -17,7 +17,7 @@ export default async function ProfilePage() {
 
   if (!profile) redirect('/onboarding')
 
-  const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map((g: any) => g.label)
+  const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map(g => g.label)
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
@@ -54,7 +54,7 @@ export default async function ProfilePage() {
       <div className="border-t border-gray-800 pt-4">
         <div className="flex justify-between text-sm text-gray-400 mb-2">
           <span>Dating unlocked</span>
-          <span>{profile.dating_unlocked ? '✓ Yes' : `No — need ${100 - profile.xp} more XP`}</span>
+          <span>{profile.dating_unlocked ? '✓ Yes' : `No — need ${Math.max(0, 100 - profile.xp)} more XP`}</span>
         </div>
       </div>
 
