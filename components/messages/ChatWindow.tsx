@@ -15,13 +15,23 @@ export default function ChatWindow({ matchId, currentUserId }: { matchId: string
   const [messages, setMessages] = useState<Message[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  async function fetchMessages() {
+    try {
+      const res = await fetch(`/api/messages?matchId=${matchId}`)
+      const d = await res.json()
+      setMessages(d.messages ?? [])
+    } catch {
+      // silently keep existing messages on poll failure
+    }
+  }
+
   useEffect(() => {
-    fetch(`/api/messages?matchId=${matchId}`)
-      .then(r => r.json())
-      .then(d => setMessages(d.messages ?? []))
-      .catch(() => {})
+    fetchMessages()
+    const interval = setInterval(fetchMessages, 5000)
+    return () => clearInterval(interval)
   }, [matchId])
 
   useEffect(() => {
@@ -32,6 +42,7 @@ export default function ChatWindow({ matchId, currentUserId }: { matchId: string
     if (!text.trim() || loading) return
     const content = text.trim()
     setText('')
+    setError(null)
     setLoading(true)
     try {
       const res = await fetch('/api/messages', {
@@ -40,9 +51,15 @@ export default function ChatWindow({ matchId, currentUserId }: { matchId: string
         body: JSON.stringify({ matchId, content }),
       })
       const data = await res.json()
-      if (data.message) {
+      if (!res.ok) {
+        setError('Failed to send message')
+        setText(content)
+      } else if (data.message) {
         setMessages(prev => [...prev, data.message])
       }
+    } catch {
+      setError('Failed to send message')
+      setText(content)
     } finally {
       setLoading(false)
     }
@@ -65,6 +82,8 @@ export default function ChatWindow({ matchId, currentUserId }: { matchId: string
         })}
         <div ref={bottomRef} />
       </div>
+
+      {error && <p className="text-red-400 text-xs pb-1">{error}</p>}
 
       <div className="flex gap-2 pt-3 border-t border-gray-800">
         <input value={text} onChange={e => setText(e.target.value)}

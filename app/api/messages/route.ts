@@ -51,11 +51,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { data: message } = await (supabase as any)
+  const { data: message, error: insertError } = await (supabase as any)
     .from('messages')
     .insert({ match_id: matchId, sender_id: user.id, content: content.trim() })
     .select()
     .single()
+
+  if (insertError) return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
 
   return NextResponse.json({ message })
 }
