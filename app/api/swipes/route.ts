@@ -33,13 +33,11 @@ export async function POST(request: Request) {
   await incrementDailySwipeCount(user.id)
 
   if (direction === 'right') {
+    // RLS hides the other user's swipe rows, so we can't query them directly.
+    // has_right_swipe is a SECURITY DEFINER fn that answers the reciprocal
+    // question (did they right-swipe me?) without exposing swipe data.
     const { data: theirSwipe } = await (supabase as any)
-      .from('swipes')
-      .select('id')
-      .eq('swiper_id', swiped_id)
-      .eq('swiped_id', user.id)
-      .eq('direction', 'right')
-      .single()
+      .rpc('has_right_swipe', { p_swiper: swiped_id, p_swiped: user.id })
 
     if (theirSwipe) {
       const [u1, u2] = [user.id, swiped_id].sort()
