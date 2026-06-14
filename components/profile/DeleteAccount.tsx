@@ -9,7 +9,7 @@ export function DeleteAccount() {
     router.push('/login')
   }
   return (
-    <button onClick={del} className="btn btn-ghost w-full text-sm text-clay-deep border-clay/30">
+    <button onClick={del} className="w-full text-center text-ink-faint text-xs hover:text-clay-deep py-2 transition-colors">
       Delete account
     </button>
   )

@@ -81,8 +81,8 @@ export default function EditProfile({ userId, initial }: Props) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="btn btn-ghost w-full text-sm">
-        Edit profile
+      <button onClick={() => setOpen(true)} className="btn btn-ghost text-sm px-3 py-1.5 shrink-0">
+        Edit
       </button>
     )
   }
