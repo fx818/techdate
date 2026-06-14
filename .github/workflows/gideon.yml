@@ -21,6 +21,7 @@ jobs:
 
       - name: Run Gideon
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          # fetch.py reads NEXT_PUBLIC_SUPABASE_URL; the repo secret is named SUPABASE_URL.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python gideon/fetch.py
