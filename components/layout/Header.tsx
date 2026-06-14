@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { NotifBell } from './NotifBell'
 
 export function Header({
   name,
@@ -18,11 +19,13 @@ export function Header({
           Await<span className="text-clay-deep">.</span>
         </Link>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-sm bg-clay-tint text-clay-deep rounded-full px-2.5 py-1">
             {streak > 0 && <span title={`${streak}-day streak`}>🔥<span className="font-mono ml-0.5">{streak}</span></span>}
             <span className="font-mono">{xp}</span> XP
           </span>
+
+          <NotifBell />
 
           <Link href="/profile" aria-label="Your profile"
             className="w-9 h-9 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display overflow-hidden border border-line hover:border-clay transition-colors">

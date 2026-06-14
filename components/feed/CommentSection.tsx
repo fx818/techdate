@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { timeAgo } from '@/lib/time'
 
 interface Comment {
   id: string
@@ -45,6 +46,7 @@ export default function CommentSection({ postId }: { postId: string }) {
       {comments.map(c => (
         <div key={c.id} className="text-sm leading-relaxed">
           <span className="text-clay-deep font-medium">{c.users.name}</span>
+          {c.created_at && <span className="text-ink-faint text-xs ml-2">{timeAgo(c.created_at)}</span>}
           <span className="text-ink-soft ml-2">{c.content}</span>
         </div>
       ))}

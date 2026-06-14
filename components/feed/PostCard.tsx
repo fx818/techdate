@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Heart, MessageSquare, Bookmark, ExternalLink } from 'lucide-react'
 import { GideonBadge } from '@/components/ui/GideonBadge'
+import { timeAgo } from '@/lib/time'
 
 interface Post {
   id: string
@@ -17,15 +18,6 @@ interface Post {
   comments_count: number
   created_at: string
   users: { id: string; name: string; photo_url: string | null } | null
-}
-
-function timeAgo(iso: string): string {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (s < 60) return 'now'
-  if (s < 3600) return `${Math.floor(s / 60)}m`
-  if (s < 86400) return `${Math.floor(s / 3600)}h`
-  if (s < 604800) return `${Math.floor(s / 86400)}d`
-  return `${Math.floor(s / 604800)}w`
 }
 
 export function PostCard({

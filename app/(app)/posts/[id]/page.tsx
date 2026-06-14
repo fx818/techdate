@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import { GideonBadge } from '@/components/ui/GideonBadge'
 import { PostActions } from '@/components/feed/PostActions'
 import CommentSection from '@/components/feed/CommentSection'
+import { formatFull } from '@/lib/time'
 
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -49,6 +50,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         <h1 className="font-display text-2xl text-ink leading-snug">{post.title}</h1>
+        <p className="text-ink-faint text-xs">{formatFull(post.created_at)}</p>
         {post.content && <p className="text-ink-soft leading-relaxed whitespace-pre-wrap">{post.content}</p>}
 
         {post.image_url && (
