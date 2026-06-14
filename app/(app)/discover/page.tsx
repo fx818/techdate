@@ -53,7 +53,7 @@ export default async function DiscoverPage() {
 
     let q = (supabase as any)
       .from('users')
-      .select('id, interest_vector, xp, last_active, name, photo_url, city, genres, bio')
+      .select('id, interest_vector, xp, last_active, name, photo_url, photos, city, genres, bio')
       .eq('city', profile.city)
       .in('gender', genderFilter)
       .neq('id', user.id)

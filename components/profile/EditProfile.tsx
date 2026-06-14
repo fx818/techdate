@@ -17,6 +17,7 @@ interface Props {
     genres: string[]
     preference: Preference
     photo_url: string | null
+    photos: string[]
   }
 }
 
@@ -31,7 +32,9 @@ export default function EditProfile({ userId, initial }: Props) {
   const [bio, setBio] = useState(initial.bio ?? '')
   const [preference, setPreference] = useState<Preference>(initial.preference)
   const [genres, setGenres] = useState<string[]>(initial.genres ?? [])
-  const [photoUrl, setPhotoUrl] = useState<string | null>(initial.photo_url)
+  const [photos, setPhotos] = useState<string[]>(
+    initial.photos && initial.photos.length ? initial.photos : (initial.photo_url ? [initial.photo_url] : [])
+  )
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -51,10 +54,14 @@ export default function EditProfile({ userId, initial }: Props) {
       const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
       if (upErr) { setError(upErr.message); return }
       const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-      setPhotoUrl(data.publicUrl)
+      setPhotos(prev => prev.length < 5 ? [...prev, data.publicUrl] : prev)
     } finally {
       setUploading(false)
     }
+  }
+
+  function removePhoto(url: string) {
+    setPhotos(prev => prev.filter(p => p !== url))
   }
 
   async function save() {
@@ -64,7 +71,7 @@ export default function EditProfile({ userId, initial }: Props) {
     setError('')
     const { error: updErr } = await (supabase as any)
       .from('users')
-      .update({ name: name.trim(), city, bio: bio.trim() || null, preference, genres, photo_url: photoUrl })
+      .update({ name: name.trim(), city, bio: bio.trim() || null, preference, genres, photos, photo_url: photos[0] ?? null })
       .eq('id', userId)
     setSaving(false)
     if (updErr) { setError(updErr.message); return }
@@ -88,18 +95,36 @@ export default function EditProfile({ userId, initial }: Props) {
           <button onClick={() => setOpen(false)} className="text-ink-faint hover:text-ink text-sm">Close</button>
         </div>
 
-        {/* Photo */}
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-clay-tint flex items-center justify-center text-2xl font-display text-clay-deep overflow-hidden shrink-0">
-            {photoUrl ? <img src={photoUrl} alt="" className="w-16 h-16 object-cover" /> : name[0]?.toUpperCase()}
+        {/* Photos */}
+        <div className="space-y-2">
+          <label className="text-ink-faint text-xs uppercase tracking-widest">Photos (up to 5)</label>
+          <div className="flex flex-wrap gap-2">
+            {photos.map(url => (
+              <div key={url} className="relative w-20 h-20 rounded-xl overflow-hidden border border-line">
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(url)}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-ink/60 hover:bg-ink text-white text-xs flex items-center justify-center"
+                  aria-label="Remove photo"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {photos.length < 5 && (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="w-20 h-20 rounded-xl border border-dashed border-line-strong bg-clay-tint text-clay-deep text-xs flex items-center justify-center"
+              >
+                {uploading ? 'Uploading…' : '+ Add photo'}
+              </button>
+            )}
           </div>
-          <div>
-            <button onClick={() => fileRef.current?.click()} disabled={uploading} className="btn btn-ghost text-sm">
-              {uploading ? 'Uploading…' : photoUrl ? 'Change photo' : 'Add photo'}
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(f) }} />
-          </div>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.target.value = '' }} />
         </div>
 
         <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="input" />

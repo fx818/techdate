@@ -13,7 +13,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('name, photo_url, city, genres, xp, bio, dating_unlocked, preference, streak_count')
+    .select('name, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count')
     .eq('id', user.id)
     .single()
 
@@ -84,6 +84,7 @@ export default async function ProfilePage() {
           genres: profile.genres ?? [],
           preference: profile.preference,
           photo_url: profile.photo_url,
+          photos: profile.photos ?? [],
         }}
       />
       <SignOutButton />
