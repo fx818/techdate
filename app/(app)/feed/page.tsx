@@ -51,16 +51,17 @@ export default async function FeedPage({
 
   const { data: posts } = await query
 
-  // Which of these posts has the current user already liked?
+  // Which of these posts has the current user liked / bookmarked?
   const postIds = (posts ?? []).map((p: any) => p.id)
   let likedPostIds = new Set<string>()
+  let bookmarkedPostIds = new Set<string>()
   if (postIds.length > 0) {
-    const { data: myLikes } = await (supabase as any)
-      .from('likes')
-      .select('post_id')
-      .eq('user_id', user.id)
-      .in('post_id', postIds)
+    const [{ data: myLikes }, { data: myBookmarks }] = await Promise.all([
+      (supabase as any).from('likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
+      (supabase as any).from('bookmarks').select('post_id').eq('user_id', user.id).in('post_id', postIds),
+    ])
     likedPostIds = new Set((myLikes ?? []).map((l: any) => l.post_id))
+    bookmarkedPostIds = new Set((myBookmarks ?? []).map((b: any) => b.post_id))
   }
 
   return (
@@ -89,12 +90,13 @@ export default async function FeedPage({
           </div>
         ) : (
           (posts ?? []).map((post: any) => (
-            <PostCard key={post.id} post={post} currentUserId={user.id} initialLiked={likedPostIds.has(post.id)} />
+            <PostCard key={post.id} post={post} currentUserId={user.id}
+              initialLiked={likedPostIds.has(post.id)} initialBookmarked={bookmarkedPostIds.has(post.id)} />
           ))
         )}
       </div>
 
-      <CreatePost userGenres={profile.genres} />
+      <CreatePost userGenres={profile.genres} userId={user.id} />
     </>
   )
 }

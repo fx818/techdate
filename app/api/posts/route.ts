@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { title, content, genre } = await request.json()
+  const { title, content, genre, image_url } = await request.json()
   if (!title || !genre) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const { data: post, error } = await (supabase as any).from('posts').insert({
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     content,
     genre,
     source: 'user',
+    image_url: image_url ?? null,
   }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

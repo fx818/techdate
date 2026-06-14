@@ -69,6 +69,11 @@ export default async function ProfilePage() {
         </div>
       </div>
 
+      <a href="/saved" className="card p-4 flex items-center justify-between hover:border-clay transition-colors">
+        <span className="text-ink font-medium flex items-center gap-2">🔖 Saved posts</span>
+        <span className="text-ink-faint">›</span>
+      </a>
+
       <EditProfile
         userId={user.id}
         initial={{
