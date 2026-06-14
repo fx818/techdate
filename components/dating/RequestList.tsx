@@ -58,17 +58,22 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
   ]
 
   return (
-    <div className="space-y-5">
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl bg-surface-sunk border border-line">
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-1 py-1.5 text-sm rounded-lg transition-colors ${tab === t.key ? 'bg-surface text-ink shadow-sm' : 'text-ink-faint'}`}>
-            {t.label}{t.count > 0 && <span className="ml-1 text-xs opacity-70">{t.count}</span>}
-          </button>
-        ))}
+    <>
+      {/* Sticky tab bar, directly under the global header */}
+      <div className="sticky top-14 z-20 bg-paper/95 backdrop-blur-md border-b border-line">
+        <div className="max-w-xl mx-auto px-4 py-3">
+          <div className="flex gap-1 p-1 rounded-xl bg-surface-sunk border border-line">
+            {TABS.map(t => (
+              <button key={t.key} onClick={() => setTab(t.key)}
+                className={`flex-1 py-1.5 text-sm rounded-lg transition-colors ${tab === t.key ? 'bg-surface text-ink shadow-sm' : 'text-ink-faint'}`}>
+                {t.label}{t.count > 0 && <span className="ml-1 text-xs opacity-70">{t.count}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
+      <div className="max-w-xl mx-auto px-4 py-5">
       {items.length === 0 ? (
         <div className="card p-8 text-center">
           <p className="font-display text-xl text-ink">
@@ -130,6 +135,7 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
           })}
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

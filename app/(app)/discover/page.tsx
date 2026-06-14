@@ -73,11 +73,7 @@ export default async function DiscoverPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-7">
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-ink leading-none">Discover</h1>
-        <p className="text-ink-faint text-sm mt-1.5">People who think like you do.</p>
-      </div>
+    <div className="max-w-xl mx-auto px-4 py-8">
       <SwipeDeck initialCandidates={candidates} />
     </div>
   )
