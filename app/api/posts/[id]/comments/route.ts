@@ -8,9 +8,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params
   const { data, error } = await (supabase as any)
     .from('comments')
-    .select('*, users(id, name, photo_url)')
+    .select('id, content, created_at, parent_id, author_id, users(id, name, photo_url)')
     .eq('post_id', id)
-    .is('parent_id', null)
     .order('created_at', { ascending: true })
 
   // A malformed/stale post id (invalid UUID) yields a PostgREST error — degrade

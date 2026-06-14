@@ -77,7 +77,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
 
       <div className="card p-5">
         <h2 className="font-display text-lg text-ink mb-3">Comments</h2>
-        <CommentSection postId={id} />
+        <CommentSection postId={id} currentUserId={user.id} />
       </div>
     </div>
   )
