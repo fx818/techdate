@@ -34,9 +34,20 @@ export default async function DiscoverPage() {
       ? ['male', 'female', 'non_binary']
       : [profile.preference]
 
-    // People who already liked you belong in Requests, not the deck.
-    const { data: incoming } = await (supabase as any).rpc('get_incoming_requests')
+    // Exclude from the deck:
+    //  • people who already liked you (they belong in Requests)
+    //  • people you've already swiped (you've acted on them)
+    //  • people you're already matched/connected with
+    const [{ data: incoming }, { data: mySwipes }, { data: myMatches }] = await Promise.all([
+      (supabase as any).rpc('get_incoming_requests'),
+      (supabase as any).from('swipes').select('swiped_id').eq('swiper_id', user.id),
+      (supabase as any).from('matches').select('user1_id, user2_id').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`),
+    ])
+
     const requesterIds: string[] = (incoming ?? []).map((r: any) => r.id)
+    const swipedIds: string[] = (mySwipes ?? []).map((s: any) => s.swiped_id)
+    const matchedIds: string[] = (myMatches ?? []).map((m: any) => (m.user1_id === user.id ? m.user2_id : m.user1_id))
+    const excludeIds = Array.from(new Set([...requesterIds, ...swipedIds, ...matchedIds]))
 
     let q = (supabase as any)
       .from('users')
@@ -46,8 +57,8 @@ export default async function DiscoverPage() {
       .neq('id', user.id)
       .limit(50)
 
-    if (requesterIds.length > 0) {
-      q = q.not('id', 'in', `(${requesterIds.map((id) => `"${id}"`).join(',')})`)
+    if (excludeIds.length > 0) {
+      q = q.not('id', 'in', `(${excludeIds.map((id) => `"${id}"`).join(',')})`)
     }
 
     const { data: rawCandidates } = await q

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { BackButton } from '@/components/feed/BackButton'
 import { GideonBadge } from '@/components/ui/GideonBadge'
 import { PostActions } from '@/components/feed/PostActions'
 import CommentSection from '@/components/feed/CommentSection'
@@ -30,9 +29,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="max-w-xl mx-auto px-4 py-5 space-y-5">
-      <Link href="/feed" className="inline-flex items-center gap-1 text-ink-faint hover:text-ink text-sm">
-        <ChevronLeft size={16} /> Back
-      </Link>
+      <BackButton />
 
       <article className="card p-5 space-y-3">
         <div className="flex items-center gap-2.5">
