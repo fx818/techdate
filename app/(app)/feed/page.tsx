@@ -65,12 +65,9 @@ export default async function FeedPage({
 
   return (
     <div className="max-w-xl mx-auto px-4 py-7 space-y-5">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="font-display text-3xl text-ink leading-none">Feed</h1>
-          <p className="text-ink-faint text-sm mt-1.5">What the community is building.</p>
-        </div>
-        <span className="text-sm font-mono text-clay-deep bg-clay-tint px-2.5 py-1 rounded-full">{profile.xp} XP</span>
+      <div>
+        <h1 className="font-display text-3xl text-ink leading-none">Feed</h1>
+        <p className="text-ink-faint text-sm mt-1.5">What the community is building.</p>
       </div>
 
       <CreatePost userGenres={profile.genres} />
