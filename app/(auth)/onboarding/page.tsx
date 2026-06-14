@@ -75,7 +75,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen px-5 py-10">
       <div className="max-w-md mx-auto space-y-7">
         <div className="space-y-3">
-          <span className="font-display text-xl text-ink">TechDate</span>
+          <span className="font-display text-xl text-ink">Await</span>
           <div className="flex gap-2">
             {[1, 2].map(s => (
               <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${step >= s ? 'bg-clay' : 'bg-line'}`} />

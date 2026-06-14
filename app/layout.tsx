@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TechDate — Tech Discussions & Dating",
-  description: "A platform for tech professionals to discuss, connect, and date",
+  title: "Await — where connections are worth the await",
+  description: "A platform for tech professionals to discuss, connect, and date. Earn your way in, then meet someone who builds like you do.",
 };
 
 export default function RootLayout({

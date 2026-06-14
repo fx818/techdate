@@ -69,10 +69,10 @@ export default function LoginPage() {
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Editorial brand panel */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-clay-tint/50 border-r border-line">
-        <span className="font-display text-2xl text-ink">TechDate</span>
+        <span className="font-display text-2xl text-ink">Await</span>
         <div className="space-y-6">
           <h1 className="font-display text-6xl leading-[1.05] text-ink">
-            For people who <span className="text-clay-deep italic">build</span> things.
+            Some connections are worth the <span className="text-clay-deep italic">await</span>.
           </h1>
           <p className="text-ink-soft text-lg max-w-md leading-relaxed">
             Talk shop with engineers who get it. Earn your way in. Then, maybe, meet someone who debugs like you do.
@@ -85,8 +85,8 @@ export default function LoginPage() {
       <div className="flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm space-y-7 animate-rise">
           <div className="lg:hidden space-y-1">
-            <h1 className="font-display text-4xl text-ink">TechDate</h1>
-            <p className="text-ink-soft text-sm">For people who build things.</p>
+            <h1 className="font-display text-4xl text-ink">Await</h1>
+            <p className="text-ink-soft text-sm">Some connections are worth the await.</p>
           </div>
 
           <div className="space-y-1">
