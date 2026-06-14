@@ -21,20 +21,25 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('all')
   const [recv, setRecv] = useState(received)
+  const [sentList, setSentList] = useState(sent)
   const [busy, setBusy] = useState<string | null>(null)
 
-  async function respond(requesterId: string, action: 'accept' | 'decline') {
-    setBusy(requesterId)
+  async function respond(otherId: string, action: 'accept' | 'decline' | 'withdraw') {
+    setBusy(otherId)
     try {
       const res = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requester_id: requesterId, action }),
+        body: JSON.stringify({ requester_id: otherId, action }),
       })
       const data = await res.json()
-      setRecv(prev => prev.filter(r => r.id !== requesterId))
-      if (action === 'accept' && data.matchId) {
-        router.push(`/messages/${data.matchId}`)
+      if (action === 'withdraw') {
+        setSentList(prev => prev.filter(r => r.id !== otherId))
+      } else {
+        setRecv(prev => prev.filter(r => r.id !== otherId))
+        if (action === 'accept' && data.matchId) {
+          router.push(`/messages/${data.matchId}`)
+        }
       }
     } finally {
       setBusy(null)
@@ -42,14 +47,14 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
   }
 
   const TABS: { key: Tab; label: string; count: number }[] = [
-    { key: 'all', label: 'All', count: recv.length + sent.length },
+    { key: 'all', label: 'All', count: recv.length + sentList.length },
     { key: 'received', label: 'Received', count: recv.length },
-    { key: 'sent', label: 'Sent', count: sent.length },
+    { key: 'sent', label: 'Sent', count: sentList.length },
   ]
 
   const items: (RequestProfile & { kind: 'received' | 'sent' })[] = [
     ...(tab === 'all' || tab === 'received' ? recv.map(r => ({ ...r, kind: 'received' as const })) : []),
-    ...(tab === 'all' || tab === 'sent' ? sent.map(s => ({ ...s, kind: 'sent' as const })) : []),
+    ...(tab === 'all' || tab === 'sent' ? sentList.map(s => ({ ...s, kind: 'sent' as const })) : []),
   ]
 
   return (
@@ -111,7 +116,13 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
                         className="btn btn-primary flex-1">{busy === p.id ? '···' : 'Accept & chat'}</button>
                     </div>
                   ) : (
-                    <p className="text-ink-faint text-sm pt-1">✦ Request sent · waiting for a response</p>
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <p className="text-ink-faint text-sm">✦ Sent · awaiting response</p>
+                      <button onClick={() => respond(p.id, 'withdraw')} disabled={busy === p.id}
+                        className="btn btn-ghost text-sm px-3 py-1.5">
+                        {busy === p.id ? '···' : 'Withdraw'}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

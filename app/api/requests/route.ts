@@ -20,8 +20,19 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { requester_id, action } = await request.json() as { requester_id: string; action: 'accept' | 'decline' }
+  const { requester_id, action } = await request.json() as { requester_id: string; action: 'accept' | 'decline' | 'withdraw' }
   if (!requester_id || !action) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+
+  // Withdraw cancels a request WE sent — delete our right-swipe on them.
+  if (action === 'withdraw') {
+    await (supabase as any)
+      .from('swipes')
+      .delete()
+      .eq('swiper_id', user.id)
+      .eq('swiped_id', requester_id)
+      .eq('direction', 'right')
+    return NextResponse.json({ withdrawn: true })
+  }
 
   // Record our response as a swipe so the request is resolved and they don't reappear.
   await (supabase as any)
