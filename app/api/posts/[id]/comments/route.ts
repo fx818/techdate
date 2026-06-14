@@ -13,8 +13,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     .is('parent_id', null)
     .order('created_at', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ comments: data })
+  // A malformed/stale post id (invalid UUID) yields a PostgREST error — degrade
+  // gracefully to an empty list rather than 500ing and leaking DB internals.
+  if (error) return NextResponse.json({ comments: [] })
+  return NextResponse.json({ comments: data ?? [] })
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
