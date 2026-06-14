@@ -2,11 +2,17 @@ import { Redis } from '@upstash/redis'
 
 let _redis: Redis | null = null
 
+// Strip any stray BOM / whitespace that can sneak into env values when they
+// are set through shells that re-encode stdin (this exact bug bit us on Vercel).
+function clean(v: string | undefined): string {
+  return (v ?? '').replace(/^﻿/, '').trim()
+}
+
 function getRedis(): Redis {
   if (!_redis) {
     _redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      url: clean(process.env.UPSTASH_REDIS_REST_URL),
+      token: clean(process.env.UPSTASH_REDIS_REST_TOKEN),
     })
   }
   return _redis

@@ -11,33 +11,41 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
   const [loading, setLoading] = useState(false)
   const [match, setMatch] = useState<{ id: string; name: string } | null>(null)
   const [paywallHit, setPaywallHit] = useState(false)
+  const [error, setError] = useState('')
 
   const current = candidates[0]
 
   async function swipe(direction: 'left' | 'right') {
     if (!current || loading) return
     setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/swipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ swiped_id: current.id, direction }),
+      })
 
-    const res = await fetch('/api/swipes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ swiped_id: current.id, direction }),
-    })
+      if (res.status === 429) {
+        setPaywallHit(true)
+        return
+      }
 
-    const data = await res.json()
+      if (!res.ok) {
+        setError('Something went wrong. Please try again.')
+        return
+      }
 
-    if (res.status === 429) {
-      setPaywallHit(true)
+      const data = await res.json()
+      if (data.match) {
+        setMatch({ id: data.matchId, name: current.name })
+      }
+      setCandidates(prev => prev.slice(1))
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    if (data.match) {
-      setMatch({ id: data.matchId, name: current.name })
-    }
-
-    setCandidates(prev => prev.slice(1))
-    setLoading(false)
   }
 
   if (paywallHit) {
@@ -66,6 +74,8 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
       )}
 
       <ProfileCard profile={current} />
+
+      {error && <p className="text-clay-deep text-sm text-center">{error}</p>}
 
       <div className="flex justify-center gap-6">
         <button onClick={() => swipe('left')} disabled={loading}

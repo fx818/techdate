@@ -16,10 +16,16 @@ export async function POST(request: Request) {
   const { data: profile } = await (supabase as any).from('users').select('is_premium, dating_unlocked').eq('id', user.id).single()
   if (!profile?.dating_unlocked) return NextResponse.json({ error: 'Dating not unlocked' }, { status: 403 })
 
+  // Redis (daily swipe cap) is best-effort: if it's unavailable, never block
+  // the swipe over a rate-limit check — degrade open rather than 500.
   if (!profile.is_premium) {
-    const swipeCount = await getDailySwipeCount(user.id)
-    if (swipeCount >= FREE_SWIPE_LIMIT) {
-      return NextResponse.json({ error: 'Daily swipe limit reached', upgrade: true }, { status: 429 })
+    try {
+      const swipeCount = await getDailySwipeCount(user.id)
+      if (swipeCount >= FREE_SWIPE_LIMIT) {
+        return NextResponse.json({ error: 'Daily swipe limit reached', upgrade: true }, { status: 429 })
+      }
+    } catch (e) {
+      console.error('swipe limit check failed (allowing swipe):', e)
     }
   }
 
@@ -30,7 +36,11 @@ export async function POST(request: Request) {
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  await incrementDailySwipeCount(user.id)
+  try {
+    await incrementDailySwipeCount(user.id)
+  } catch (e) {
+    console.error('swipe counter increment failed:', e)
+  }
 
   if (direction === 'right') {
     // RLS hides the other user's swipe rows, so we can't query them directly.
