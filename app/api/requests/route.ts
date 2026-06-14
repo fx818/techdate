@@ -1,0 +1,55 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+
+// GET: list incoming requests (people who liked you, awaiting your response)
+export async function GET() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data, error } = await (supabase as any).rpc('get_incoming_requests')
+  if (error) return NextResponse.json({ requests: [] })
+  return NextResponse.json({ requests: data ?? [] })
+}
+
+// POST: respond to a request. { requester_id, action: 'accept' | 'decline' }
+export async function POST(request: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { requester_id, action } = await request.json() as { requester_id: string; action: 'accept' | 'decline' }
+  if (!requester_id || !action) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+
+  // Record our response as a swipe so the request is resolved and they don't reappear.
+  await (supabase as any)
+    .from('swipes')
+    .insert({ swiper_id: user.id, swiped_id: requester_id, direction: action === 'accept' ? 'right' : 'left' })
+
+  if (action !== 'accept') {
+    return NextResponse.json({ accepted: false })
+  }
+
+  // Accepting creates the match (and thus the chat).
+  const [u1, u2] = [user.id, requester_id].sort()
+  let matchId: string | null = null
+  const { data: insertedMatch, error: matchInsertError } = await (supabase as any)
+    .from('matches')
+    .insert({ user1_id: u1, user2_id: u2 })
+    .select('id')
+    .single()
+
+  if (matchInsertError) {
+    const { data: existingMatch } = await (supabase as any)
+      .from('matches')
+      .select('id')
+      .eq('user1_id', u1)
+      .eq('user2_id', u2)
+      .single()
+    matchId = existingMatch?.id ?? null
+  } else {
+    matchId = insertedMatch?.id ?? null
+  }
+
+  return NextResponse.json({ accepted: true, matchId })
+}

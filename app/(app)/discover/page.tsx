@@ -34,13 +34,23 @@ export default async function DiscoverPage() {
       ? ['male', 'female', 'non_binary']
       : [profile.preference]
 
-    const { data: rawCandidates } = await (supabase as any)
+    // People who already liked you belong in Requests, not the deck.
+    const { data: incoming } = await (supabase as any).rpc('get_incoming_requests')
+    const requesterIds: string[] = (incoming ?? []).map((r: any) => r.id)
+
+    let q = (supabase as any)
       .from('users')
       .select('id, interest_vector, xp, last_active, name, photo_url, city, genres, bio')
       .eq('city', profile.city)
       .in('gender', genderFilter)
       .neq('id', user.id)
       .limit(50)
+
+    if (requesterIds.length > 0) {
+      q = q.not('id', 'in', `(${requesterIds.map((id) => `"${id}"`).join(',')})`)
+    }
+
+    const { data: rawCandidates } = await q
 
     if (rawCandidates) {
       const { rankCandidates } = await import('@/lib/matching/candidates')

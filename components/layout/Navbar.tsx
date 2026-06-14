@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Rss, Heart, MessageSquare, User } from 'lucide-react'
+import { Rss, Heart, Sparkles, MessageSquare, User } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/feed', icon: Rss, label: 'Feed' },
   { href: '/discover', icon: Heart, label: 'Discover' },
+  { href: '/requests', icon: Sparkles, label: 'Requests' },
   { href: '/matches', icon: MessageSquare, label: 'Matches' },
   { href: '/profile', icon: User, label: 'Profile' },
 ]
@@ -22,7 +23,7 @@ export function Navbar() {
           return (
             <Link key={href} href={href}
               className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs">
-              <span className={`flex items-center justify-center rounded-full px-5 py-1 transition-colors ${
+              <span className={`flex items-center justify-center rounded-full px-3.5 py-1 transition-colors ${
                 active ? 'bg-clay-tint text-clay-deep' : 'text-ink-faint'
               }`}>
                 <Icon size={20} strokeWidth={active ? 2.4 : 2} />

@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import { X, Heart } from 'lucide-react'
 import { ProfileCard } from './ProfileCard'
-import { MatchModal } from './MatchModal'
 import { DatingProfile } from '@/types/dating'
 
 export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProfile[] }) {
   const [candidates, setCandidates] = useState(initialCandidates)
   const [loading, setLoading] = useState(false)
-  const [match, setMatch] = useState<{ id: string; name: string } | null>(null)
+  const [sent, setSent] = useState(false)
   const [paywallHit, setPaywallHit] = useState(false)
   const [error, setError] = useState('')
 
@@ -36,9 +35,9 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
         return
       }
 
-      const data = await res.json()
-      if (data.match) {
-        setMatch({ id: data.matchId, name: current.name })
+      if (direction === 'right') {
+        setSent(true)
+        setTimeout(() => setSent(false), 1400)
       }
       setCandidates(prev => prev.slice(1))
     } catch {
@@ -69,12 +68,9 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
 
   return (
     <div className="space-y-7">
-      {match && (
-        <MatchModal matchId={match.id} matchName={match.name} onClose={() => setMatch(null)} />
-      )}
-
       <ProfileCard profile={current} />
 
+      {sent && <p className="text-clay-deep text-sm text-center animate-rise">✦ Request sent</p>}
       {error && <p className="text-clay-deep text-sm text-center">{error}</p>}
 
       <div className="flex justify-center gap-6">
