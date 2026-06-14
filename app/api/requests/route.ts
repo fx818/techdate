@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// GET: list incoming requests (people who liked you, awaiting your response)
+// GET: list incoming pings (people who want to chat, awaiting your response)
 export async function GET() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,7 +14,7 @@ export async function GET() {
   return NextResponse.json({ received: received ?? [], sent: sent ?? [] })
 }
 
-// POST: respond to a request. { requester_id, action: 'accept' | 'decline' }
+// POST: respond to a ping. { requester_id, action: 'accept' | 'decline' | 'withdraw' }
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

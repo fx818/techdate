@@ -30,7 +30,8 @@ export default function EditProfile({ userId, initial }: Props) {
   const [name, setName] = useState(initial.name)
   const [city, setCity] = useState(initial.city)
   const [bio, setBio] = useState(initial.bio ?? '')
-  const [preference, setPreference] = useState<Preference>(initial.preference)
+  // Preference is preserved on save but no longer has UI (networking model, no dating filter).
+  const [preference] = useState<Preference>(initial.preference)
   const [genres, setGenres] = useState<string[]>(initial.genres ?? [])
   const [photos, setPhotos] = useState<string[]>(
     initial.photos && initial.photos.length ? initial.photos : (initial.photo_url ? [initial.photo_url] : [])
@@ -132,19 +133,6 @@ export default function EditProfile({ userId, initial }: Props) {
           <option value="">Select city</option>
           {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-
-        <div className="space-y-1.5">
-          <label className="text-ink-faint text-xs uppercase tracking-widest">Show me</label>
-          <div className="flex gap-2">
-            {([['male', 'Men'], ['female', 'Women'], ['everyone', 'Everyone']] as [Preference, string][]).map(([val, label]) => (
-              <button key={val} onClick={() => setPreference(val)}
-                className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${preference === val ? 'bg-clay border-clay text-white' : 'bg-surface border-line-strong text-ink-soft'}`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <p className="text-ink-faint text-xs">Used only for Discover matches — not the feed.</p>
-        </div>
 
         <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Short bio" className="input h-20 resize-none" />
 

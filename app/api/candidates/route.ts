@@ -22,16 +22,11 @@ export async function GET() {
 
   const { data: profile } = await supabase
     .from('users')
-    .select('city, gender, preference, xp, interest_vector, dating_unlocked')
+    .select('city, xp, interest_vector')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  if (!profile.dating_unlocked) return NextResponse.json({ error: 'Dating not unlocked' }, { status: 403 })
-
-  const genderFilter = profile.preference === 'everyone'
-    ? ['male', 'female', 'non_binary']
-    : [profile.preference]
 
   const [xpMin, xpMax] = getXpTierBandRange(profile.xp)
 
@@ -46,7 +41,6 @@ export async function GET() {
     .from('users')
     .select('id, interest_vector, xp, last_active, name, photo_url, city, genres, bio')
     .eq('city', profile.city)
-    .in('gender', genderFilter)
     .gte('xp', xpMin)
     .lte('xp', xpMax)
     .neq('id', user.id)

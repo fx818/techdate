@@ -77,10 +77,10 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
       {items.length === 0 ? (
         <div className="card p-8 text-center">
           <p className="font-display text-xl text-ink">
-            {tab === 'sent' ? 'No sent requests' : tab === 'received' ? 'No requests received' : 'Nothing here yet'}
+            {tab === 'sent' ? 'No pings sent' : tab === 'received' ? 'No pings received' : 'Nothing here yet'}
           </p>
           <p className="text-ink-faint text-sm mt-1">
-            {tab === 'sent' ? 'Like someone in Discover to send a request.' : 'When someone likes you, they’ll appear here.'}
+            {tab === 'sent' ? 'Ping someone from People or their profile to start a chat.' : 'When someone pings you, they’ll appear here.'}
           </p>
         </div>
       ) : (
@@ -96,7 +96,7 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
                   <span className={`absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-medium ${
                     p.kind === 'received' ? 'bg-clay text-white' : 'bg-surface/90 text-ink-soft border border-line'
                   }`}>
-                    {p.kind === 'received' ? 'Likes you' : 'Sent'}
+                    {p.kind === 'received' ? 'Wants to chat' : 'Pinged'}
                   </span>
                 </div>
                 <div className="p-5 space-y-2.5">

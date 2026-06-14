@@ -41,7 +41,6 @@ export default async function ProfilePage() {
   const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map(g => g.label)
 
   const streak = profile.streak_count ?? 0
-  const xpToUnlock = Math.max(0, 100 - profile.xp)
 
   return (
     <div className="max-w-xl mx-auto px-4 py-7 space-y-5">
@@ -82,25 +81,19 @@ export default async function ProfilePage() {
         )}
       </div>
 
-      {/* Stat tiles — single row of 4 */}
-      <div className="grid grid-cols-4 gap-2">
+      {/* Stat tiles — XP / Chats / Streak */}
+      <div className="grid grid-cols-3 gap-2">
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{profile.xp}</p>
           <p className="text-ink-faint text-[11px] mt-1.5">XP</p>
         </div>
         <Link href="/matches" className="card p-3 text-center hover:border-clay transition-colors">
           <p className="font-display text-xl text-ink leading-none">{matchCount ?? 0}</p>
-          <p className="text-ink-faint text-[11px] mt-1.5">💛 Matches</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">💬 Chats</p>
         </Link>
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{streak}</p>
           <p className="text-ink-faint text-[11px] mt-1.5">🔥 Streak</p>
-        </div>
-        <div className="card p-3 text-center">
-          <p className={`font-display text-xl leading-none ${profile.dating_unlocked ? 'text-sage' : 'text-ink-faint'}`}>
-            {profile.dating_unlocked ? '✓' : '🔒'}
-          </p>
-          <p className="text-ink-faint text-[11px] mt-1.5">{profile.dating_unlocked ? 'Dating' : `${xpToUnlock} XP`}</p>
         </div>
       </div>
 

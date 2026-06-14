@@ -16,7 +16,8 @@ export default function OnboardingPage() {
   const [name, setName] = useState('')
   const [city, setCity] = useState('')
   const [gender, setGender] = useState<Gender>('male')
-  const [preference, setPreference] = useState<Preference>('everyone')
+  // Stored on the profile for future use; no dating-preference UI in the networking model.
+  const [preference] = useState<Preference>('everyone')
   const [bio, setBio] = useState('')
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -104,18 +105,6 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-ink-faint text-xs uppercase tracking-widest">Show me</label>
-              <div className="flex gap-2">
-                {([['male', 'Men'], ['female', 'Women'], ['everyone', 'Everyone']] as [Preference, string][]).map(([val, label]) => (
-                  <button key={val} onClick={() => setPreference(val)}
-                    className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${preference === val ? 'bg-clay border-clay text-white' : 'bg-surface border-line-strong text-ink-soft'}`}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-ink-faint text-xs">Used only for Discover matches — not the feed.</p>
             </div>
             <textarea placeholder="Short bio (optional)" value={bio} onChange={e => setBio(e.target.value)}
               className="input h-24 resize-none" />

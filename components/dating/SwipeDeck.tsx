@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Heart } from 'lucide-react'
+import { X, Send } from 'lucide-react'
 import { ProfileCard } from './ProfileCard'
 import { DatingProfile } from '@/types/dating'
 
@@ -51,8 +51,7 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
     return (
       <div className="card p-8 text-center space-y-4 max-w-sm mx-auto">
         <div className="font-display text-2xl text-ink">That&apos;s 10 for today</div>
-        <p className="text-ink-soft text-sm">You&apos;ve used your free swipes. Upgrade for unlimited.</p>
-        <button className="btn btn-primary w-full">Upgrade — ₹299/mo</button>
+        <p className="text-ink-soft text-sm">You&apos;ve used your free pings for today. Check back tomorrow.</p>
       </div>
     )
   }
@@ -60,8 +59,8 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
   if (!current) {
     return (
       <div className="text-center py-16 space-y-1.5">
-        <p className="font-display text-xl text-ink">No more profiles right now.</p>
-        <p className="text-ink-faint text-sm">Check back tomorrow, or be more active in discussions.</p>
+        <p className="font-display text-xl text-ink">No more people right now.</p>
+        <p className="text-ink-faint text-sm">Check back later, or meet people through the discussion feed.</p>
       </div>
     )
   }
@@ -70,19 +69,20 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
     <div className="space-y-7">
       <ProfileCard profile={current} />
 
-      {sent && <p className="text-clay-deep text-sm text-center animate-rise">✦ Request sent</p>}
+      {sent && <p className="text-clay-deep text-sm text-center animate-rise">✦ Ping sent</p>}
       {error && <p className="text-clay-deep text-sm text-center">{error}</p>}
 
       <div className="flex justify-center gap-6">
-        <button onClick={() => swipe('left')} disabled={loading}
+        <button onClick={() => swipe('left')} disabled={loading} aria-label="Skip"
           className="w-16 h-16 rounded-full bg-surface border border-line-strong flex items-center justify-center text-ink-soft shadow-sm hover:border-ink-faint hover:text-ink transition-colors disabled:opacity-50 active:scale-95">
           <X size={26} />
         </button>
-        <button onClick={() => swipe('right')} disabled={loading}
+        <button onClick={() => swipe('right')} disabled={loading} aria-label="Ping"
           className="w-16 h-16 rounded-full bg-clay border border-clay flex items-center justify-center text-white shadow-md hover:bg-clay-deep transition-colors disabled:opacity-50 active:scale-95">
-          <Heart size={26} fill="currentColor" />
+          <Send size={24} />
         </button>
       </div>
+      <p className="text-ink-faint text-xs text-center">Skip · Ping to start a chat</p>
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 **Some connections are worth the await.**
 
-Await is a hybrid **tech-discussion + dating** platform for tech professionals (built for Indian Tier‑1 cities). You join a discussion community, earn XP by participating, and once you cross a threshold the dating layer unlocks — so you meet people who've genuinely engaged with the same ideas you have.
+Await is a hybrid **tech-discussion + professional-networking** platform for tech professionals (built for Indian Tier‑1 cities). You join a discussion community, talk shop, and connect with people whose ideas you've actually read — **Ping** someone, they accept, and you chat. Connecting is open to everyone (no gate), so the network grows with the conversation.
 
 🔗 **Live:** https://techdate-eta.vercel.app
 
@@ -11,15 +11,15 @@ Await is a hybrid **tech-discussion + dating** platform for tech professionals (
 ## The core idea
 
 ```
-Sign up → pick your interests → discuss tech (posts, comments, likes)
-        → earn XP → unlock dating at 100 XP
-        → send a request → they accept → chat
+Sign up → pick your interests → discuss tech (posts, comments, likes) → earn XP
+        → find people (interest-matched, or from any profile)
+        → Ping → they accept → chat
 ```
 
 Two layers, one account:
 
-- **Discussion layer (always free):** a feed of community posts + auto‑curated tech news, with likes, threaded comments, bookmarks, and search/filters.
-- **Dating layer (unlocked at 100 XP):** an interest‑matched discovery deck with a request → accept → chat flow.
+- **Discussion layer:** a feed of community posts + auto‑curated tech news, with likes, threaded comments, bookmarks, and search/filters.
+- **Networking layer:** an interest‑matched **People** deck and a **Ping → accept → Chat** flow. Open to all signed‑up users — no XP gate, no gender/preference filter.
 
 ---
 
@@ -42,7 +42,7 @@ Two layers, one account:
 - **Floating compose button** + clean, card‑based feed.
 
 ### 🎮 XP & gamification
-Every interaction earns XP; reaching **100 XP** unlocks dating.
+Every interaction earns XP — a discussion reputation signal shown on your profile (it does **not** gate connecting or messaging).
 
 | Action | XP |
 |--------|----|
@@ -55,20 +55,18 @@ Every interaction earns XP; reaching **100 XP** unlocks dating.
 
 XP and a 🔥 login streak are always visible in the header.
 
-### 💛 Dating (Discover)
-- **Interest‑matched discovery deck** ranked by an interest‑vector cosine similarity (60%) + XP‑tier proximity (20%) + activity recency (20%).
-- Filtered by **city + your "Show me" preference** (Men / Women / Everyone — *dating only, never affects the feed*).
-- Already‑matched, already‑swiped, and blocked users never reappear in the deck.
-- The **"Show me"** preference (Men / Women / Everyone) applies **only to Discover** — never the feed.
-- **Multiple profile photos** with a swipeable carousel.
-- **"Active recently"** status on cards and profiles.
-- **Match count** is public (shown on every profile); your matches list lets you open each person's profile or jump into chat.
+### 🧑‍🤝‍🧑 People (find techies to connect with)
+- **Interest‑matched People deck** ranked by interest‑vector cosine similarity (60%) + XP‑tier proximity (20%) + activity recency (20%).
+- Scoped to your **city**; already‑connected, already‑pinged/skipped, blocked, and incoming‑ping users never reappear.
+- No gender/preference filter — it's professional networking, not dating.
+- **Multiple profile photos** with a swipeable carousel and an **"Active recently"** status.
+- **Connection count** is public (shown on every profile); your **Chats** list lets you open each person's profile or jump into the conversation.
 
-### 🤝 Request / Accept matching
-- A right‑swipe sends a **request** (no blind auto‑matching).
-- A dedicated **Requests** page with **All / Received / Sent** tabs.
-- Recipients **Accept** (creates the match + opens chat) or **Decline**; senders can **Withdraw** a pending request.
-- Free users get **10 swipes/day** (rate‑limited via Redis); the limit degrades gracefully if Redis is unavailable.
+### 🤝 Ping → Chat (connect)
+- **Two ways to Ping:** from the People deck, or the **Ping** button on anyone's profile.
+- A Ping is a **request to chat** — no auto‑connect. The recipient **Accepts** (creates the connection + opens chat) or **Declines**; senders can **Withdraw** a pending Ping.
+- A dedicated **Pings** page with **All / Received / Sent** tabs.
+- Free users get **10 pings/day** (rate‑limited via Redis); the limit degrades gracefully if Redis is unavailable.
 
 ### 💬 Messaging
 - Per‑match chat with the other person's **profile photo** in the header.
@@ -76,16 +74,16 @@ XP and a 🔥 login streak are always visible in the header.
 
 ### 🔔 Notifications
 - A **bell in the header** with an unread badge.
-- Alerts you when **someone you've matched with posts** something; tap through to the post.
+- Alerts you when **someone you're connected with posts** something; tap through to the post.
 
 ### 🛡️ Trust & safety
-- **Block** a user (removes them from your feed, discover, notifications, and tears down any match).
+- **Block** a user (removes them from your feed, People, notifications, and tears down any connection).
 - **Report** users, posts, or comments.
 - **Unmatch** from the chat header.
 
 ### 👤 Profiles
-- **Your profile:** identity card, a single row of 4 stat tiles (XP · Matches · Streak · Dating), interests, **your recent posts with "View all" → `/profile/posts`**, saved posts, edit (multi‑photo upload), sign out, delete account.
-- **Public profiles** (`/users/[id]`): anyone's bio, interests, recent posts, and a matching 4‑stat row (XP · Matches · Streak · Posts); author names/avatars across the app link here.
+- **Your profile:** identity card, a row of 3 stat tiles (XP · 💬 Chats · Streak), interests, **your recent posts with "View all" → `/profile/posts`**, saved posts, edit (multi‑photo upload), sign out, delete account.
+- **Public profiles** (`/users/[id]`): anyone's bio, interests, recent posts, a 4‑stat row (XP · Chats · Streak · Posts), and a **Ping** button (Ping → Ping sent → Accept → Message, state‑aware); author names/avatars across the app link here.
 
 ---
 
@@ -97,7 +95,7 @@ XP and a 🔥 login streak are always visible in the header.
 | Language | TypeScript |
 | Styling | **Tailwind CSS v4** — custom "warm paper" theme (clay accent, Fraunces + Hanken Grotesk) |
 | Backend / DB / Auth / Storage | **Supabase** (PostgreSQL + Row‑Level Security) |
-| Rate limiting | **Upstash Redis** (daily swipe counter) |
+| Rate limiting | **Upstash Redis** (daily ping counter) |
 | Content agent | **Python** cron on **GitHub Actions** |
 | Hosting | **Vercel** |
 
@@ -119,9 +117,9 @@ app/
 ```
 
 ### Key data flows
-- **XP:** interactions call `lib/xp/award.ts::awardXp`, which writes an `xp_events` row, increments `users.xp`, and auto‑unlocks dating at 100.
+- **XP:** interactions call `lib/xp/award.ts::awardXp`, which writes an `xp_events` row and increments `users.xp` (a reputation signal; it doesn't gate connecting).
 - **Interest vectors:** each user has a normalized `interest_vector` (sums to 1.0), seeded at onboarding and nudged on every like/comment/post; drives match ranking.
-- **Request/accept:** right‑swipes are pending requests; a `SECURITY DEFINER` SQL function surfaces incoming/sent requests without leaking swipe data; accepting creates the match.
+- **Ping/accept:** a Ping (right‑swipe) is a pending request; a `SECURITY DEFINER` SQL function surfaces incoming/sent pings without leaking swipe data; accepting creates the connection + chat.
 - **Notifications & blocking:** derived on read from matches/posts and a `get_blocked_ids()` `SECURITY DEFINER` helper (no extra tables/cron).
 
 ### Project layout

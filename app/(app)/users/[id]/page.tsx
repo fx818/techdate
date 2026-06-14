@@ -4,6 +4,7 @@ import { BackButton } from '@/components/feed/BackButton'
 import { XpBadge } from '@/components/ui/XpBadge'
 import { PostCard } from '@/components/feed/PostCard'
 import { UserSafetyMenu } from '@/components/profile/UserSafetyMenu'
+import { PingButton } from '@/components/dating/PingButton'
 import { GENRES } from '@/lib/genres'
 import { activeLabel } from '@/lib/active'
 
@@ -32,6 +33,18 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   }
 
   const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: id })
+
+  // Relationship state for the Ping button (connected / they pinged me / I pinged them / none)
+  const [a, b] = [user.id, id].sort()
+  const [{ data: existingMatch }, { data: mySwipe }, { data: theirSwipe }] = await Promise.all([
+    (supabase as any).from('matches').select('id').eq('user1_id', a).eq('user2_id', b).maybeSingle(),
+    (supabase as any).from('swipes').select('direction').eq('swiper_id', user.id).eq('swiped_id', id).maybeSingle(),
+    (supabase as any).from('swipes').select('direction').eq('swiper_id', id).eq('swiped_id', user.id).eq('direction', 'right').maybeSingle(),
+  ])
+  let pingState: 'none' | 'pinged' | 'incoming' | 'connected' = 'none'
+  if (existingMatch) pingState = 'connected'
+  else if (mySwipe?.direction === 'right') pingState = 'pinged'
+  else if (theirSwipe) pingState = 'incoming'
 
   const { count: postCount } = await (supabase as any)
     .from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id).eq('is_gideon', false)
@@ -79,9 +92,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
             {genreLabels.map((g: string) => <span key={g} className="chip">{g}</span>)}
           </div>
         )}
+        <div className="border-t border-line pt-4">
+          <PingButton otherUserId={id} initialState={pingState} matchId={existingMatch?.id ?? null} />
+        </div>
       </div>
 
-      {/* Stat tiles — single row of 4 */}
+      {/* Stat tiles — XP / Chats / Streak / Posts */}
       <div className="grid grid-cols-4 gap-2">
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{profile.xp}</p>
@@ -89,7 +105,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
         </div>
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{matchCount ?? 0}</p>
-          <p className="text-ink-faint text-[11px] mt-1.5">💛 Matches</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">💬 Chats</p>
         </div>
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{profile.streak_count ?? 0}</p>

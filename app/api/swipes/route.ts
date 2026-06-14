@@ -13,12 +13,11 @@ export async function POST(request: Request) {
   const { swiped_id, direction } = await request.json() as { swiped_id: string; direction: SwipeDirection }
   if (!swiped_id || !direction) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
-  const { data: profile } = await (supabase as any).from('users').select('is_premium, dating_unlocked').eq('id', user.id).single()
-  if (!profile?.dating_unlocked) return NextResponse.json({ error: 'Dating not unlocked' }, { status: 403 })
+  const { data: profile } = await (supabase as any).from('users').select('is_premium').eq('id', user.id).single()
 
-  // Redis (daily swipe cap) is best-effort: if it's unavailable, never block
-  // the swipe over a rate-limit check — degrade open rather than 500.
-  if (!profile.is_premium) {
+  // Redis (daily ping cap) is best-effort: if it's unavailable, never block
+  // the ping over a rate-limit check — degrade open rather than 500.
+  if (!profile?.is_premium) {
     try {
       const swipeCount = await getDailySwipeCount(user.id)
       if (swipeCount >= FREE_SWIPE_LIMIT) {

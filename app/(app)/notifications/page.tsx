@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
       {items.length === 0 ? (
         <div className="card p-8 text-center">
           <p className="font-display text-xl text-ink">All quiet</p>
-          <p className="text-ink-faint text-sm mt-1">When someone you matched with posts, you&apos;ll see it here.</p>
+          <p className="text-ink-faint text-sm mt-1">When someone you&apos;re connected with posts, you&apos;ll see it here.</p>
         </div>
       ) : (
         <div className="space-y-2.5">

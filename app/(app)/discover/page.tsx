@@ -2,42 +2,24 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SwipeDeck } from '@/components/dating/SwipeDeck'
 
-export default async function DiscoverPage() {
+export default async function PeoplePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('dating_unlocked, xp, city, gender, preference, interest_vector')
+    .select('xp, city, interest_vector')
     .eq('id', user.id)
     .single()
 
-  if (!profile?.dating_unlocked) {
-    const xp = profile?.xp ?? 0
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-5">
-        <div className="font-display text-5xl text-clay/70">✦</div>
-        <h2 className="font-display text-3xl text-ink">Dating is locked</h2>
-        <p className="text-ink-soft">You need 100 XP to unlock dating — you have <span className="font-mono text-clay-deep">{xp}</span>.</p>
-        <div className="h-2 rounded-full bg-line overflow-hidden max-w-xs mx-auto">
-          <div className="h-full bg-clay rounded-full transition-all" style={{ width: `${Math.min(100, xp)}%` }} />
-        </div>
-        <p className="text-ink-faint text-sm">Discuss, post, and comment on the feed to earn XP.</p>
-      </div>
-    )
-  }
-
   let candidates: any[] = []
   try {
-    const genderFilter = profile.preference === 'everyone'
-      ? ['male', 'female', 'non_binary']
-      : [profile.preference]
-
     // Exclude from the deck:
-    //  • people who already liked you (they belong in Requests)
-    //  • people you've already swiped (you've acted on them)
-    //  • people you're already matched/connected with
+    //  • people who already pinged you (they belong in Pings)
+    //  • people you've already pinged/skipped (you've acted on them)
+    //  • people you're already connected with
+    //  • blocked users
     const [{ data: incoming }, { data: mySwipes }, { data: myMatches }, { data: blocked }] = await Promise.all([
       (supabase as any).rpc('get_incoming_requests'),
       (supabase as any).from('swipes').select('swiped_id').eq('swiper_id', user.id),
@@ -55,7 +37,6 @@ export default async function DiscoverPage() {
       .from('users')
       .select('id, interest_vector, xp, last_active, name, photo_url, photos, city, genres, bio')
       .eq('city', profile.city)
-      .in('gender', genderFilter)
       .neq('id', user.id)
       .limit(50)
 
@@ -86,7 +67,11 @@ export default async function DiscoverPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8">
+    <div className="max-w-xl mx-auto px-4 py-7">
+      <div className="mb-5">
+        <h1 className="font-display text-3xl text-ink leading-none">People</h1>
+        <p className="text-ink-faint text-sm mt-1.5">Techies in {profile.city} who share your interests. Ping someone to start a chat.</p>
+      </div>
       <SwipeDeck initialCandidates={candidates} />
     </div>
   )

@@ -22,6 +22,8 @@ export async function awardXp(userId: string, action: XpAction) {
   if (!user) return
 
   const newXp = (user.xp as number) + xpAmount
+  // `dating_unlocked` is vestigial now that messaging (Ping/Chat) is open to
+  // everyone with no XP gate; we still flip it for historical/analytics parity.
   const shouldUnlock = !(user.dating_unlocked as boolean) && newXp >= DATING_UNLOCK_THRESHOLD
 
   await supabase

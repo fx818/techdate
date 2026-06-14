@@ -3,21 +3,21 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Rss, Heart, Sparkles, MessageSquare } from 'lucide-react'
+import { Rss, Users, Send, MessageSquare } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/feed', icon: Rss, label: 'Feed' },
-  { href: '/discover', icon: Heart, label: 'Discover' },
-  { href: '/requests', icon: Sparkles, label: 'Requests' },
-  { href: '/matches', icon: MessageSquare, label: 'Matches' },
+  { href: '/discover', icon: Users, label: 'People' },
+  { href: '/requests', icon: Send, label: 'Pings' },
+  { href: '/matches', icon: MessageSquare, label: 'Chats' },
 ]
 
 export function Navbar() {
   const pathname = usePathname()
   const [requestCount, setRequestCount] = useState(0)
 
-  // Refresh the pending-request count on every navigation (cheap, keeps the
-  // badge in sync after you accept/decline on the Requests page).
+  // Refresh the incoming-ping count on every navigation (cheap, keeps the
+  // badge in sync after you accept/decline on the Pings page).
   useEffect(() => {
     fetch('/api/requests')
       .then(r => r.json())

@@ -81,13 +81,6 @@ export default async function FeedPage({
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-5 space-y-4">
-        {!profile.dating_unlocked && (
-          <div className="rounded-xl bg-sage-tint border border-sage/20 p-3.5 text-sm text-sage flex items-center gap-2">
-            <span className="font-display text-base">✦</span>
-            Earn <span className="font-semibold">{100 - profile.xp}</span> more XP to unlock dating.
-          </div>
-        )}
-
         {(posts ?? []).length === 0 ? (
           <div className="card p-8 text-center">
             <p className="font-display text-xl text-ink">{q ? 'No posts match your search' : 'Nothing here yet'}</p>

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MessageSquare } from 'lucide-react'
 
-export default async function MatchesPage() {
+export default async function ChatsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -27,17 +27,17 @@ export default async function MatchesPage() {
     <div className="max-w-xl mx-auto px-4 py-7">
       <div className="mb-5 flex items-end justify-between">
         <div>
-          <h1 className="font-display text-3xl text-ink leading-none">Matches</h1>
-          <p className="text-ink-faint text-sm mt-1.5">People you both said yes to.</p>
+          <h1 className="font-display text-3xl text-ink leading-none">Chats</h1>
+          <p className="text-ink-faint text-sm mt-1.5">People you&apos;re connected with.</p>
         </div>
         <span className="text-sm font-mono text-clay-deep bg-clay-tint px-2.5 py-1 rounded-full">
-          {count} {count === 1 ? 'match' : 'matches'}
+          {count} {count === 1 ? 'chat' : 'chats'}
         </span>
       </div>
       {count === 0 ? (
         <div className="card p-8 text-center">
-          <p className="font-display text-xl text-ink">No matches yet</p>
-          <p className="text-ink-faint text-sm mt-1">Keep swiping in Discover.</p>
+          <p className="font-display text-xl text-ink">No chats yet</p>
+          <p className="text-ink-faint text-sm mt-1">Ping someone from People or their profile to start one.</p>
         </div>
       ) : (
         <div className="space-y-2.5">
