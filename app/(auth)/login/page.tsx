@@ -48,6 +48,16 @@ export default function LoginPage() {
     setLoading(false)
   }
 
+  async function handleForgot() {
+    if (!email) { setError('Enter your email first'); return }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${location.origin}/auth/callback?type=recovery`,
+    })
+    if (error) { setError(error.message); return }
+    setError('')
+    setMode('check_email')
+  }
+
   if (mode === 'check_email') {
     return (
       <div className="min-h-screen flex items-center justify-center px-5">
@@ -126,6 +136,11 @@ export default function LoginPage() {
               className="input"
             />
             {error && <p className="text-clay-deep text-sm">{error}</p>}
+            {mode === 'signin' && (
+              <button onClick={handleForgot} className="text-clay-deep text-xs hover:underline self-start">
+                Forgot password?
+              </button>
+            )}
             <button
               onClick={mode === 'signin' ? handleSignIn : handleSignUp}
               disabled={loading || !email || password.length < 6}

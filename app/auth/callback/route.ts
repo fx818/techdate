@@ -32,6 +32,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
   }
 
+  if (type === 'recovery') {
+    return NextResponse.redirect(`${origin}/reset-password`)
+  }
+
   // Email change = company email confirmation
   if (type === 'email_change') {
     await (supabase as any)
