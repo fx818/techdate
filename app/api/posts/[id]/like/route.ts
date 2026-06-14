@@ -11,14 +11,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { id: postId } = await params
 
   const { data: existing } = await (supabase as any).from('likes')
-    .select('id').eq('user_id', user.id).eq('post_id', postId).single()
+    .select('id').eq('user_id', user.id).eq('post_id', postId).maybeSingle()
 
   if (existing) {
     await (supabase as any).from('likes').delete().eq('user_id', user.id).eq('post_id', postId)
     return NextResponse.json({ liked: false })
   }
 
-  await (supabase as any).from('likes').insert({ user_id: user.id, post_id: postId })
+  // unique(user_id, post_id) guarantees one like per user per post; a duplicate
+  // (e.g. double-click race) trips the constraint — treat it as already-liked
+  // and do NOT award XP again.
+  const { error: insertError } = await (supabase as any)
+    .from('likes').insert({ user_id: user.id, post_id: postId })
+  if (insertError) return NextResponse.json({ liked: true })
 
   await awardXp(user.id, 'like')
 

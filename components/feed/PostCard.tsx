@@ -18,18 +18,25 @@ interface Post {
   users: { id: string; name: string; photo_url: string | null } | null
 }
 
-export function PostCard({ post, currentUserId }: { post: Post; currentUserId: string }) {
-  const [liked, setLiked] = useState(false)
+export function PostCard({ post, currentUserId, initialLiked = false }: { post: Post; currentUserId: string; initialLiked?: boolean }) {
+  const [liked, setLiked] = useState(initialLiked)
   const [likeCount, setLikeCount] = useState(post.likes_count)
   const [showComments, setShowComments] = useState(false)
+  const [pending, setPending] = useState(false)
 
   async function toggleLike() {
-    const res = await fetch(`/api/posts/${post.id}/like`, { method: 'POST' })
-    if (!res.ok) return
-    const data = await res.json()
-    if (typeof data.liked !== 'boolean') return
-    setLiked(data.liked)
-    setLikeCount(prev => data.liked ? prev + 1 : prev - 1)
+    if (pending) return
+    setPending(true)
+    try {
+      const res = await fetch(`/api/posts/${post.id}/like`, { method: 'POST' })
+      if (!res.ok) return
+      const data = await res.json()
+      if (typeof data.liked !== 'boolean') return
+      setLiked(data.liked)
+      setLikeCount(prev => data.liked ? prev + 1 : prev - 1)
+    } finally {
+      setPending(false)
+    }
   }
 
   return (
@@ -54,7 +61,7 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId: s
       {post.content && <p className="text-gray-400 text-sm">{post.content}</p>}
 
       <div className="flex items-center gap-4 pt-1">
-        <button onClick={toggleLike} className={`flex items-center gap-1.5 text-sm ${liked ? 'text-red-400' : 'text-gray-500 hover:text-gray-300'}`}>
+        <button onClick={toggleLike} disabled={pending} className={`flex items-center gap-1.5 text-sm disabled:opacity-60 ${liked ? 'text-red-400' : 'text-gray-500 hover:text-gray-300'}`}>
           <Heart size={15} fill={liked ? 'currentColor' : 'none'} />
           {likeCount}
         </button>
