@@ -13,12 +13,12 @@ export default async function MatchesPage() {
       id,
       user1_id,
       user2_id,
-      matched_at,
+      created_at,
       user1:users!matches_user1_id_fkey(id, name, photo_url),
       user2:users!matches_user2_id_fkey(id, name, photo_url)
     `)
     .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-    .order('matched_at', { ascending: false })
+    .order('created_at', { ascending: false })
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6">

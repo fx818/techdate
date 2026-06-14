@@ -53,7 +53,7 @@ export async function GET() {
     .limit(100)
 
   if (swipedIds.length > 0) {
-    query = query.not('id', 'in', `(${swipedIds.join(',')})`)
+    query = query.not('id', 'in', `(${swipedIds.map((id: string) => `"${id}"`).join(',')})`)
   }
 
   const { data: rawCandidates } = await query

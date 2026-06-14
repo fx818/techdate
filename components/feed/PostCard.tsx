@@ -25,7 +25,9 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId: s
 
   async function toggleLike() {
     const res = await fetch(`/api/posts/${post.id}/like`, { method: 'POST' })
+    if (!res.ok) return
     const data = await res.json()
+    if (typeof data.liked !== 'boolean') return
     setLiked(data.liked)
     setLikeCount(prev => data.liked ? prev + 1 : prev - 1)
   }
