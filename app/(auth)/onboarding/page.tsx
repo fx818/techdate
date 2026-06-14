@@ -115,6 +115,7 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
+              <p className="text-ink-faint text-xs">Used only for Discover matches — not the feed.</p>
             </div>
             <textarea placeholder="Short bio (optional)" value={bio} onChange={e => setBio(e.target.value)}
               className="input h-24 resize-none" />

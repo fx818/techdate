@@ -143,6 +143,7 @@ export default function EditProfile({ userId, initial }: Props) {
               </button>
             ))}
           </div>
+          <p className="text-ink-faint text-xs">Used only for Discover matches — not the feed.</p>
         </div>
 
         <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Short bio" className="input h-20 resize-none" />
