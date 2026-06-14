@@ -4,8 +4,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Pass pathname to server components via request header
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+
   try {
-    let supabaseResponse = NextResponse.next({ request })
+    let supabaseResponse = NextResponse.next({
+      request: { headers: requestHeaders },
+    })
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +21,7 @@ export async function proxy(request: NextRequest) {
           getAll() { return request.cookies.getAll() },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-            supabaseResponse = NextResponse.next({ request })
+            supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
             cookiesToSet.forEach(({ name, value, options }) =>
               supabaseResponse.cookies.set(name, value, options)
             )
@@ -36,15 +42,13 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/feed', request.url))
     }
 
-    supabaseResponse.headers.set('x-pathname', pathname)
     return supabaseResponse
   } catch {
-    // If Supabase init fails, redirect to login rather than 404
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/onboarding')
     if (!isAuthRoute) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    return NextResponse.next({ request })
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 }
 
