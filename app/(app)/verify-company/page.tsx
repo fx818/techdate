@@ -18,10 +18,10 @@ export default function VerifyCompanyPage() {
     }
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.updateUser({
-      email,
-      options: { emailRedirectTo: `${location.origin}/auth/callback?type=email_change` },
-    })
+    const { error } = await supabase.auth.updateUser(
+      { email },
+      { emailRedirectTo: `${location.origin}/auth/callback?type=email_change` }
+    )
     if (error) {
       setError(error.message)
       setLoading(false)
