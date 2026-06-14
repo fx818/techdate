@@ -14,7 +14,7 @@ export function FeedFilters({ userGenres }: { userGenres: string[] }) {
   const params = useSearchParams()
 
   const genre = params.get('genre') ?? 'all'
-  const source = (params.get('source') ?? 'all') as Source
+  const source = (params.get('source') ?? 'community') as Source // community is the default view
   const sort = (params.get('sort') ?? 'latest') as Sort
   const [q, setQ] = useState(params.get('q') ?? '')
   const [open, setOpen] = useState(false)
@@ -68,7 +68,7 @@ export function FeedFilters({ userGenres }: { userGenres: string[] }) {
             <p className="text-ink-faint text-xs uppercase tracking-widest mb-1.5">Source</p>
             <div className="flex gap-1 p-1 rounded-xl bg-surface-sunk border border-line w-fit">
               {([['all', 'All'], ['community', 'Community'], ['gideon', 'Gideon']] as [Source, string][]).map(([val, label]) => (
-                <button key={val} onClick={() => setParam('source', val, 'all')}
+                <button key={val} onClick={() => setParam('source', val, 'community')}
                   className={`px-3 py-1 text-sm rounded-lg transition-colors ${source === val ? 'bg-surface text-ink shadow-sm' : 'text-ink-faint'}`}>
                   {label}
                 </button>

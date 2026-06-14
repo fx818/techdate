@@ -24,7 +24,7 @@ export default async function FeedPage({
   const sp = await searchParams
   const q = (sp.q ?? '').trim()
   const genre = sp.genre ?? 'all'
-  const source = sp.source ?? 'all'
+  const source = sp.source ?? 'community' // default to community posts only
   const sort = sp.sort ?? 'latest'
 
   let query = (supabase as any)
