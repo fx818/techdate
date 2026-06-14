@@ -2,8 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PostCard } from '@/components/feed/PostCard'
 import { CreatePost } from '@/components/feed/CreatePost'
+import { FeedFilters } from '@/components/feed/FeedFilters'
 
-export default async function FeedPage() {
+export default async function FeedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; genre?: string; source?: string; sort?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -16,12 +21,35 @@ export default async function FeedPage() {
 
   if (!profile) redirect('/onboarding')
 
-  const { data: posts } = await (supabase as any)
+  const sp = await searchParams
+  const q = (sp.q ?? '').trim()
+  const genre = sp.genre ?? 'all'
+  const source = sp.source ?? 'all'
+  const sort = sp.sort ?? 'latest'
+
+  let query = (supabase as any)
     .from('posts')
     .select('*, users(id, name, photo_url)')
-    .in('genre', profile.genres)
-    .order('created_at', { ascending: false })
-    .limit(20)
+
+  // Genre: a specific topic, or fall back to the user's chosen genres
+  if (genre !== 'all') query = query.eq('genre', genre)
+  else query = query.in('genre', profile.genres)
+
+  // Source: community posts vs Gideon-curated
+  if (source === 'gideon') query = query.eq('is_gideon', true)
+  else if (source === 'community') query = query.eq('is_gideon', false)
+
+  // Search title + content (sanitise chars that would break the PostgREST filter)
+  if (q) {
+    const safe = q.replace(/[,()*%:]/g, ' ').trim()
+    if (safe) query = query.or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
+  }
+
+  // Sort
+  const orderCol = sort === 'top' ? 'likes_count' : sort === 'discussed' ? 'comments_count' : 'created_at'
+  query = query.order(orderCol, { ascending: false }).limit(30)
+
+  const { data: posts } = await query
 
   // Which of these posts has the current user already liked?
   const postIds = (posts ?? []).map((p: any) => p.id)
@@ -54,10 +82,21 @@ export default async function FeedPage() {
         </div>
       )}
 
+      <FeedFilters userGenres={profile.genres} />
+
       <div className="space-y-4">
-        {(posts ?? []).map((post: any) => (
-          <PostCard key={post.id} post={post} currentUserId={user.id} initialLiked={likedPostIds.has(post.id)} />
-        ))}
+        {(posts ?? []).length === 0 ? (
+          <div className="card p-8 text-center">
+            <p className="font-display text-xl text-ink">{q ? 'No posts match your search' : 'Nothing here yet'}</p>
+            <p className="text-ink-faint text-sm mt-1">
+              {q || genre !== 'all' || source !== 'all' ? 'Try clearing some filters.' : 'Be the first to post something.'}
+            </p>
+          </div>
+        ) : (
+          (posts ?? []).map((post: any) => (
+            <PostCard key={post.id} post={post} currentUserId={user.id} initialLiked={likedPostIds.has(post.id)} />
+          ))
+        )}
       </div>
     </div>
   )

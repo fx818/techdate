@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Navbar } from '@/components/layout/Navbar'
+import { Header } from '@/components/layout/Header'
 import { StreakPing } from '@/components/layout/StreakPing'
 import { isPersonalEmail, trialDaysLeft } from '@/lib/auth/email'
 import { headers } from 'next/headers'
@@ -34,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-paper text-ink pb-24">
       <StreakPing />
+      <Header />
       {children}
       <Navbar />
     </div>
