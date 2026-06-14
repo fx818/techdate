@@ -11,6 +11,11 @@ export async function getNotifications(supabase: any, userId: string) {
   const otherIds = (matches ?? []).map((m: any) => (m.user1_id === userId ? m.user2_id : m.user1_id))
   if (otherIds.length === 0) return { items: [], unread: 0 }
 
+  const { data: blocked } = await supabase.rpc('get_blocked_ids')
+  const blockedIds = new Set((blocked ?? []).map((b: any) => b.user_id))
+  const visibleIds = otherIds.filter((id: string) => !blockedIds.has(id))
+  if (visibleIds.length === 0) return { items: [], unread: 0 }
+
   const { data: profile } = await supabase
     .from('users').select('last_notifications_seen').eq('id', userId).single()
   const lastSeen = profile?.last_notifications_seen ? new Date(profile.last_notifications_seen).getTime() : 0
@@ -18,7 +23,7 @@ export async function getNotifications(supabase: any, userId: string) {
   const { data: posts } = await supabase
     .from('posts')
     .select('id, title, created_at, users(id, name, photo_url)')
-    .in('author_id', otherIds)
+    .in('author_id', visibleIds)
     .eq('is_gideon', false)
     .order('created_at', { ascending: false })
     .limit(30)

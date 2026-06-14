@@ -38,16 +38,18 @@ export default async function DiscoverPage() {
     //  • people who already liked you (they belong in Requests)
     //  • people you've already swiped (you've acted on them)
     //  • people you're already matched/connected with
-    const [{ data: incoming }, { data: mySwipes }, { data: myMatches }] = await Promise.all([
+    const [{ data: incoming }, { data: mySwipes }, { data: myMatches }, { data: blocked }] = await Promise.all([
       (supabase as any).rpc('get_incoming_requests'),
       (supabase as any).from('swipes').select('swiped_id').eq('swiper_id', user.id),
       (supabase as any).from('matches').select('user1_id, user2_id').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`),
+      (supabase as any).rpc('get_blocked_ids'),
     ])
 
     const requesterIds: string[] = (incoming ?? []).map((r: any) => r.id)
     const swipedIds: string[] = (mySwipes ?? []).map((s: any) => s.swiped_id)
     const matchedIds: string[] = (myMatches ?? []).map((m: any) => (m.user1_id === user.id ? m.user2_id : m.user1_id))
-    const excludeIds = Array.from(new Set([...requesterIds, ...swipedIds, ...matchedIds]))
+    const blockedIds: string[] = (blocked ?? []).map((b: any) => b.user_id)
+    const excludeIds = Array.from(new Set([...requesterIds, ...swipedIds, ...matchedIds, ...blockedIds]))
 
     let q = (supabase as any)
       .from('users')

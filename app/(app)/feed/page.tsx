@@ -45,6 +45,13 @@ export default async function FeedPage({
     if (safe) query = query.or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
   }
 
+  // Exclude posts by blocked users
+  const { data: blocked } = await (supabase as any).rpc('get_blocked_ids')
+  const blockedIds: string[] = (blocked ?? []).map((b: any) => b.user_id)
+  if (blockedIds.length > 0) {
+    query = query.not('author_id', 'in', `(${blockedIds.map((id: string) => `"${id}"`).join(',')})`)
+  }
+
   // Sort
   const orderCol = sort === 'top' ? 'likes_count' : sort === 'discussed' ? 'comments_count' : 'created_at'
   query = query.order(orderCol, { ascending: false }).limit(30)
