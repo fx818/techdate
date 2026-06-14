@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { Navbar } from '@/components/layout/Navbar'
 import { Header } from '@/components/layout/Header'
 import { StreakPing } from '@/components/layout/StreakPing'
-import { isPersonalEmail, trialDaysLeft } from '@/lib/auth/email'
+import { isPersonalEmail, isTrialExpired } from '@/lib/auth/email'
 import { headers } from 'next/headers'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -23,10 +23,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const pathname = headersList.get('x-pathname') ?? ''
   if (profile && !pathname.startsWith('/verify-company')) {
     const email = user.email ?? ''
+    // Only personal-email users hit the gate; company-email signups are exempt.
     const needsCompanyEmail =
       isPersonalEmail(email) &&
       !profile.company_email_verified &&
-      trialDaysLeft(profile.created_at) === 0
+      isTrialExpired(profile.created_at)
 
     if (needsCompanyEmail) redirect('/verify-company')
   }
