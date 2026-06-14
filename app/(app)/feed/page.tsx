@@ -30,7 +30,7 @@ export default async function FeedPage() {
         <span className="text-sm text-indigo-400">{profile.xp} XP</span>
       </div>
 
-      <CreatePost userGenres={profile.genres} onCreated={() => {}} />
+      <CreatePost userGenres={profile.genres} />
 
       {!profile.dating_unlocked && (
         <div className="bg-indigo-950/40 border border-indigo-800/50 rounded-lg p-3 text-sm text-indigo-300">

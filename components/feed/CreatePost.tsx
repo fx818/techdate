@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { GENRES } from '@/lib/genres'
 
-export function CreatePost({ userGenres, onCreated }: { userGenres: string[]; onCreated: () => void }) {
+export function CreatePost({ userGenres }: { userGenres: string[] }) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -24,7 +26,7 @@ export function CreatePost({ userGenres, onCreated }: { userGenres: string[]; on
       setTitle('')
       setContent('')
       setOpen(false)
-      onCreated()
+      router.refresh()
     } finally {
       setLoading(false)
     }
