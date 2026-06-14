@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { XpBadge } from '@/components/ui/XpBadge'
+import { PostCard } from '@/components/feed/PostCard'
 import { GENRES } from '@/lib/genres'
 import SignOutButton from '@/components/layout/SignOutButton'
 import EditProfile from '@/components/profile/EditProfile'
@@ -21,6 +22,21 @@ export default async function ProfilePage() {
   if (!profile) redirect('/onboarding')
 
   const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: user.id })
+
+  // Recent posts (preview 2) + their like/bookmark state
+  const { data: myPosts } = await (supabase as any)
+    .from('posts').select('*, users(id, name, photo_url)').eq('author_id', user.id).eq('is_gideon', false)
+    .order('created_at', { ascending: false }).limit(2)
+  const myPostIds = (myPosts ?? []).map((p: any) => p.id)
+  let likedPostIds = new Set<string>(); let bookmarkedPostIds = new Set<string>()
+  if (myPostIds.length > 0) {
+    const [{ data: myLikes }, { data: myBookmarks }] = await Promise.all([
+      (supabase as any).from('likes').select('post_id').eq('user_id', user.id).in('post_id', myPostIds),
+      (supabase as any).from('bookmarks').select('post_id').eq('user_id', user.id).in('post_id', myPostIds),
+    ])
+    likedPostIds = new Set((myLikes ?? []).map((l: any) => l.post_id))
+    bookmarkedPostIds = new Set((myBookmarks ?? []).map((b: any) => b.post_id))
+  }
 
   const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map(g => g.label)
 
@@ -66,25 +82,25 @@ export default async function ProfilePage() {
         )}
       </div>
 
-      {/* Stat tiles */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="card p-4 text-center">
-          <p className="font-display text-2xl text-ink leading-none">{profile.xp}</p>
-          <p className="text-ink-faint text-xs mt-1.5">XP</p>
+      {/* Stat tiles — single row of 4 */}
+      <div className="grid grid-cols-4 gap-2">
+        <div className="card p-3 text-center">
+          <p className="font-display text-xl text-ink leading-none">{profile.xp}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">XP</p>
         </div>
-        <Link href="/matches" className="card p-4 text-center hover:border-clay transition-colors">
-          <p className="font-display text-2xl text-ink leading-none">{matchCount ?? 0}</p>
-          <p className="text-ink-faint text-xs mt-1.5">💛 Matches</p>
+        <Link href="/matches" className="card p-3 text-center hover:border-clay transition-colors">
+          <p className="font-display text-xl text-ink leading-none">{matchCount ?? 0}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">💛 Matches</p>
         </Link>
-        <div className="card p-4 text-center">
-          <p className="font-display text-2xl text-ink leading-none">{streak}</p>
-          <p className="text-ink-faint text-xs mt-1.5">🔥 day streak</p>
+        <div className="card p-3 text-center">
+          <p className="font-display text-xl text-ink leading-none">{streak}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">🔥 Streak</p>
         </div>
-        <div className="card p-4 text-center">
-          <p className={`font-display text-2xl leading-none ${profile.dating_unlocked ? 'text-sage' : 'text-ink-faint'}`}>
+        <div className="card p-3 text-center">
+          <p className={`font-display text-xl leading-none ${profile.dating_unlocked ? 'text-sage' : 'text-ink-faint'}`}>
             {profile.dating_unlocked ? '✓' : '🔒'}
           </p>
-          <p className="text-ink-faint text-xs mt-1.5">{profile.dating_unlocked ? 'Dating on' : `${xpToUnlock} XP left`}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">{profile.dating_unlocked ? 'Dating' : `${xpToUnlock} XP`}</p>
         </div>
       </div>
 
@@ -96,6 +112,26 @@ export default async function ProfilePage() {
             <span key={g} className="chip">{g}</span>
           ))}
         </div>
+      </div>
+
+      {/* My posts */}
+      <div>
+        <div className="flex items-center justify-between mb-2.5">
+          <h2 className="text-ink-faint text-xs uppercase tracking-widest">My posts</h2>
+          {(myPosts ?? []).length > 0 && (
+            <Link href="/profile/posts" className="text-clay-deep text-xs font-medium hover:underline">View all ›</Link>
+          )}
+        </div>
+        {(myPosts ?? []).length === 0 ? (
+          <div className="card p-6 text-center text-ink-faint text-sm">You haven&apos;t posted yet.</div>
+        ) : (
+          <div className="space-y-4">
+            {(myPosts ?? []).map((post: any) => (
+              <PostCard key={post.id} post={post} currentUserId={user.id}
+                initialLiked={likedPostIds.has(post.id)} initialBookmarked={bookmarkedPostIds.has(post.id)} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Saved */}
