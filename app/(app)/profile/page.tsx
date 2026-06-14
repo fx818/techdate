@@ -4,6 +4,7 @@ import { XpBadge } from '@/components/ui/XpBadge'
 import { GENRES } from '@/lib/genres'
 import SignOutButton from '@/components/layout/SignOutButton'
 import EditProfile from '@/components/profile/EditProfile'
+import { DeleteAccount } from '@/components/profile/DeleteAccount'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -86,6 +87,7 @@ export default async function ProfilePage() {
         }}
       />
       <SignOutButton />
+      <DeleteAccount />
     </div>
   )
 }
