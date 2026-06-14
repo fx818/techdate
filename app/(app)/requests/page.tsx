@@ -23,15 +23,18 @@ export default async function RequestsPage() {
     )
   }
 
-  const { data: requests } = await (supabase as any).rpc('get_incoming_requests')
+  const [{ data: received }, { data: sent }] = await Promise.all([
+    (supabase as any).rpc('get_incoming_requests'),
+    (supabase as any).rpc('get_sent_requests'),
+  ])
 
   return (
     <div className="max-w-xl mx-auto px-4 py-7">
       <div className="mb-5">
         <h1 className="font-display text-3xl text-ink leading-none">Requests</h1>
-        <p className="text-ink-faint text-sm mt-1.5">People who liked you. Accept to start chatting.</p>
+        <p className="text-ink-faint text-sm mt-1.5">Likes you&apos;ve received and sent.</p>
       </div>
-      <RequestList initial={requests ?? []} />
+      <RequestList received={received ?? []} sent={sent ?? []} />
     </div>
   )
 }

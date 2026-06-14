@@ -22,7 +22,7 @@ export function Navbar() {
   useEffect(() => {
     fetch('/api/requests')
       .then(r => r.json())
-      .then(d => setRequestCount(Array.isArray(d.requests) ? d.requests.length : 0))
+      .then(d => setRequestCount(Array.isArray(d.received) ? d.received.length : 0))
       .catch(() => {})
   }, [pathname])
 

@@ -7,9 +7,11 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data, error } = await (supabase as any).rpc('get_incoming_requests')
-  if (error) return NextResponse.json({ requests: [] })
-  return NextResponse.json({ requests: data ?? [] })
+  const [{ data: received }, { data: sent }] = await Promise.all([
+    (supabase as any).rpc('get_incoming_requests'),
+    (supabase as any).rpc('get_sent_requests'),
+  ])
+  return NextResponse.json({ received: received ?? [], sent: sent ?? [] })
 }
 
 // POST: respond to a request. { requester_id, action: 'accept' | 'decline' }
