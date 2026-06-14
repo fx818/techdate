@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { XpBadge } from '@/components/ui/XpBadge'
 import { GENRES } from '@/lib/genres'
 import SignOutButton from '@/components/layout/SignOutButton'
@@ -18,6 +19,8 @@ export default async function ProfilePage() {
     .single()
 
   if (!profile) redirect('/onboarding')
+
+  const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: user.id })
 
   const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map(g => g.label)
 
@@ -64,11 +67,15 @@ export default async function ProfilePage() {
       </div>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div className="card p-4 text-center">
           <p className="font-display text-2xl text-ink leading-none">{profile.xp}</p>
           <p className="text-ink-faint text-xs mt-1.5">XP</p>
         </div>
+        <Link href="/matches" className="card p-4 text-center hover:border-clay transition-colors">
+          <p className="font-display text-2xl text-ink leading-none">{matchCount ?? 0}</p>
+          <p className="text-ink-faint text-xs mt-1.5">💛 Matches</p>
+        </Link>
         <div className="card p-4 text-center">
           <p className="font-display text-2xl text-ink leading-none">{streak}</p>
           <p className="text-ink-faint text-xs mt-1.5">🔥 day streak</p>

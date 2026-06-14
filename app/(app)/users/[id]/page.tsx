@@ -31,6 +31,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
     )
   }
 
+  const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: id })
+
   const { data: posts } = await (supabase as any)
     .from('posts').select('*, users(id, name, photo_url)').eq('author_id', id).eq('is_gideon', false)
     .order('created_at', { ascending: false }).limit(10)
@@ -65,7 +67,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
               </div>
               <UserSafetyMenu userId={id} />
             </div>
-            <div className="mt-2"><XpBadge xp={profile.xp} /></div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <XpBadge xp={profile.xp} />
+              <span className="text-xs bg-surface-sunk text-ink-soft px-2.5 py-1 rounded-full">
+                💛 <span className="font-mono">{matchCount ?? 0}</span> {(matchCount ?? 0) === 1 ? 'match' : 'matches'}
+              </span>
+            </div>
           </div>
         </div>
         {profile.bio && <p className="text-ink-soft text-sm leading-relaxed border-t border-line pt-4">{profile.bio}</p>}
