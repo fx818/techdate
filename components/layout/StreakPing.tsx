@@ -10,6 +10,7 @@ export function StreakPing() {
     if (sessionStorage.getItem('streak_pinged')) return
     sessionStorage.setItem('streak_pinged', '1')
     fetch('/api/streak', { method: 'POST' }).catch(() => {})
+    fetch('/api/active', { method: 'POST' }).catch(() => {})
   }, [])
   return null
 }

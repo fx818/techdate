@@ -5,10 +5,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { XpBadge } from '@/components/ui/XpBadge'
 import { GENRES } from '@/lib/genres'
 import { DatingProfile } from '@/types/dating'
+import { activeLabel } from '@/lib/active'
 
 export function ProfileCard({ profile }: { profile: DatingProfile }) {
   const genreLabels = GENRES.filter(g => profile.genres.includes(g.id)).map(g => g.label)
   const topGenre = genreLabels[0] ?? ''
+  const active = activeLabel(profile.last_active)
 
   const images = (profile.photos && profile.photos.length > 0)
     ? profile.photos
@@ -57,6 +59,7 @@ export function ProfileCard({ profile }: { profile: DatingProfile }) {
           <h2 className="font-display text-2xl text-ink">{profile.name}</h2>
           <span className="text-ink-faint text-sm">{profile.city}</span>
         </div>
+        {active && <p className="text-sage text-xs flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-sage inline-block" />{active}</p>}
         <XpBadge xp={profile.xp} />
         {topGenre && (
           <p className="text-clay-deep text-sm">Most active in: <span className="font-medium">{topGenre}</span></p>

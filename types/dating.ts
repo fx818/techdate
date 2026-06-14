@@ -7,4 +7,5 @@ export interface DatingProfile {
   genres: string[]
   xp: number
   bio: string | null
+  last_active: string | null
 }

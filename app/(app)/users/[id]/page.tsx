@@ -5,6 +5,7 @@ import { XpBadge } from '@/components/ui/XpBadge'
 import { PostCard } from '@/components/feed/PostCard'
 import { UserSafetyMenu } from '@/components/profile/UserSafetyMenu'
 import { GENRES } from '@/lib/genres'
+import { activeLabel } from '@/lib/active'
 
 export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -14,7 +15,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   if (id === user.id) redirect('/profile')
 
   const { data: profile } = await (supabase as any)
-    .from('users').select('id, name, photo_url, city, genres, xp, bio').eq('id', id).maybeSingle()
+    .from('users').select('id, name, photo_url, city, genres, xp, bio, last_active').eq('id', id).maybeSingle()
   if (!profile) redirect('/feed')
 
   const { data: blocked } = await (supabase as any).rpc('get_blocked_ids')
@@ -60,6 +61,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
               <div>
                 <h1 className="font-display text-2xl text-ink leading-tight">{profile.name}</h1>
                 <p className="text-ink-faint text-sm">{profile.city}</p>
+                {activeLabel(profile.last_active) && <p className="text-sage text-xs">{activeLabel(profile.last_active)}</p>}
               </div>
               <UserSafetyMenu userId={id} />
             </div>
