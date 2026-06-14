@@ -62,28 +62,27 @@ export function PostCard({
 
   return (
     <div className="card p-5 space-y-3">
-      <Link href={`/posts/${post.id}`} className="block space-y-3 group">
-        {/* Author + meta */}
-        <div className="flex items-center gap-2.5">
-          {post.is_gideon ? (
-            <GideonBadge />
-          ) : (
-            <>
-              <div className="w-7 h-7 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep text-sm font-display overflow-hidden shrink-0">
-                {post.users?.photo_url
-                  ? <img src={post.users.photo_url} alt={author} className="w-7 h-7 object-cover" />
-                  : author[0]?.toUpperCase()}
-              </div>
-              <span className="text-sm text-ink-soft font-medium">{author}</span>
-            </>
-          )}
-          <span className="text-xs bg-surface-sunk text-ink-faint px-2 py-0.5 rounded-full">{post.genre}</span>
-          <span className="text-ink-faint text-xs ml-auto">{timeAgo(post.created_at)}</span>
-        </div>
+      {/* Author + meta — author links to their profile */}
+      <div className="flex items-center gap-2.5">
+        {post.is_gideon ? (
+          <GideonBadge />
+        ) : (
+          <Link href={`/users/${post.users?.id}`} className="flex items-center gap-2.5 group/author">
+            <div className="w-7 h-7 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep text-sm font-display overflow-hidden shrink-0">
+              {post.users?.photo_url
+                ? <img src={post.users.photo_url} alt={author} className="w-7 h-7 object-cover" />
+                : author[0]?.toUpperCase()}
+            </div>
+            <span className="text-sm text-ink-soft font-medium group-hover/author:text-clay-deep transition-colors">{author}</span>
+          </Link>
+        )}
+        <span className="text-xs bg-surface-sunk text-ink-faint px-2 py-0.5 rounded-full">{post.genre}</span>
+        <span className="text-ink-faint text-xs ml-auto">{timeAgo(post.created_at)}</span>
+      </div>
 
+      <Link href={`/posts/${post.id}`} className="block space-y-3 group">
         <h3 className="font-display text-xl text-ink leading-snug group-hover:text-clay-deep transition-colors">{post.title}</h3>
         {post.content && <p className="text-ink-soft text-sm leading-relaxed line-clamp-3">{post.content}</p>}
-
         {post.image_url && (
           <img src={post.image_url} alt="" className="w-full rounded-xl border border-line max-h-96 object-cover" />
         )}

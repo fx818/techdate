@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { BackButton } from '@/components/feed/BackButton'
 import { GideonBadge } from '@/components/ui/GideonBadge'
 import { PostActions } from '@/components/feed/PostActions'
@@ -37,14 +38,14 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             {post.is_gideon ? <GideonBadge /> : (
-              <>
+              <Link href={`/users/${post.users?.id}`} className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep text-sm font-display overflow-hidden shrink-0">
                   {post.users?.photo_url
                     ? <img src={post.users.photo_url} alt={author} className="w-7 h-7 object-cover" />
                     : author[0]?.toUpperCase()}
                 </div>
                 <span className="text-sm text-ink-soft font-medium">{author}</span>
-              </>
+              </Link>
             )}
             <span className="text-xs bg-surface-sunk text-ink-faint px-2 py-0.5 rounded-full">{post.genre}</span>
           </div>
