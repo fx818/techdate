@@ -15,7 +15,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   if (id === user.id) redirect('/profile')
 
   const { data: profile } = await (supabase as any)
-    .from('users').select('id, name, photo_url, city, genres, xp, bio, last_active').eq('id', id).maybeSingle()
+    .from('users').select('id, name, photo_url, city, genres, xp, bio, last_active, streak_count').eq('id', id).maybeSingle()
   if (!profile) redirect('/feed')
 
   const { data: blocked } = await (supabase as any).rpc('get_blocked_ids')
@@ -32,6 +32,9 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   }
 
   const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: id })
+
+  const { count: postCount } = await (supabase as any)
+    .from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id).eq('is_gideon', false)
 
   const { data: posts } = await (supabase as any)
     .from('posts').select('*, users(id, name, photo_url)').eq('author_id', id).eq('is_gideon', false)
@@ -67,12 +70,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
               </div>
               <UserSafetyMenu userId={id} />
             </div>
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <XpBadge xp={profile.xp} />
-              <span className="text-xs bg-surface-sunk text-ink-soft px-2.5 py-1 rounded-full">
-                💛 <span className="font-mono">{matchCount ?? 0}</span> {(matchCount ?? 0) === 1 ? 'match' : 'matches'}
-              </span>
-            </div>
+            <div className="mt-2"><XpBadge xp={profile.xp} /></div>
           </div>
         </div>
         {profile.bio && <p className="text-ink-soft text-sm leading-relaxed border-t border-line pt-4">{profile.bio}</p>}
@@ -81,6 +79,26 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
             {genreLabels.map((g: string) => <span key={g} className="chip">{g}</span>)}
           </div>
         )}
+      </div>
+
+      {/* Stat tiles — single row of 4 */}
+      <div className="grid grid-cols-4 gap-2">
+        <div className="card p-3 text-center">
+          <p className="font-display text-xl text-ink leading-none">{profile.xp}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">XP</p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className="font-display text-xl text-ink leading-none">{matchCount ?? 0}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">💛 Matches</p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className="font-display text-xl text-ink leading-none">{profile.streak_count ?? 0}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">🔥 Streak</p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className="font-display text-xl text-ink leading-none">{postCount ?? 0}</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">📝 Posts</p>
+        </div>
       </div>
 
       <h2 className="font-display text-lg text-ink">Posts</h2>
