@@ -64,29 +64,27 @@ export default async function FeedPage({
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-7 space-y-5">
-      <div>
-        <h1 className="font-display text-3xl text-ink leading-none">Feed</h1>
-        <p className="text-ink-faint text-sm mt-1.5">What the community is building.</p>
+    <>
+      {/* Sticky search + filters, sits directly under the global header */}
+      <div className="sticky top-14 z-20 bg-paper/95 backdrop-blur-md border-b border-line">
+        <div className="max-w-xl mx-auto px-4 py-3">
+          <FeedFilters userGenres={profile.genres} />
+        </div>
       </div>
 
-      <CreatePost userGenres={profile.genres} />
+      <div className="max-w-xl mx-auto px-4 py-5 space-y-4">
+        {!profile.dating_unlocked && (
+          <div className="rounded-xl bg-sage-tint border border-sage/20 p-3.5 text-sm text-sage flex items-center gap-2">
+            <span className="font-display text-base">✦</span>
+            Earn <span className="font-semibold">{100 - profile.xp}</span> more XP to unlock dating.
+          </div>
+        )}
 
-      {!profile.dating_unlocked && (
-        <div className="rounded-xl bg-sage-tint border border-sage/20 p-3.5 text-sm text-sage flex items-center gap-2">
-          <span className="font-display text-base">✦</span>
-          Earn <span className="font-semibold">{100 - profile.xp}</span> more XP to unlock dating.
-        </div>
-      )}
-
-      <FeedFilters userGenres={profile.genres} />
-
-      <div className="space-y-4">
         {(posts ?? []).length === 0 ? (
           <div className="card p-8 text-center">
             <p className="font-display text-xl text-ink">{q ? 'No posts match your search' : 'Nothing here yet'}</p>
             <p className="text-ink-faint text-sm mt-1">
-              {q || genre !== 'all' || source !== 'all' ? 'Try clearing some filters.' : 'Be the first to post something.'}
+              {q || genre !== 'all' || source !== 'all' ? 'Try clearing some filters.' : 'Tap + to post something.'}
             </p>
           </div>
         ) : (
@@ -95,6 +93,8 @@ export default async function FeedPage({
           ))
         )}
       </div>
-    </div>
+
+      <CreatePost userGenres={profile.genres} />
+    </>
   )
 }
