@@ -23,20 +23,22 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/onboarding')
+  const { pathname } = request.nextUrl
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/onboarding')
 
-  if (!user && !isAuthRoute && request.nextUrl.pathname !== '/') {
+  if (!user && !isAuthRoute && pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && request.nextUrl.pathname === '/') {
+  if (user && pathname === '/') {
     return NextResponse.redirect(new URL('/feed', request.url))
   }
 
+  // Pass pathname to server components via header
+  supabaseResponse.headers.set('x-pathname', pathname)
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api|auth).*)'],
 }
