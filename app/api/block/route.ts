@@ -11,12 +11,14 @@ export async function POST(request: Request) {
 
   const { error } = await (supabase as any)
     .from('blocks').insert({ blocker_id: user.id, blocked_id: target_id })
-  const [u1, u2] = [user.id, target_id].sort()
-  await (supabase as any).from('matches').delete().eq('user1_id', u1).eq('user2_id', u2)
-
   if (error && !error.message?.includes('duplicate')) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  // Block succeeded (or already existed) — tear down any match between the two.
+  const [u1, u2] = [user.id, target_id].sort()
+  await (supabase as any).from('matches').delete().eq('user1_id', u1).eq('user2_id', u2)
+
   return NextResponse.json({ blocked: true })
 }
 
