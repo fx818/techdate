@@ -10,7 +10,7 @@ load_dotenv()
 
 SUPABASE_URL = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-MAX_POSTS_PER_GENRE = 6
+MAX_POSTS_PER_GENRE = 2
 
 def load_genres() -> dict:
     script_dir = os.path.dirname(os.path.abspath(__file__))
