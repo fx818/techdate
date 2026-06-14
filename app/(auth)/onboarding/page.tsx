@@ -94,13 +94,27 @@ export default function OnboardingPage() {
               <option value="">Select city</option>
               {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <div className="flex gap-2">
-              {(['male', 'female', 'non_binary'] as Gender[]).map(g => (
-                <button key={g} onClick={() => setGender(g)}
-                  className={`flex-1 py-2 rounded-lg text-sm capitalize border transition-colors ${gender === g ? 'bg-clay border-clay text-white' : 'bg-surface border-line-strong text-ink-soft'}`}>
-                  {g.replace('_', ' ')}
-                </button>
-              ))}
+            <div className="space-y-1.5">
+              <label className="text-ink-faint text-xs uppercase tracking-widest">I am</label>
+              <div className="flex gap-2">
+                {(['male', 'female', 'non_binary'] as Gender[]).map(g => (
+                  <button key={g} onClick={() => setGender(g)}
+                    className={`flex-1 py-2 rounded-lg text-sm capitalize border transition-colors ${gender === g ? 'bg-clay border-clay text-white' : 'bg-surface border-line-strong text-ink-soft'}`}>
+                    {g.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-ink-faint text-xs uppercase tracking-widest">Show me</label>
+              <div className="flex gap-2">
+                {([['male', 'Men'], ['female', 'Women'], ['everyone', 'Everyone']] as [Preference, string][]).map(([val, label]) => (
+                  <button key={val} onClick={() => setPreference(val)}
+                    className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${preference === val ? 'bg-clay border-clay text-white' : 'bg-surface border-line-strong text-ink-soft'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
             <textarea placeholder="Short bio (optional)" value={bio} onChange={e => setBio(e.target.value)}
               className="input h-24 resize-none" />

@@ -33,8 +33,10 @@ export interface Database {
           is_premium: boolean
           last_active: string
           created_at: string
+          last_login_date: string | null
+          streak_count: number
         }
-        Insert: Omit<Database['public']['Tables']['users']['Row'], 'created_at' | 'xp' | 'dating_unlocked' | 'is_premium'>
+        Insert: Omit<Database['public']['Tables']['users']['Row'], 'created_at' | 'xp' | 'dating_unlocked' | 'is_premium' | 'last_login_date' | 'streak_count'>
         Update: Partial<Database['public']['Tables']['users']['Row']>
       }
       posts: {

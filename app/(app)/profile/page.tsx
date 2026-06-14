@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { XpBadge } from '@/components/ui/XpBadge'
 import { GENRES } from '@/lib/genres'
 import SignOutButton from '@/components/layout/SignOutButton'
+import EditProfile from '@/components/profile/EditProfile'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -11,7 +12,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('name, photo_url, city, genres, xp, bio, dating_unlocked')
+    .select('name, photo_url, city, genres, xp, bio, dating_unlocked, preference, streak_count')
     .eq('id', user.id)
     .single()
 
@@ -53,15 +54,32 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      <div className="card p-4">
-        <div className="flex justify-between items-center text-sm">
+      <div className="card divide-y divide-line">
+        <div className="flex justify-between items-center text-sm p-4">
           <span className="text-ink-soft">Dating</span>
           <span className={profile.dating_unlocked ? 'text-sage font-medium' : 'text-ink-faint'}>
             {profile.dating_unlocked ? '✓ Unlocked' : `${Math.max(0, 100 - profile.xp)} XP to unlock`}
           </span>
         </div>
+        <div className="flex justify-between items-center text-sm p-4">
+          <span className="text-ink-soft">Login streak</span>
+          <span className="text-clay-deep font-medium">
+            🔥 <span className="font-mono">{profile.streak_count ?? 0}</span> day{(profile.streak_count ?? 0) === 1 ? '' : 's'}
+          </span>
+        </div>
       </div>
 
+      <EditProfile
+        userId={user.id}
+        initial={{
+          name: profile.name,
+          bio: profile.bio,
+          city: profile.city,
+          genres: profile.genres ?? [],
+          preference: profile.preference,
+          photo_url: profile.photo_url,
+        }}
+      />
       <SignOutButton />
     </div>
   )
