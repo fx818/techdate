@@ -72,60 +72,62 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 px-4 py-8">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex gap-2">
-          {[1, 2].map(s => (
-            <div key={s} className={`h-1 flex-1 rounded-full ${step >= s ? 'bg-indigo-500' : 'bg-gray-700'}`} />
-          ))}
+    <div className="min-h-screen px-5 py-10">
+      <div className="max-w-md mx-auto space-y-7">
+        <div className="space-y-3">
+          <span className="font-display text-xl text-ink">TechDate</span>
+          <div className="flex gap-2">
+            {[1, 2].map(s => (
+              <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${step >= s ? 'bg-clay' : 'bg-line'}`} />
+            ))}
+          </div>
         </div>
 
         {step === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">Your profile</h2>
-            <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-700" />
-            <select value={city} onChange={e => setCity(e.target.value)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-700">
+          <div className="space-y-5 animate-rise">
+            <div>
+              <h2 className="font-display text-3xl text-ink">Your profile</h2>
+              <p className="text-ink-soft text-sm mt-1">Tell us who you are.</p>
+            </div>
+            <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} className="input" />
+            <select value={city} onChange={e => setCity(e.target.value)} className="input">
               <option value="">Select city</option>
               {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               {(['male', 'female', 'non_binary'] as Gender[]).map(g => (
                 <button key={g} onClick={() => setGender(g)}
-                  className={`flex-1 py-2 rounded-md text-sm capitalize ${gender === g ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'}`}>
+                  className={`flex-1 py-2 rounded-lg text-sm capitalize border transition-colors ${gender === g ? 'bg-clay border-clay text-white' : 'bg-surface border-line-strong text-ink-soft'}`}>
                   {g.replace('_', ' ')}
                 </button>
               ))}
             </div>
             <textarea placeholder="Short bio (optional)" value={bio} onChange={e => setBio(e.target.value)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-700 h-24 resize-none" />
-            <button onClick={() => { if (name && city) setStep(2) }}
-              disabled={!name || !city}
-              className="w-full bg-indigo-600 text-white py-2 rounded-md disabled:opacity-50">
-              Next
+              className="input h-24 resize-none" />
+            <button onClick={() => { if (name && city) setStep(2) }} disabled={!name || !city}
+              className="btn btn-primary w-full">
+              Continue
             </button>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">Pick your interests</h2>
-            <p className="text-gray-400 text-sm">Choose 3–5 topics you care about</p>
+          <div className="space-y-5 animate-rise">
+            <div>
+              <h2 className="font-display text-3xl text-ink">Pick your interests</h2>
+              <p className="text-ink-soft text-sm mt-1">Choose 3–5 topics you care about.</p>
+            </div>
             <div className="flex flex-wrap gap-2">
               {GENRES.map(g => (
                 <button key={g.id} onClick={() => toggleGenre(g.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm border ${selectedGenres.includes(g.id)
-                    ? 'bg-indigo-600 border-indigo-600 text-white'
-                    : 'bg-gray-800 border-gray-700 text-gray-300'}`}>
+                  className={`chip ${selectedGenres.includes(g.id) ? 'chip-on' : ''}`}>
                   {g.label}
                 </button>
               ))}
             </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            <button onClick={submit} disabled={loading || selectedGenres.length < 3}
-              className="w-full bg-indigo-600 text-white py-2 rounded-md disabled:opacity-50">
-              {loading ? 'Setting up...' : "Let's go"}
+            {error && <p className="text-clay-deep text-sm">{error}</p>}
+            <button onClick={submit} disabled={loading || selectedGenres.length < 3} className="btn btn-primary w-full">
+              {loading ? 'Setting up···' : "Let's go"}
             </button>
           </div>
         )}

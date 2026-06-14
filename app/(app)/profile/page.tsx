@@ -20,41 +20,45 @@ export default async function ProfilePage() {
   const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map(g => g.label)
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-2xl font-bold text-white">
-          {profile.photo_url ? (
-            <img src={profile.photo_url} className="w-16 h-16 rounded-full object-cover" alt={profile.name} />
-          ) : (
-            profile.name?.[0]?.toUpperCase()
-          )}
-        </div>
-        <div className="flex-1">
-          <h1 className="text-white text-xl font-semibold">{profile.name}</h1>
-          <p className="text-gray-400 text-sm">{profile.city}</p>
-          <div className="mt-1">
-            <XpBadge xp={profile.xp} />
+    <div className="max-w-xl mx-auto px-4 py-7 space-y-6">
+      <div className="card p-6 space-y-5">
+        <div className="flex items-start gap-4">
+          <div className="w-20 h-20 rounded-full bg-clay-tint flex items-center justify-center text-3xl font-display text-clay-deep overflow-hidden shrink-0">
+            {profile.photo_url ? (
+              <img src={profile.photo_url} className="w-20 h-20 rounded-full object-cover" alt={profile.name} />
+            ) : (
+              profile.name?.[0]?.toUpperCase()
+            )}
+          </div>
+          <div className="flex-1 pt-1">
+            <h1 className="font-display text-2xl text-ink leading-tight">{profile.name}</h1>
+            <p className="text-ink-faint text-sm">{profile.city}</p>
+            <div className="mt-2">
+              <XpBadge xp={profile.xp} />
+            </div>
           </div>
         </div>
+
+        {profile.bio && (
+          <p className="text-ink-soft text-sm leading-relaxed border-t border-line pt-4">{profile.bio}</p>
+        )}
       </div>
 
-      {profile.bio && (
-        <p className="text-gray-300 text-sm">{profile.bio}</p>
-      )}
-
       <div>
-        <h2 className="text-gray-400 text-xs uppercase tracking-wider mb-2">Interests</h2>
+        <h2 className="text-ink-faint text-xs uppercase tracking-widest mb-2.5">Interests</h2>
         <div className="flex flex-wrap gap-2">
           {genreLabels.map((g: string) => (
-            <span key={g} className="bg-gray-800 text-gray-300 text-sm px-3 py-1 rounded-full">{g}</span>
+            <span key={g} className="chip">{g}</span>
           ))}
         </div>
       </div>
 
-      <div className="border-t border-gray-800 pt-4">
-        <div className="flex justify-between text-sm text-gray-400 mb-2">
-          <span>Dating unlocked</span>
-          <span>{profile.dating_unlocked ? '✓ Yes' : `No — need ${Math.max(0, 100 - profile.xp)} more XP`}</span>
+      <div className="card p-4">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-ink-soft">Dating</span>
+          <span className={profile.dating_unlocked ? 'text-sage font-medium' : 'text-ink-faint'}>
+            {profile.dating_unlocked ? '✓ Unlocked' : `${Math.max(0, 100 - profile.xp)} XP to unlock`}
+          </span>
         </div>
       </div>
 

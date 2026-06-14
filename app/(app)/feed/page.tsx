@@ -36,21 +36,25 @@ export default async function FeedPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-white">Feed</h1>
-        <span className="text-sm text-indigo-400">{profile.xp} XP</span>
+    <div className="max-w-xl mx-auto px-4 py-7 space-y-5">
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-ink leading-none">Feed</h1>
+          <p className="text-ink-faint text-sm mt-1.5">What the community is building.</p>
+        </div>
+        <span className="text-sm font-mono text-clay-deep bg-clay-tint px-2.5 py-1 rounded-full">{profile.xp} XP</span>
       </div>
 
       <CreatePost userGenres={profile.genres} />
 
       {!profile.dating_unlocked && (
-        <div className="bg-indigo-950/40 border border-indigo-800/50 rounded-lg p-3 text-sm text-indigo-300">
-          Earn {100 - profile.xp} more XP to unlock dating
+        <div className="rounded-xl bg-sage-tint border border-sage/20 p-3.5 text-sm text-sage flex items-center gap-2">
+          <span className="font-display text-base">✦</span>
+          Earn <span className="font-semibold">{100 - profile.xp}</span> more XP to unlock dating.
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {(posts ?? []).map((post: any) => (
           <PostCard key={post.id} post={post} currentUserId={user.id} initialLiked={likedPostIds.has(post.id)} />
         ))}

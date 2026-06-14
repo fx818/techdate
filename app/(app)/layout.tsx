@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white pb-20">
+    <div className="min-h-screen bg-paper text-ink pb-24">
       {children}
       <Navbar />
     </div>

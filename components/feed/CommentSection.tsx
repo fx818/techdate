@@ -41,20 +41,20 @@ export default function CommentSection({ postId }: { postId: string }) {
   }
 
   return (
-    <div className="space-y-3 border-t border-gray-800 pt-3">
+    <div className="space-y-3 border-t border-line pt-3.5">
       {comments.map(c => (
-        <div key={c.id} className="text-sm">
-          <span className="text-indigo-400 font-medium">{c.users.name}</span>
-          <span className="text-gray-300 ml-2">{c.content}</span>
+        <div key={c.id} className="text-sm leading-relaxed">
+          <span className="text-clay-deep font-medium">{c.users.name}</span>
+          <span className="text-ink-soft ml-2">{c.content}</span>
         </div>
       ))}
       <div className="flex gap-2">
         <input value={text} onChange={e => setText(e.target.value)}
-          placeholder="Add a comment..."
+          placeholder="Add a comment…"
           onKeyDown={e => e.key === 'Enter' && submit()}
-          className="flex-1 bg-gray-800 text-white text-sm px-3 py-1.5 rounded-md border border-gray-700 focus:outline-none focus:border-indigo-500" />
+          className="input text-sm py-1.5" />
         <button onClick={submit} disabled={loading || !text.trim()}
-          className="bg-indigo-600 text-white text-sm px-3 py-1.5 rounded-md disabled:opacity-50">
+          className="btn btn-primary text-sm px-4 py-1.5">
           Post
         </button>
       </div>

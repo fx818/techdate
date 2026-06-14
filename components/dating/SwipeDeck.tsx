@@ -42,39 +42,39 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
 
   if (paywallHit) {
     return (
-      <div className="text-center space-y-4 py-12">
-        <p className="text-white text-lg font-semibold">You&apos;ve used your 10 free swipes today</p>
-        <p className="text-gray-400 text-sm">Upgrade to Premium for unlimited swipes</p>
-        <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg">Upgrade — ₹299/mo</button>
+      <div className="card p-8 text-center space-y-4 max-w-sm mx-auto">
+        <div className="font-display text-2xl text-ink">That&apos;s 10 for today</div>
+        <p className="text-ink-soft text-sm">You&apos;ve used your free swipes. Upgrade for unlimited.</p>
+        <button className="btn btn-primary w-full">Upgrade — ₹299/mo</button>
       </div>
     )
   }
 
   if (!current) {
     return (
-      <div className="text-center py-12 text-gray-400">
-        <p>No more profiles right now.</p>
-        <p className="text-sm mt-1">Check back tomorrow or be more active in discussions!</p>
+      <div className="text-center py-16 space-y-1.5">
+        <p className="font-display text-xl text-ink">No more profiles right now.</p>
+        <p className="text-ink-faint text-sm">Check back tomorrow, or be more active in discussions.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {match && (
         <MatchModal matchId={match.id} matchName={match.name} onClose={() => setMatch(null)} />
       )}
 
       <ProfileCard profile={current} />
 
-      <div className="flex justify-center gap-8">
+      <div className="flex justify-center gap-6">
         <button onClick={() => swipe('left')} disabled={loading}
-          className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-red-400 hover:bg-red-950 disabled:opacity-50">
-          <X size={24} />
+          className="w-16 h-16 rounded-full bg-surface border border-line-strong flex items-center justify-center text-ink-soft shadow-sm hover:border-ink-faint hover:text-ink transition-colors disabled:opacity-50 active:scale-95">
+          <X size={26} />
         </button>
         <button onClick={() => swipe('right')} disabled={loading}
-          className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-green-400 hover:bg-green-950 disabled:opacity-50">
-          <Heart size={24} />
+          className="w-16 h-16 rounded-full bg-clay border border-clay flex items-center justify-center text-white shadow-md hover:bg-clay-deep transition-colors disabled:opacity-50 active:scale-95">
+          <Heart size={26} fill="currentColor" />
         </button>
       </div>
     </div>

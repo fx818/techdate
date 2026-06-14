@@ -12,18 +12,17 @@ export function MatchModal({ matchId, matchName, onClose }: Props) {
   const router = useRouter()
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4">
-      <div className="bg-gray-900 border border-indigo-700 rounded-2xl p-8 text-center space-y-4 max-w-sm w-full">
-        <div className="text-4xl">🎉</div>
-        <h2 className="text-2xl font-bold text-white">It&apos;s a Match!</h2>
-        <p className="text-gray-400">You and <span className="text-indigo-400">{matchName}</span> liked each other</p>
-        <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 border border-gray-700 text-gray-300 py-2 rounded-lg">
-            Keep Swiping
+    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center z-50 px-5">
+      <div className="card p-8 text-center space-y-4 max-w-sm w-full animate-pop">
+        <div className="font-display text-5xl text-clay">✷</div>
+        <h2 className="font-display text-3xl text-ink">It&apos;s a match</h2>
+        <p className="text-ink-soft">You and <span className="text-clay-deep font-medium">{matchName}</span> liked each other.</p>
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose} className="btn btn-ghost flex-1">
+            Keep swiping
           </button>
-          <button onClick={() => router.push(`/messages/${matchId}`)}
-            className="flex-1 bg-indigo-600 text-white py-2 rounded-lg">
-            Message
+          <button onClick={() => router.push(`/messages/${matchId}`)} className="btn btn-primary flex-1">
+            Say hello
           </button>
         </div>
       </div>

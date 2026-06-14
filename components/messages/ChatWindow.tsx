@@ -67,13 +67,15 @@ export default function ChatWindow({ matchId, currentUserId }: { matchId: string
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="flex-1 overflow-y-auto space-y-3 py-2">
+      <div className="flex-1 overflow-y-auto space-y-2.5 py-2">
         {messages.map(msg => {
           const isMe = msg.sender_id === currentUserId
           return (
             <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] px-3 py-2 rounded-2xl text-sm ${
-                isMe ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-100'
+              <div className={`max-w-[72%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
+                isMe
+                  ? 'bg-clay text-white rounded-br-md'
+                  : 'bg-surface border border-line text-ink rounded-bl-md'
               }`}>
                 {msg.content}
               </div>
@@ -83,16 +85,16 @@ export default function ChatWindow({ matchId, currentUserId }: { matchId: string
         <div ref={bottomRef} />
       </div>
 
-      {error && <p className="text-red-400 text-xs pb-1">{error}</p>}
+      {error && <p className="text-clay-deep text-xs pb-1">{error}</p>}
 
-      <div className="flex gap-2 pt-3 border-t border-gray-800">
+      <div className="flex gap-2 pt-3 border-t border-line">
         <input value={text} onChange={e => setText(e.target.value)}
-          placeholder="Message..."
+          placeholder="Message…"
           onKeyDown={e => e.key === 'Enter' && send()}
-          className="flex-1 bg-gray-800 text-white px-4 py-2 rounded-full border border-gray-700 focus:outline-none focus:border-indigo-500 text-sm" />
+          className="input rounded-full px-4 text-sm" />
         <button onClick={send} disabled={loading || !text.trim()}
-          className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center disabled:opacity-50">
-          <Send size={16} className="text-white" />
+          className="w-11 h-11 bg-clay rounded-full flex items-center justify-center shrink-0 hover:bg-clay-deep transition-colors disabled:opacity-50 active:scale-95">
+          <Send size={17} className="text-white" />
         </button>
       </div>
     </div>

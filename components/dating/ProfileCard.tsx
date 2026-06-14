@@ -7,27 +7,27 @@ export function ProfileCard({ profile }: { profile: DatingProfile }) {
   const topGenre = genreLabels[0] ?? ''
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden w-full max-w-sm mx-auto">
-      <div className="h-64 bg-gray-800 flex items-center justify-center">
+    <div className="card overflow-hidden w-full max-w-sm mx-auto animate-pop">
+      <div className="h-64 bg-clay-tint flex items-center justify-center">
         {profile.photo_url ? (
           <img src={profile.photo_url} alt={profile.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="text-6xl text-gray-600">{profile.name[0]?.toUpperCase()}</div>
+          <div className="font-display text-7xl text-clay/60">{profile.name[0]?.toUpperCase()}</div>
         )}
       </div>
-      <div className="p-4 space-y-2">
+      <div className="p-5 space-y-2.5">
         <div className="flex items-center justify-between">
-          <h2 className="text-white text-lg font-semibold">{profile.name}</h2>
-          <span className="text-gray-400 text-sm">{profile.city}</span>
+          <h2 className="font-display text-2xl text-ink">{profile.name}</h2>
+          <span className="text-ink-faint text-sm">{profile.city}</span>
         </div>
         <XpBadge xp={profile.xp} />
         {topGenre && (
-          <p className="text-indigo-400 text-sm">Most active in: {topGenre}</p>
+          <p className="text-clay-deep text-sm">Most active in: <span className="font-medium">{topGenre}</span></p>
         )}
-        {profile.bio && <p className="text-gray-400 text-sm">{profile.bio}</p>}
-        <div className="flex flex-wrap gap-1 pt-1">
+        {profile.bio && <p className="text-ink-soft text-sm leading-relaxed">{profile.bio}</p>}
+        <div className="flex flex-wrap gap-1.5 pt-1">
           {genreLabels.map(g => (
-            <span key={g} className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">{g}</span>
+            <span key={g} className="text-xs bg-surface-sunk text-ink-soft px-2 py-0.5 rounded-full">{g}</span>
           ))}
         </div>
       </div>

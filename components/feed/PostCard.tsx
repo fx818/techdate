@@ -40,33 +40,33 @@ export function PostCard({ post, currentUserId, initialLiked = false }: { post: 
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+    <div className="card p-5 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           {post.is_gideon ? (
             <GideonBadge />
           ) : (
-            <span className="text-sm text-gray-400">{post.users?.name ?? 'Unknown'}</span>
+            <span className="text-sm text-ink-soft font-medium">{post.users?.name ?? 'Unknown'}</span>
           )}
-          <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">{post.genre}</span>
+          <span className="text-xs bg-surface-sunk text-ink-faint px-2 py-0.5 rounded-full">{post.genre}</span>
         </div>
         {post.url && (
-          <a href={post.url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-300">
-            <ExternalLink size={14} />
+          <a href={post.url} target="_blank" rel="noopener noreferrer" className="text-ink-faint hover:text-clay-deep transition-colors">
+            <ExternalLink size={15} />
           </a>
         )}
       </div>
 
-      <h3 className="text-white font-medium leading-snug">{post.title}</h3>
-      {post.content && <p className="text-gray-400 text-sm">{post.content}</p>}
+      <h3 className="font-display text-xl text-ink leading-snug">{post.title}</h3>
+      {post.content && <p className="text-ink-soft text-sm leading-relaxed">{post.content}</p>}
 
-      <div className="flex items-center gap-4 pt-1">
-        <button onClick={toggleLike} disabled={pending} className={`flex items-center gap-1.5 text-sm disabled:opacity-60 ${liked ? 'text-red-400' : 'text-gray-500 hover:text-gray-300'}`}>
-          <Heart size={15} fill={liked ? 'currentColor' : 'none'} />
+      <div className="flex items-center gap-5 pt-1">
+        <button onClick={toggleLike} disabled={pending} className={`flex items-center gap-1.5 text-sm transition-colors disabled:opacity-60 ${liked ? 'text-clay-deep' : 'text-ink-faint hover:text-clay'}`}>
+          <Heart size={16} fill={liked ? 'currentColor' : 'none'} className="transition-transform active:scale-90" />
           {likeCount}
         </button>
-        <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300">
-          <MessageSquare size={15} />
+        <button onClick={() => setShowComments(!showComments)} className={`flex items-center gap-1.5 text-sm transition-colors ${showComments ? 'text-clay-deep' : 'text-ink-faint hover:text-ink'}`}>
+          <MessageSquare size={16} />
           {post.comments_count}
         </button>
       </div>

@@ -21,27 +21,33 @@ export default async function MatchesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6">
-      <h1 className="text-lg font-semibold text-white mb-4">Matches</h1>
+    <div className="max-w-xl mx-auto px-4 py-7">
+      <div className="mb-5">
+        <h1 className="font-display text-3xl text-ink leading-none">Matches</h1>
+        <p className="text-ink-faint text-sm mt-1.5">People you both said yes to.</p>
+      </div>
       {!matches?.length ? (
-        <p className="text-gray-400 text-sm">No matches yet. Keep swiping!</p>
+        <div className="card p-8 text-center">
+          <p className="font-display text-xl text-ink">No matches yet</p>
+          <p className="text-ink-faint text-sm mt-1">Keep swiping in Discover.</p>
+        </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {matches.map((match: any) => {
             const other = match.user1_id === user.id ? match.user2 : match.user1
             return (
               <Link key={match.id} href={`/messages/${match.id}`}
-                className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-lg p-3 hover:border-gray-700">
-                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-medium">
+                className="flex items-center gap-3.5 card p-3.5 hover:border-clay transition-colors">
+                <div className="w-12 h-12 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display text-lg overflow-hidden shrink-0">
                   {other?.photo_url ? (
-                    <img src={other.photo_url} className="w-10 h-10 rounded-full object-cover" alt={other.name} />
+                    <img src={other.photo_url} className="w-12 h-12 rounded-full object-cover" alt={other.name} />
                   ) : (
                     other?.name?.[0]?.toUpperCase()
                   )}
                 </div>
                 <div>
-                  <p className="text-white font-medium">{other?.name}</p>
-                  <p className="text-gray-500 text-xs">Tap to chat</p>
+                  <p className="text-ink font-medium">{other?.name}</p>
+                  <p className="text-ink-faint text-xs">Tap to chat</p>
                 </div>
               </Link>
             )

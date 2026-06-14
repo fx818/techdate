@@ -22,9 +22,12 @@ export default async function MessagesPage({ params }: { params: Promise<{ match
   const otherName = match.user1_id === user.id ? match.user2?.name : match.user1?.name
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6 flex flex-col h-[calc(100vh-80px)]">
-      <div className="flex items-center gap-2 mb-4">
-        <h1 className="text-white font-semibold">{otherName}</h1>
+    <div className="max-w-xl mx-auto px-4 py-6 flex flex-col h-[calc(100vh-96px)]">
+      <div className="flex items-center gap-3 mb-3 pb-3 border-b border-line">
+        <div className="w-9 h-9 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display">
+          {otherName?.[0]?.toUpperCase()}
+        </div>
+        <h1 className="font-display text-xl text-ink">{otherName}</h1>
       </div>
       <ChatWindow matchId={matchId} currentUserId={user.id} />
     </div>

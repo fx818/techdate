@@ -33,15 +33,14 @@ export default function VerifyCompanyPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-        <div className="w-full max-w-sm space-y-4 text-center">
-          <div className="text-4xl">📬</div>
-          <h2 className="text-xl font-bold text-white">Check your work email</h2>
-          <p className="text-gray-400 text-sm">
-            We sent a confirmation link to <span className="text-white">{email}</span>.
-            Click it to verify and continue using TechDate.
+      <div className="min-h-screen flex items-center justify-center px-5">
+        <div className="card max-w-sm w-full p-8 text-center space-y-4 animate-pop">
+          <div className="mx-auto w-14 h-14 rounded-full bg-clay-tint flex items-center justify-center text-2xl">✶</div>
+          <h2 className="font-display text-2xl text-ink">Check your work email</h2>
+          <p className="text-ink-soft text-sm leading-relaxed">
+            We sent a confirmation link to <span className="text-ink font-medium">{email}</span>. Click it to verify and continue using TechDate.
           </p>
-          <button onClick={() => setSent(false)} className="text-indigo-400 text-sm hover:text-indigo-300">
+          <button onClick={() => setSent(false)} className="text-clay-deep text-sm font-medium hover:underline">
             Use a different email
           </button>
         </div>
@@ -50,14 +49,13 @@ export default function VerifyCompanyPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen flex items-center justify-center px-5">
+      <div className="card max-w-sm w-full p-8 space-y-6 animate-rise">
         <div className="space-y-2">
-          <div className="text-3xl">🏢</div>
-          <h2 className="text-xl font-bold text-white">Verify your work email</h2>
-          <p className="text-gray-400 text-sm">
-            Your 7-day trial has ended. Enter your company email to keep access.
-            Personal emails (Gmail, Yahoo, etc.) are not accepted.
+          <div className="font-display text-4xl text-clay/70">✦</div>
+          <h2 className="font-display text-2xl text-ink">Verify your work email</h2>
+          <p className="text-ink-soft text-sm leading-relaxed">
+            Your 7-day trial has ended. Enter your company email to keep access — personal emails (Gmail, Yahoo, etc.) aren&apos;t accepted.
           </p>
         </div>
 
@@ -68,19 +66,19 @@ export default function VerifyCompanyPage() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendVerification()}
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-700 focus:outline-none focus:border-indigo-500"
+            className="input"
           />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-clay-deep text-sm">{error}</p>}
           <button
             onClick={sendVerification}
             disabled={loading || !email.includes('@')}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-500 disabled:opacity-50"
+            className="btn btn-primary w-full"
           >
-            {loading ? 'Sending...' : 'Send verification email'}
+            {loading ? 'Sending…' : 'Send verification email'}
           </button>
         </div>
 
-        <p className="text-gray-600 text-xs text-center">
+        <p className="text-ink-faint text-xs text-center">
           You&apos;ll receive a confirmation link. Click it to verify ownership.
         </p>
       </div>

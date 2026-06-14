@@ -14,11 +14,16 @@ export default async function DiscoverPage() {
     .single()
 
   if (!profile?.dating_unlocked) {
+    const xp = profile?.xp ?? 0
     return (
-      <div className="max-w-xl mx-auto px-4 py-12 text-center space-y-3">
-        <h2 className="text-white text-xl font-semibold">Dating is locked</h2>
-        <p className="text-gray-400">You need 100 XP to unlock dating. You have {profile?.xp ?? 0} XP.</p>
-        <p className="text-gray-500 text-sm">Discuss, post, and comment on the feed to earn XP.</p>
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-5">
+        <div className="font-display text-5xl text-clay/70">✦</div>
+        <h2 className="font-display text-3xl text-ink">Dating is locked</h2>
+        <p className="text-ink-soft">You need 100 XP to unlock dating — you have <span className="font-mono text-clay-deep">{xp}</span>.</p>
+        <div className="h-2 rounded-full bg-line overflow-hidden max-w-xs mx-auto">
+          <div className="h-full bg-clay rounded-full transition-all" style={{ width: `${Math.min(100, xp)}%` }} />
+        </div>
+        <p className="text-ink-faint text-sm">Discuss, post, and comment on the feed to earn XP.</p>
       </div>
     )
   }
@@ -58,8 +63,11 @@ export default async function DiscoverPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6">
-      <h1 className="text-lg font-semibold text-white mb-6">Discover</h1>
+    <div className="max-w-xl mx-auto px-4 py-7">
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-ink leading-none">Discover</h1>
+        <p className="text-ink-faint text-sm mt-1.5">People who think like you do.</p>
+      </div>
       <SwipeDeck initialCandidates={candidates} />
     </div>
   )

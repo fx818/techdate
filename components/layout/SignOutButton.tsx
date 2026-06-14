@@ -16,8 +16,7 @@ export default function SignOutButton() {
   }
 
   return (
-    <button onClick={signOut}
-      className="w-full border border-gray-700 text-gray-400 py-2 rounded-lg text-sm hover:border-gray-600 hover:text-gray-300">
+    <button onClick={signOut} className="btn btn-ghost w-full text-sm">
       Sign out
     </button>
   )

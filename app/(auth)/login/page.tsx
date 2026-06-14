@@ -50,15 +50,14 @@ export default function LoginPage() {
 
   if (mode === 'check_email') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-        <div className="w-full max-w-sm space-y-4 text-center">
-          <div className="text-4xl">📬</div>
-          <h2 className="text-xl font-bold text-white">Check your email</h2>
-          <p className="text-gray-400 text-sm">
-            We sent a confirmation link to <span className="text-white">{email}</span>.
-            Click it to activate your account.
+      <div className="min-h-screen flex items-center justify-center px-5">
+        <div className="card max-w-sm w-full p-8 text-center space-y-4 animate-pop">
+          <div className="mx-auto w-14 h-14 rounded-full bg-clay-tint flex items-center justify-center text-2xl">✶</div>
+          <h2 className="font-display text-2xl text-ink">Check your inbox</h2>
+          <p className="text-ink-soft text-sm leading-relaxed">
+            We sent a confirmation link to <span className="text-ink font-medium">{email}</span>. Open it to activate your account.
           </p>
-          <button onClick={() => setMode('signin')} className="text-indigo-400 text-sm hover:text-indigo-300">
+          <button onClick={() => setMode('signin')} className="text-clay-deep text-sm font-medium hover:underline">
             Back to sign in
           </button>
         </div>
@@ -67,59 +66,81 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">TechDate</h1>
-          <p className="text-gray-400 text-sm mt-1">For people who build things.</p>
-        </div>
-
-        <div className="flex rounded-md overflow-hidden border border-gray-700">
-          <button
-            onClick={() => setMode('signin')}
-            className={`flex-1 py-2 text-sm ${mode === 'signin' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'}`}
-          >
-            Sign in
-          </button>
-          <button
-            onClick={() => setMode('signup')}
-            className={`flex-1 py-2 text-sm ${mode === 'signup' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'}`}
-          >
-            Sign up
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-700 focus:outline-none focus:border-indigo-500"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && (mode === 'signin' ? handleSignIn() : handleSignUp())}
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-700 focus:outline-none focus:border-indigo-500"
-          />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button
-            onClick={mode === 'signin' ? handleSignIn : handleSignUp}
-            disabled={loading || !email || password.length < 6}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-500 disabled:opacity-50"
-          >
-            {loading ? '...' : mode === 'signin' ? 'Sign in' : 'Create account'}
-          </button>
-        </div>
-
-        {mode === 'signup' && (
-          <p className="text-gray-500 text-xs text-center">
-            You can sign up with any email. A company email verification will be required after 7 days.
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Editorial brand panel */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-clay-tint/50 border-r border-line">
+        <span className="font-display text-2xl text-ink">TechDate</span>
+        <div className="space-y-6">
+          <h1 className="font-display text-6xl leading-[1.05] text-ink">
+            For people who <span className="text-clay-deep italic">build</span> things.
+          </h1>
+          <p className="text-ink-soft text-lg max-w-md leading-relaxed">
+            Talk shop with engineers who get it. Earn your way in. Then, maybe, meet someone who debugs like you do.
           </p>
-        )}
+        </div>
+        <p className="text-ink-faint text-sm font-mono">discuss → contribute → connect</p>
+      </div>
+
+      {/* Auth panel */}
+      <div className="flex items-center justify-center px-5 py-12">
+        <div className="w-full max-w-sm space-y-7 animate-rise">
+          <div className="lg:hidden space-y-1">
+            <h1 className="font-display text-4xl text-ink">TechDate</h1>
+            <p className="text-ink-soft text-sm">For people who build things.</p>
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="font-display text-2xl text-ink hidden lg:block">
+              {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+            </h2>
+            <div className="flex gap-1 p-1 rounded-xl bg-surface-sunk border border-line w-fit">
+              <button
+                onClick={() => setMode('signin')}
+                className={`px-4 py-1.5 text-sm rounded-lg transition-colors ${mode === 'signin' ? 'bg-surface text-ink shadow-sm' : 'text-ink-faint'}`}
+              >
+                Sign in
+              </button>
+              <button
+                onClick={() => setMode('signup')}
+                className={`px-4 py-1.5 text-sm rounded-lg transition-colors ${mode === 'signup' ? 'bg-surface text-ink shadow-sm' : 'text-ink-faint'}`}
+              >
+                Sign up
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && (mode === 'signin' ? handleSignIn() : handleSignUp())}
+              className="input"
+            />
+            {error && <p className="text-clay-deep text-sm">{error}</p>}
+            <button
+              onClick={mode === 'signin' ? handleSignIn : handleSignUp}
+              disabled={loading || !email || password.length < 6}
+              className="btn btn-primary w-full"
+            >
+              {loading ? '···' : mode === 'signin' ? 'Sign in' : 'Create account'}
+            </button>
+          </div>
+
+          {mode === 'signup' && (
+            <p className="text-ink-faint text-xs leading-relaxed">
+              Sign up with any email. A company email verification will be required after a 7-day trial.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )

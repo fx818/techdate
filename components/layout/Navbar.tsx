@@ -15,17 +15,19 @@ export function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-950 border-t border-gray-800 z-40">
-      <div className="max-w-xl mx-auto flex">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-line bg-surface/90 backdrop-blur-md">
+      <div className="max-w-xl mx-auto flex px-2">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link key={href} href={href}
-              className={`flex-1 flex flex-col items-center py-3 gap-0.5 text-xs ${
-                active ? 'text-indigo-400' : 'text-gray-500 hover:text-gray-300'
+              className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs">
+              <span className={`flex items-center justify-center rounded-full px-5 py-1 transition-colors ${
+                active ? 'bg-clay-tint text-clay-deep' : 'text-ink-faint'
               }`}>
-              <Icon size={20} />
-              {label}
+                <Icon size={20} strokeWidth={active ? 2.4 : 2} />
+              </span>
+              <span className={active ? 'text-ink font-medium' : 'text-ink-faint'}>{label}</span>
             </Link>
           )
         })}
