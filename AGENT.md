@@ -19,7 +19,7 @@ Await is a hybrid tech-discussion + dating platform for Indian Tier‑1 tech pro
 - **`await params`** — dynamic route params are `Promise<…>` in Next 16. Always `const { id } = await params`.
 - **Framework preset** — Vercel must treat this as Next.js; `vercel.json` pins `"framework": "nextjs"` (without it, every route 404s).
 - **Env hygiene** — values set via shells that re-encode stdin can carry a BOM and silently break the Supabase/Redis clients. `lib/redis/client.ts` defensively trims its env vars.
-- **Cross-user gates** that RLS can't express use `SECURITY DEFINER` SQL functions (pattern: `has_right_swipe`, `get_incoming_requests`, `get_sent_requests`, `get_blocked_ids`, `delete_own_account`).
+- **Cross-user gates** that RLS can't express use `SECURITY DEFINER` SQL functions (pattern: `has_right_swipe`, `get_incoming_requests`, `get_sent_requests`, `get_blocked_ids`, `delete_own_account`, `match_count`).
 
 ---
 
@@ -28,6 +28,8 @@ Await is a hybrid tech-discussion + dating platform for Indian Tier‑1 tech pro
 Tailwind v4 (CSS-config in `app/globals.css`, no `tailwind.config`). Tokens: `paper`/`surface` (cream), `ink`/`ink-soft`/`ink-faint` (warm near-black), `clay`/`clay-deep`/`clay-tint` (coral accent), `sage` (success), `line` (borders). Fonts: **Fraunces** (display, `font-display`) + **Hanken Grotesk** (UI) + Geist Mono. Shared primitives: `.card`, `.btn`/`.btn-primary`/`.btn-ghost`, `.input`, `.chip`, `animate-rise`/`animate-pop`.
 
 **Shell:** global `Header` (Await wordmark + XP/streak pill + notification bell + profile avatar) → sticky control bar where relevant (feed search, requests tabs) → content; bottom `Navbar` has 4 tabs (Feed · Discover · Requests · Matches); profile is the header avatar; compose is a FAB on the feed.
+
+**Profiles:** `/profile` (own) and `/users/[id]` (public) share a layout: identity card + a single row of 4 stat tiles (own: XP/Matches/Streak/Dating; public: XP/Matches/Streak/Posts) + interests + recent posts. Own profile previews 2 posts with "View all" → `/profile/posts`; saved posts at `/saved`.
 
 ---
 
@@ -39,7 +41,7 @@ Sign in → /feed (or /onboarding if no profile)
 Forgot password → resetPasswordForEmail → /auth/callback?type=recovery → /reset-password
 ```
 - Email + password only (no phone OTP).
-- **7-day trial gate:** personal-email users (see `lib/auth/email.ts::isPersonalEmail`) are redirected to `/verify-company` after 7 days until they verify a work email (`updateUser({email})` → `/auth/callback?type=email_change` → sets `company_email_verified`).
+- **24-hour trial gate** (`lib/auth/email.ts::isTrialExpired`): personal-email users (`isPersonalEmail`, expanded free-provider list) are redirected to `/verify-company` after 24h until they verify a work email (`updateUser({email})` → `/auth/callback?type=email_change` → sets `company_email_verified`). Company-email signups are exempt; the verify-company page rejects personal emails.
 - **Account deletion:** `/api/account` DELETE → `delete_own_account()` RPC (deletes the user's posts, then the auth user; cascades the rest) → signs out.
 - Supabase dashboard **Redirect URLs** must include `https://techdate-eta.vercel.app/auth/callback`.
 
@@ -55,6 +57,7 @@ Forgot password → resetPasswordForEmail → /auth/callback?type=recovery → /
 
 - **Discover deck** (`app/(app)/discover/page.tsx`): candidates filtered by city + `preference` ("Show me", dating-only — never the feed), excluding self + already-swiped + matched + blocked + incoming-requesters. Ranked by `lib/matching/candidates.ts` (cosine 60% + XP tier 20% + recency 20%).
 - **Pure request/accept model:** a right-swipe = a pending request (NO auto-match). `/api/swipes` only records the swipe. `/api/requests` GET lists received + sent (via `get_incoming_requests` / `get_sent_requests` RPCs); POST handles `accept` (creates match), `decline`, `withdraw` (deletes the swipe). Requests page has All/Received/Sent tabs.
+- **Match count is public:** `match_count(p_user)` SECURITY DEFINER fn (count only, never who) — shown on `/profile` and `/users/[id]` stat tiles. The `/matches` list links each row to the person's profile (`/users/[id]`) + a message button (`/messages/[matchId]`).
 - **Swipe limit:** 10/day free, Redis key `swipes:{userId}:{YYYY-MM-DD}` (86400s TTL); degrades open if Redis fails.
 - **Matches:** unique sorted pair `[u1,u2].sort()`; created only on accept.
 - **Multiple photos:** `users.photos text[]` (photo_url mirrors photos[0]); carousel in `ProfileCard`.
@@ -92,9 +95,9 @@ Header bell (`NotifBell`) → `/api/notifications` (unread count). `/notificatio
 
 ---
 
-## Database (18 migrations in `supabase/migrations/`, run in order)
+## Database (19 migrations in `supabase/migrations/`, run in order)
 
-001 users · 002 posts/comments/likes (+count triggers) · 003 xp_events · 004 swipes/matches · 005 messages · 006 matches INSERT RLS · 007 company_email · 008 streak cols + `avatars` bucket · 009 SECURITY DEFINER count triggers + `has_right_swipe` · 010 `get_incoming_requests` · 011 `get_sent_requests` · 012 swipe DELETE policy · 013 post `image_url` + `bookmarks` + `post-images` bucket · 014 `last_notifications_seen` · 015 `blocks` + `reports` + `get_blocked_ids` · 016 post/comment edit-delete RLS + matches DELETE RLS + `delete_own_account` · 017 `users.photos` · 018 delete posts on account deletion.
+001 users · 002 posts/comments/likes (+count triggers) · 003 xp_events · 004 swipes/matches · 005 messages · 006 matches INSERT RLS · 007 company_email · 008 streak cols + `avatars` bucket · 009 SECURITY DEFINER count triggers + `has_right_swipe` · 010 `get_incoming_requests` · 011 `get_sent_requests` · 012 swipe DELETE policy · 013 post `image_url` + `bookmarks` + `post-images` bucket · 014 `last_notifications_seen` · 015 `blocks` + `reports` + `get_blocked_ids` · 016 post/comment edit-delete RLS + matches DELETE RLS + `delete_own_account` · 017 `users.photos` · 018 delete posts on account deletion · 019 public `match_count(user)` fn.
 
 Storage buckets: `avatars`, `post-images` (public read, owner-scoped write).
 

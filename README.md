@@ -27,7 +27,7 @@ Two layers, one account:
 
 ### 🔐 Authentication & accounts
 - **Email + password** sign up / sign in (email confirmation required).
-- **Company‑email verification with a 7‑day trial** — anyone can start with a personal email (Gmail, Yahoo, etc.), but after 7 days a work‑email verification is required to continue.
+- **Company‑email verification with a 24‑hour trial** — anyone can start with a personal email (Gmail, Outlook, etc.), but after 24 hours a work‑email verification is required to continue. Users who sign up with a company email are exempt (never asked to verify); the verification step also rejects known free providers.
 - **Forgot / reset password** flow via email recovery link.
 - **Self‑service account deletion** — removes your profile, posts, comments, matches, and messages (DPDP/privacy friendly).
 
@@ -59,8 +59,10 @@ XP and a 🔥 login streak are always visible in the header.
 - **Interest‑matched discovery deck** ranked by an interest‑vector cosine similarity (60%) + XP‑tier proximity (20%) + activity recency (20%).
 - Filtered by **city + your "Show me" preference** (Men / Women / Everyone — *dating only, never affects the feed*).
 - Already‑matched, already‑swiped, and blocked users never reappear in the deck.
+- The **"Show me"** preference (Men / Women / Everyone) applies **only to Discover** — never the feed.
 - **Multiple profile photos** with a swipeable carousel.
 - **"Active recently"** status on cards and profiles.
+- **Match count** is public (shown on every profile); your matches list lets you open each person's profile or jump into chat.
 
 ### 🤝 Request / Accept matching
 - A right‑swipe sends a **request** (no blind auto‑matching).
@@ -82,8 +84,8 @@ XP and a 🔥 login streak are always visible in the header.
 - **Unmatch** from the chat header.
 
 ### 👤 Profiles
-- **Your profile:** identity card, stat tiles (XP / streak / dating status), interests, saved posts, edit (with multi‑photo upload), sign out, delete account.
-- **Public profiles** (`/users/[id]`): anyone's bio, interests, and recent posts; author names/avatars across the app link here.
+- **Your profile:** identity card, a single row of 4 stat tiles (XP · Matches · Streak · Dating), interests, **your recent posts with "View all" → `/profile/posts`**, saved posts, edit (multi‑photo upload), sign out, delete account.
+- **Public profiles** (`/users/[id]`): anyone's bio, interests, recent posts, and a matching 4‑stat row (XP · Matches · Streak · Posts); author names/avatars across the app link here.
 
 ---
 
@@ -111,7 +113,7 @@ app/
   (auth)/          login, onboarding, reset-password   — no navbar, no auth guard
   (app)/           feed, discover, requests, matches, messages/[matchId],
                    profile, users/[id], posts/[id], saved, notifications, verify-company
-                   └── layout.tsx — auth guard + 7-day trial gate + global header + bottom nav
+                   └── layout.tsx — auth guard + 24-hour trial gate + global header + bottom nav
   auth/callback/   route handler for Supabase email links (confirm / recovery / email-change)
   api/             ~19 route handlers (see AGENT.md for the full list)
 ```
@@ -127,7 +129,7 @@ app/
 app/                Next.js routes (pages + API)
 components/         feed, dating, messages, profile, layout, ui
 lib/                supabase clients, xp, matching, auth, redis, time, notifications, genres
-supabase/migrations/  ordered SQL migrations (001–018)
+supabase/migrations/  ordered SQL migrations (001–019)
 gideon/             Python content agent + genre config
 proxy.ts            Next.js 16 middleware (auth redirects, x-pathname header)
 ```
@@ -181,7 +183,7 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 
 ## Database
 
-18 ordered migrations in `supabase/migrations/`. Run them in order (`npx supabase db push`).
+19 ordered migrations in `supabase/migrations/`. Run them in order (`npx supabase db push`).
 
 | # | Migration | Adds |
 |---|-----------|------|
@@ -203,6 +205,7 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 | 016 | content_ownership | edit/delete RLS + `delete_own_account()` |
 | 017 | profile_photos | `users.photos` array |
 | 018 | account_deletion_posts | delete posts on account deletion |
+| 019 | match_count | public `match_count(user)` function |
 
 > **RLS note:** every server query uses `(supabase as any).from(...)` — an intentional workaround because `@supabase/ssr`'s typed client doesn't propagate generics through `.from()`. Cross‑user gates that RLS can't express use `SECURITY DEFINER` functions.
 
