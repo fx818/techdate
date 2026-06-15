@@ -7,7 +7,7 @@ import { GENRES } from '@/lib/genres'
 import SignOutButton from '@/components/layout/SignOutButton'
 import EditProfile from '@/components/profile/EditProfile'
 import { DeleteAccount } from '@/components/profile/DeleteAccount'
-import { isPersonalEmail, trialHoursLeft } from '@/lib/auth/email'
+import { isPersonalEmail, trialDaysLeft } from '@/lib/auth/email'
 import { isDisposableEmail } from '@/lib/auth/disposable'
 
 export default async function ProfilePage() {
@@ -27,7 +27,7 @@ export default async function ProfilePage() {
   const email = user.email ?? ''
   const companyVerified = !!profile.company_email_verified
   const needsVerify = !companyVerified && (isPersonalEmail(email) || isDisposableEmail(email))
-  const hoursLeft = trialHoursLeft(profile.created_at)
+  const daysLeft = trialDaysLeft(profile.created_at)
 
   const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: user.id })
 
@@ -119,8 +119,8 @@ export default async function ProfilePage() {
           <div className="min-w-0">
             <p className="text-ink font-medium">Verify your company email</p>
             <p className="text-ink-faint text-xs mt-0.5">
-              {hoursLeft > 0
-                ? `${hoursLeft}h left in your trial — verify now to keep full access.`
+              {daysLeft > 0
+                ? `${daysLeft} day${daysLeft === 1 ? '' : 's'} left in your trial — verify now to keep full access.`
                 : 'Required to continue using Await.'}
             </p>
           </div>

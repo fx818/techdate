@@ -25,7 +25,7 @@ export function isPersonalEmail(email: string): boolean {
 }
 
 // Trial window before a personal-email user must verify a company email.
-const TRIAL_MS = 24 * 60 * 60 * 1000 // 24 hours
+const TRIAL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 export function isTrialExpired(createdAt: string): boolean {
   return Date.now() - new Date(createdAt).getTime() >= TRIAL_MS
@@ -34,4 +34,9 @@ export function isTrialExpired(createdAt: string): boolean {
 export function trialHoursLeft(createdAt: string): number {
   const end = new Date(createdAt).getTime() + TRIAL_MS
   return Math.max(0, Math.ceil((end - Date.now()) / (60 * 60 * 1000)))
+}
+
+export function trialDaysLeft(createdAt: string): number {
+  const end = new Date(createdAt).getTime() + TRIAL_MS
+  return Math.max(0, Math.ceil((end - Date.now()) / (24 * 60 * 60 * 1000)))
 }

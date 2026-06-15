@@ -33,7 +33,7 @@ Two layers, one account:
 ### 🔐 Authentication & accounts
 - **Email + password** sign up / sign in (email confirmation required).
 - **Unique @username** chosen at onboarding (3–20 chars, availability‑checked); used for your public profile URL.
-- **Company‑email verification with a 24‑hour trial** — anyone can start with a personal email (Gmail, Outlook, etc.), but after 24 hours a work‑email verification is required to continue. The submitted email must (1) not be a known free provider, (2) not be a disposable/temp‑mail domain (checked against a ~120k‑domain blocklist), and (3) have valid **MX/A DNS records** (can actually receive mail) — then ownership is proven by clicking a confirmation link sent to that inbox. Disposable‑email signups are also caught by the trial gate. Genuine company‑domain signups are exempt.
+- **Company‑email verification with a 7‑day trial** — anyone can start with a personal email (Gmail, Outlook, etc.), but after 7 days a work‑email verification is required to continue (until then they can use the app; after, they're restricted to their profile + the verify flow). The submitted email must (1) not be a known free provider, (2) not be a disposable/temp‑mail domain (checked against a ~120k‑domain blocklist), and (3) have valid **MX/A DNS records** (can actually receive mail) — then ownership is proven by clicking a confirmation link sent to that inbox. Disposable‑email signups are also caught by the trial gate. Genuine company‑domain signups are exempt.
 - **Forgot / reset password** flow via email recovery link.
 - **Self‑service account deletion** — removes your profile, posts, comments, matches, and messages (DPDP/privacy friendly).
 

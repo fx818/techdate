@@ -60,7 +60,7 @@ export default function VerifyCompanyPage() {
           <div className="font-display text-4xl text-clay/70">✦</div>
           <h2 className="font-display text-2xl text-ink">Verify your work email</h2>
           <p className="text-ink-soft text-sm leading-relaxed">
-            Confirm your company email to get verified and keep full access after your 24-hour trial. Personal and temporary emails aren&apos;t accepted.
+            Confirm your company email to get verified and keep full access after your 7-day trial. Personal and temporary emails aren&apos;t accepted.
           </p>
         </div>
 

@@ -152,7 +152,7 @@ export default function LoginPage() {
 
           {mode === 'signup' && (
             <p className="text-ink-faint text-xs leading-relaxed">
-              Sign up with any email. If it&apos;s a personal email (Gmail, Outlook, etc.), you&apos;ll need to verify a company email within 24 hours.
+              Sign up with any email. If it&apos;s a personal email (Gmail, Outlook, etc.), you&apos;ll need to verify a company email within 7 days.
             </p>
           )}
         </div>
