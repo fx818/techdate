@@ -27,12 +27,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { content, parent_id } = await request.json()
   if (!content) return NextResponse.json({ error: 'Missing content' }, { status: 400 })
 
+  // Return the joined author so the client renders the real name/photo immediately
+  // (without it, freshly-posted comments fall back to "User" until a refetch).
   const { data: comment, error } = await (supabase as any).from('comments').insert({
     post_id: postId,
     author_id: user.id,
     parent_id: parent_id ?? null,
     content,
-  }).select().single()
+  }).select('id, content, created_at, parent_id, author_id, users(id, name, photo_url)').single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
