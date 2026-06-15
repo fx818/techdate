@@ -24,6 +24,7 @@ Await is a hybrid tech-discussion + professional-networking platform for Indian 
 - **Next.js 16 middleware = `proxy.ts`** (not `middleware.ts`). The exported function is `proxy`. Adding a `middleware.ts` alongside it is a build error. `proxy.ts` also sets an `x-pathname` request header consumed by `(app)/layout.tsx`.
 - **`await params`** — dynamic route params are `Promise<…>` in Next 16. Always `const { id } = await params`.
 - **Framework preset** — Vercel must treat this as Next.js; `vercel.json` pins `"framework": "nextjs"` (without it, every route 404s).
+- **Region** — `vercel.json` pins `"regions": ["bom1"]` (Mumbai) to colocate functions with the Supabase DB (`ap-south-1`). Do NOT remove — functions in a US region make every query a ~250ms cross-planet round-trip (the app was unusably slow until this was set).
 - **Env hygiene** — values set via shells that re-encode stdin can carry a BOM and silently break the Supabase/Redis clients. `lib/redis/client.ts` defensively trims its env vars.
 - **Cross-user gates** that RLS can't express use `SECURITY DEFINER` SQL functions (pattern: `has_right_swipe`, `get_incoming_requests`, `get_sent_requests`, `get_blocked_ids`, `delete_own_account`, `match_count`).
 
@@ -55,7 +56,7 @@ Forgot password → resetPasswordForEmail → /auth/callback?type=recovery → /
 
 ## XP system
 
-`like=2, reply=5, comment=10, post=25, profile_complete=20, login_streak=3`. Awarded via `lib/xp/award.ts::awardXp` (writes `xp_events`, increments `users.xp`). XP is a discussion reputation signal only — it does **not** gate connecting/messaging. (`DATING_UNLOCK_THRESHOLD=100` and the `dating_unlocked` flip still exist but gate nothing.) Login streak: idempotent per-day via `/api/streak` (pinged by `components/layout/StreakPing.tsx`, which also bumps `last_active`).
+`like=2, reply=5, comment=10, post=25, profile_complete=20, login_streak=3`. Awarded via `lib/xp/award.ts::awardXp`, which calls the atomic `award_xp(p_action, p_xp)` RPC (migration 021 — one round-trip: insert `xp_events` + bump `users.xp` + flip `dating_unlocked`, all on `auth.uid()`). In the like/comment/post routes, XP + interest-vector updates run via Next's `after()` (post-response) so the interaction returns instantly; pass the request's supabase client into `awardXp(..., client)` inside `after()`. XP is a discussion reputation signal only — it does **not** gate connecting/messaging. (`DATING_UNLOCK_THRESHOLD=100` and the `dating_unlocked` flip still exist but gate nothing.) Login streak: idempotent per-day via `/api/streak` (pinged by `components/layout/StreakPing.tsx`, which also bumps `last_active`).
 
 ---
 
@@ -106,7 +107,7 @@ Header bell (`NotifBell`) → `/api/notifications` (unread count). `/notificatio
 
 ## Database (20 migrations in `supabase/migrations/`, run in order)
 
-001 users · 002 posts/comments/likes (+count triggers) · 003 xp_events · 004 swipes/matches · 005 messages · 006 matches INSERT RLS · 007 company_email · 008 streak cols + `avatars` bucket · 009 SECURITY DEFINER count triggers + `has_right_swipe` · 010 `get_incoming_requests` · 011 `get_sent_requests` · 012 swipe DELETE policy · 013 post `image_url` + `bookmarks` + `post-images` bucket · 014 `last_notifications_seen` · 015 `blocks` + `reports` + `get_blocked_ids` · 016 post/comment edit-delete RLS + matches DELETE RLS + `delete_own_account` · 017 `users.photos` · 018 delete posts on account deletion · 019 public `match_count(user)` fn · 020 `users.username` + `posts.slug` (unique, NOT NULL, backfilled) for readable URLs.
+001 users · 002 posts/comments/likes (+count triggers) · 003 xp_events · 004 swipes/matches · 005 messages · 006 matches INSERT RLS · 007 company_email · 008 streak cols + `avatars` bucket · 009 SECURITY DEFINER count triggers + `has_right_swipe` · 010 `get_incoming_requests` · 011 `get_sent_requests` · 012 swipe DELETE policy · 013 post `image_url` + `bookmarks` + `post-images` bucket · 014 `last_notifications_seen` · 015 `blocks` + `reports` + `get_blocked_ids` · 016 post/comment edit-delete RLS + matches DELETE RLS + `delete_own_account` · 017 `users.photos` · 018 delete posts on account deletion · 019 public `match_count(user)` fn · 020 `users.username` + `posts.slug` (unique, NOT NULL, backfilled) for readable URLs · 021 atomic `award_xp(p_action, p_xp)` RPC (SECURITY DEFINER, uses auth.uid()).
 
 Storage buckets: `avatars`, `post-images` (public read, owner-scoped write).
 

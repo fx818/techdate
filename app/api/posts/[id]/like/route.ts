@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { awardXp } from '@/lib/xp/award'
 import { updateVector } from '@/lib/matching/vector'
@@ -25,16 +25,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .from('likes').insert({ user_id: user.id, post_id: postId })
   if (insertError) return NextResponse.json({ liked: true })
 
-  await awardXp(user.id, 'like')
-
-  const { data: post } = await (supabase as any).from('posts').select('genre').eq('id', postId).single()
-  if (post) {
-    const { data: profile } = await (supabase as any).from('users').select('interest_vector').eq('id', user.id).single()
-    if (profile) {
-      const updatedVector = updateVector(profile.interest_vector, post.genre, 0.05)
-      await (supabase as any).from('users').update({ interest_vector: updatedVector }).eq('id', user.id)
+  // XP + interest-vector are side effects — run them after responding so the
+  // like feels instant. Reuse the request's supabase client inside after().
+  after(async () => {
+    await awardXp(user.id, 'like', supabase)
+    const { data: post } = await (supabase as any).from('posts').select('genre').eq('id', postId).single()
+    if (post) {
+      const { data: profile } = await (supabase as any).from('users').select('interest_vector').eq('id', user.id).single()
+      if (profile) {
+        const updatedVector = updateVector(profile.interest_vector, post.genre, 0.05)
+        await (supabase as any).from('users').update({ interest_vector: updatedVector }).eq('id', user.id)
+      }
     }
-  }
+  })
 
   return NextResponse.json({ liked: true })
 }

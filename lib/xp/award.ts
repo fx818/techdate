@@ -1,38 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { XP_WEIGHTS, DATING_UNLOCK_THRESHOLD } from './weights'
+import { XP_WEIGHTS } from './weights'
 import type { XpAction } from '@/lib/supabase/types'
 
-export async function awardXp(userId: string, action: XpAction) {
+// One atomic RPC (insert xp_event + bump users.xp + flip dating_unlocked) instead
+// of the old 3 sequential round-trips. Pass an existing client (e.g. from inside
+// `after()`) to reuse the request's auth context.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function awardXp(_userId: string, action: XpAction, client?: any) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = (await createClient()) as any
+  const supabase = (client ?? (await createClient())) as any
   const xpAmount = XP_WEIGHTS[action]
-
-  await supabase.from('xp_events').insert({
-    user_id: userId,
-    action,
-    xp_awarded: xpAmount,
-  })
-
-  const { data: user } = await supabase
-    .from('users')
-    .select('xp, dating_unlocked')
-    .eq('id', userId)
-    .single()
-
-  if (!user) return
-
-  const newXp = (user.xp as number) + xpAmount
-  // `dating_unlocked` is vestigial now that messaging (Ping/Chat) is open to
-  // everyone with no XP gate; we still flip it for historical/analytics parity.
-  const shouldUnlock = !(user.dating_unlocked as boolean) && newXp >= DATING_UNLOCK_THRESHOLD
-
-  await supabase
-    .from('users')
-    .update({
-      xp: newXp,
-      ...(shouldUnlock ? { dating_unlocked: true } : {}),
-    })
-    .eq('id', userId)
-
-  return { newXp, unlocked: shouldUnlock }
+  const { data: newXp } = await supabase.rpc('award_xp', { p_action: action, p_xp: xpAmount })
+  return { newXp }
 }

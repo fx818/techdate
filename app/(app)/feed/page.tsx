@@ -13,11 +13,11 @@ export default async function FeedPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await (supabase as any)
-    .from('users')
-    .select('genres, xp, dating_unlocked')
-    .eq('id', user.id)
-    .single()
+  // Independent reads in parallel (profile + blocked list) instead of a waterfall.
+  const [{ data: profile }, { data: blocked }] = await Promise.all([
+    (supabase as any).from('users').select('genres, xp, dating_unlocked').eq('id', user.id).single(),
+    (supabase as any).rpc('get_blocked_ids'),
+  ])
 
   if (!profile) redirect('/onboarding')
 
@@ -45,8 +45,7 @@ export default async function FeedPage({
     if (safe) query = query.or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
   }
 
-  // Exclude posts by blocked users
-  const { data: blocked } = await (supabase as any).rpc('get_blocked_ids')
+  // Exclude posts by blocked users (blocked list fetched in parallel above)
   const blockedIds: string[] = (blocked ?? []).map((b: any) => b.user_id)
   if (blockedIds.length > 0) {
     query = query.not('author_id', 'in', `(${blockedIds.map((id: string) => `"${id}"`).join(',')})`)

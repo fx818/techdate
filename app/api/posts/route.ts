@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { awardXp } from '@/lib/xp/award'
 import { updateVector } from '@/lib/matching/vector'
@@ -52,13 +52,15 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  await awardXp(user.id, 'post')
-
-  const { data: profile } = await (supabase as any).from('users').select('interest_vector').eq('id', user.id).single()
-  if (profile) {
-    const updatedVector = updateVector(profile.interest_vector, genre, 0.15)
-    await (supabase as any).from('users').update({ interest_vector: updatedVector }).eq('id', user.id)
-  }
+  // XP + interest-vector are side effects — run after responding so posting feels instant.
+  after(async () => {
+    await awardXp(user.id, 'post', supabase)
+    const { data: profile } = await (supabase as any).from('users').select('interest_vector').eq('id', user.id).single()
+    if (profile) {
+      const updatedVector = updateVector(profile.interest_vector, genre, 0.15)
+      await (supabase as any).from('users').update({ interest_vector: updatedVector }).eq('id', user.id)
+    }
+  })
 
   return NextResponse.json({ post }, { status: 201 })
 }
