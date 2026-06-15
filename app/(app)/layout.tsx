@@ -36,11 +36,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq('id', user.id)
     .single()
 
-  // Check company email requirement (skip on the verify-company page itself)
-  if (profile && !pathname.startsWith('/verify-company')) {
+  // Company-email requirement. Restricted users may only reach /profile (to find
+  // the verify option) and /verify-company. Middleware enforces this on every
+  // request; this is defense-in-depth and also covers disposable emails (the
+  // disposable blocklist is too large to run in edge middleware).
+  const onAllowedUnverifiedRoute =
+    pathname.startsWith('/verify-company') || pathname.startsWith('/profile')
+  if (profile && !onAllowedUnverifiedRoute) {
     const email = user.email ?? ''
-    // Personal-provider AND disposable/temp-mail signups must verify a real
-    // company email; genuine company-domain signups are exempt.
     const needsCompanyEmail =
       (isPersonalEmail(email) || isDisposableEmail(email)) &&
       !profile.company_email_verified &&
