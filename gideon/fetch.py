@@ -62,10 +62,20 @@ def insert_posts(supabase: Client, posts: list, genre: str, existing_urls: set) 
             break
     return inserted
 
+def reset_gideon_posts(supabase: Client) -> None:
+    """Delete every Gideon-authored post (opt-in via GIDEON_RESET) so a fresh
+    fetch can repopulate the feed — used to apply content/format improvements."""
+    print("GIDEON_RESET set — deleting existing Gideon posts...")
+    supabase.table("posts").delete().eq("is_gideon", True).execute()
+    print("  done.")
+
 def run():
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     genres = load_genres()
     total = 0
+
+    if os.environ.get("GIDEON_RESET", "").lower() in ("1", "true", "yes"):
+        reset_gideon_posts(supabase)
 
     for genre_id, config in genres.items():
         print(f"Fetching for genre: {genre_id}")
