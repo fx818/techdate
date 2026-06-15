@@ -7,6 +7,8 @@ import { GENRES } from '@/lib/genres'
 import SignOutButton from '@/components/layout/SignOutButton'
 import EditProfile from '@/components/profile/EditProfile'
 import { DeleteAccount } from '@/components/profile/DeleteAccount'
+import { isPersonalEmail, trialHoursLeft } from '@/lib/auth/email'
+import { isDisposableEmail } from '@/lib/auth/disposable'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -15,11 +17,17 @@ export default async function ProfilePage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('name, username, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count')
+    .select('name, username, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count, company_email_verified, created_at')
     .eq('id', user.id)
     .single()
 
   if (!profile) redirect('/onboarding')
+
+  // Company-email verification status (self-serve verify is offered during the trial).
+  const email = user.email ?? ''
+  const companyVerified = !!profile.company_email_verified
+  const needsVerify = !companyVerified && (isPersonalEmail(email) || isDisposableEmail(email))
+  const hoursLeft = trialHoursLeft(profile.created_at)
 
   const { data: matchCount } = await (supabase as any).rpc('match_count', { p_user: user.id })
 
@@ -98,6 +106,27 @@ export default async function ProfilePage() {
           <p className="text-ink-faint text-[11px] mt-1.5">🔥 Streak</p>
         </div>
       </div>
+
+      {/* Company email verification */}
+      {companyVerified ? (
+        <div className="card p-4 flex items-center gap-2 text-sage">
+          <span className="text-base">✓</span>
+          <span className="text-sm font-medium">Company email verified</span>
+        </div>
+      ) : needsVerify ? (
+        <Link href="/verify-company"
+          className="card p-4 flex items-center justify-between gap-3 hover:border-clay transition-colors border-clay/40 bg-clay-tint/20">
+          <div className="min-w-0">
+            <p className="text-ink font-medium">Verify your company email</p>
+            <p className="text-ink-faint text-xs mt-0.5">
+              {hoursLeft > 0
+                ? `${hoursLeft}h left in your trial — verify now to keep full access.`
+                : 'Required to continue using Await.'}
+            </p>
+          </div>
+          <span className="btn btn-primary text-sm px-3 py-1.5 shrink-0">Verify</span>
+        </Link>
+      ) : null}
 
       {/* Interests */}
       <div>
