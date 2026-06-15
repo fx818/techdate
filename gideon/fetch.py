@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import uuid
+import httpx
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from sources.hackernews import fetch_hn_posts
@@ -23,6 +24,30 @@ def get_existing_urls(supabase: Client, genre: str) -> set:
     """Fetch URLs already stored for this genre to avoid duplicates."""
     result = supabase.table("posts").select("url").eq("genre", genre).eq("is_gideon", True).execute()
     return {row["url"] for row in result.data if row["url"]}
+
+_OG_PATTERNS = (
+    r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+    r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']',
+    r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)["\']',
+)
+
+def fetch_og_image(url: str) -> str | None:
+    """Best-effort: scrape the og:image (or twitter:image) from a page's HTML so
+    image-less posts (e.g. Hacker News links) still get a thumbnail."""
+    if not url:
+        return None
+    try:
+        r = httpx.get(url, timeout=8, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0 (compatible; GideonBot/1.0)"})
+        r.raise_for_status()
+        html = r.text[:200000]
+        for pat in _OG_PATTERNS:
+            m = re.search(pat, html, re.IGNORECASE)
+            if m and m.group(1).startswith("http"):
+                return m.group(1)
+    except Exception as e:
+        print(f"  og:image fetch failed for {url}: {e}")
+    return None
 
 def slugify(text: str, max_len: int = 60) -> str:
     """Lowercase, non-alphanumerics -> hyphen, trimmed, capped. Always non-empty."""
@@ -45,13 +70,14 @@ def insert_posts(supabase: Client, posts: list, genre: str, existing_urls: set) 
             continue
         if post["url"] in existing_urls:
             continue
+        image_url = post.get("image_url") or fetch_og_image(post.get("url"))
         supabase.table("posts").insert({
             "is_gideon": True,
             "title": post["title"],
             "slug": unique_slug(supabase, post["title"]),
             "url": post["url"],
             "content": post.get("content") or None,
-            "image_url": post.get("image_url") or None,
+            "image_url": image_url,
             "genre": genre,
             "source": post["source"],
             "author_id": None,

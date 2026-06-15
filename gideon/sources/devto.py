@@ -13,7 +13,11 @@ def _markdown_to_text(md: str) -> str:
     """Convert dev.to body_markdown into clean plain text for our <p> renderer."""
     if not md:
         return ""
-    t = md
+    t = md.lstrip()
+    # dev.to bodies begin with a YAML frontmatter block (--- ... ---) holding
+    # title/description/tags/cover_image. Strip it so it doesn't leak into content.
+    if t.startswith("---"):
+        t = re.sub(r"^---\s*\n.*?\n---\s*\n?", "", t, count=1, flags=re.DOTALL)
     t = re.sub(r"\{%.*?%\}", "", t, flags=re.DOTALL)              # liquid tags
     t = re.sub(r"```.*?```", "", t, flags=re.DOTALL)              # fenced code
     t = re.sub(r"`([^`]*)`", r"\1", t)                            # inline code
@@ -23,8 +27,10 @@ def _markdown_to_text(md: str) -> str:
     t = re.sub(r"^\s{0,3}>\s?", "", t, flags=re.MULTILINE)        # blockquotes
     t = re.sub(r"\*\*([^*]+)\*\*", r"\1", t)                      # bold
     t = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"\1", t)            # italic
-    t = re.sub(r"^\s*[-*+]\s+", "• ", t, flags=re.MULTILINE)     # bullets
-    t = re.sub(r"^\s*\d+\.\s+", "", t, flags=re.MULTILINE)       # numbered lists
+    t = re.sub(r"^\s{0,3}[-*+]\s+", "• ", t, flags=re.MULTILINE)  # bullets
+    t = re.sub(r"^\s{0,3}\d+\.\s+", "", t, flags=re.MULTILINE)    # numbered lists
+    t = re.sub(r"^\s{0,3}[-*_]{3,}\s*$", "", t, flags=re.MULTILINE)  # hr rules
+    t = re.sub(r"[ \t]+\n", "\n", t)                             # trailing spaces
     t = re.sub(r"\n{3,}", "\n\n", t)                             # collapse blanks
     return t.strip()
 
