@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { GENRES } from '@/lib/genres'
 import { isValidUsername } from '@/lib/slug'
+import { CitySelect } from '@/components/ui/CitySelect'
 import type { Preference } from '@/lib/supabase/types'
-
-const CITIES = ['Bangalore', 'Delhi', 'Noida', 'Gurgaon', 'Mumbai', 'Pune', 'Hyderabad', 'Chennai']
 
 interface Props {
   userId: string
@@ -150,10 +149,7 @@ export default function EditProfile({ userId, initial }: Props) {
             className="flex-1 bg-transparent px-2 py-2.5 text-ink outline-none"
           />
         </div>
-        <select value={city} onChange={e => setCity(e.target.value)} className="input">
-          <option value="">Select city</option>
-          {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <CitySelect value={city} onChange={setCity} placeholder="City" />
 
         <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Short bio" className="input h-20 resize-none" />
 

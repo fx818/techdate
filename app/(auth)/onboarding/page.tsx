@@ -6,11 +6,10 @@ import { useRouter } from 'next/navigation'
 import { seedVector } from '@/lib/matching/vector'
 import { GENRES } from '@/lib/genres'
 import { isValidUsername, suggestUsername } from '@/lib/slug'
+import { CitySelect } from '@/components/ui/CitySelect'
 import type { Gender, Preference, Database } from '@/lib/supabase/types'
 
 type UserInsert = Database['public']['Tables']['users']['Insert']
-
-const CITIES = ['Bangalore', 'Delhi', 'Noida', 'Gurgaon', 'Mumbai', 'Pune', 'Hyderabad', 'Chennai']
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
@@ -138,10 +137,7 @@ export default function OnboardingPage() {
                 ? <p className="text-clay-deep text-xs">{usernameError}</p>
                 : <p className="text-ink-faint text-xs">Your profile link: await.app/users/{username || 'username'}</p>}
             </div>
-            <select value={city} onChange={e => setCity(e.target.value)} className="input">
-              <option value="">Select city</option>
-              {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <CitySelect value={city} onChange={setCity} placeholder="City" />
             <div className="space-y-1.5">
               <label className="text-ink-faint text-xs uppercase tracking-widest">I am</label>
               <div className="flex gap-2">
