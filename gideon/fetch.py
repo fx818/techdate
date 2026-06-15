@@ -36,6 +36,9 @@ def fetch_og_image(url: str) -> str | None:
     image-less posts (e.g. Hacker News links) still get a thumbnail."""
     if not url:
         return None
+    # HN discussion/self-post pages have no useful image and rate-limit scrapers.
+    if "news.ycombinator.com" in url:
+        return None
     try:
         r = httpx.get(url, timeout=8, follow_redirects=True,
                       headers={"User-Agent": "Mozilla/5.0 (compatible; GideonBot/1.0)"})
