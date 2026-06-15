@@ -1,9 +1,14 @@
 import html
 import re
+import time
 
 import httpx
 
 HN_ALGOLIA = "https://hn.algolia.com/api/v1/search"
+
+# Only consider stories from the last N days so each run surfaces FRESH content
+# instead of re-hitting the same all-time-top URLs (which dedup then skips).
+HN_RECENCY_DAYS = 7
 
 
 def _clean(text: str) -> str:
@@ -33,13 +38,14 @@ def _build_content(hit: dict) -> str:
     return f"Trending on Hacker News — {' · '.join(parts)}."
 
 
-def fetch_hn_posts(query: str, tags: list, limit: int = 8) -> list:
-    """Fetch posts from HackerNews Algolia API for a given query."""
+def fetch_hn_posts(query: str, tags: list, limit: int = 12) -> list:
+    """Fetch recent, popular posts from the HackerNews Algolia API for a query."""
+    cutoff = int(time.time()) - HN_RECENCY_DAYS * 86400
     params = {
         "query": query,
         "tags": "story",
         "hitsPerPage": limit,
-        "numericFilters": "points>10",
+        "numericFilters": f"points>10,created_at_i>{cutoff}",
     }
     try:
         response = httpx.get(HN_ALGOLIA, params=params, timeout=10)

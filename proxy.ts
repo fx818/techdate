@@ -32,9 +32,14 @@ export async function proxy(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/onboarding')
+    // Public routes: auth pages + post detail pages (shareable, login-free read).
+    // `/users` is deliberately NOT public (profile privacy for the matchmaking future).
+    const isPublicRoute =
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/onboarding') ||
+      pathname.startsWith('/posts')
 
-    if (!user && !isAuthRoute) {
+    if (!user && !isPublicRoute) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
@@ -44,8 +49,11 @@ export async function proxy(request: NextRequest) {
 
     return supabaseResponse
   } catch {
-    const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/onboarding')
-    if (!isAuthRoute) {
+    const isPublicRoute =
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/onboarding') ||
+      pathname.startsWith('/posts')
+    if (!isPublicRoute) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
     return NextResponse.next({ request: { headers: requestHeaders } })

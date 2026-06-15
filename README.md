@@ -28,6 +28,7 @@ Two layers, one account:
 ### 🔗 Human‑readable URLs
 - Every page URL is a **readable slug**, never a raw UUID: profiles at `/users/<username>`, posts at `/posts/<title-slug>`, chats at `/messages/<handle>-<id>`.
 - You pick a unique **@username** at onboarding (editable later); posts get a unique slug from their title. Legacy UUID links still resolve and redirect to the canonical slug.
+- **Post pages are public** — a shared `/posts/<slug>` link opens for logged‑out visitors as a read‑only thread with a "join the conversation" CTA (like/save/comment require login). User profiles (`/users/<username>`) stay private (login‑only).
 
 ### 🔐 Authentication & accounts
 - **Email + password** sign up / sign in (email confirmation required).
@@ -220,7 +221,7 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 `gideon/` is a Python cron (no user account) that keeps the feed fresh so it's never empty.
 
 - Runs **every 12 hours** via GitHub Actions (`.github/workflows/gideon.yml`), or on demand (`workflow_dispatch`).
-- Fetches from **HackerNews Algolia API** + **dev.to API** per genre, dedupes by URL, and inserts the **2 highest‑scoring posts per genre** (`is_gideon = true`), each with a **slug**, a **description** (dev.to excerpt / HN story text or metadata blurb) and, for dev.to, a **cover image**.
+- Fetches from **HackerNews Algolia API** (stories from the **last 7 days**, for freshness) + **dev.to API** per genre, dedupes by URL, and inserts the **2 highest‑scoring posts per genre** (`is_gideon = true`), each with a **slug**, a **description** (dev.to article body / HN story text or metadata blurb) and an **image** (dev.to cover, or an OG‑image scraped from the article for external links).
 - Writes with the service‑role key (bypasses RLS).
 
 **GitHub Actions secrets required:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.

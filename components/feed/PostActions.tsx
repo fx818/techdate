@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Heart, Bookmark } from 'lucide-react'
 
 export function PostActions({
@@ -8,11 +9,13 @@ export function PostActions({
   initialLiked,
   initialBookmarked,
   initialLikeCount,
+  isAuthed = true,
 }: {
   postId: string
   initialLiked: boolean
   initialBookmarked: boolean
   initialLikeCount: number
+  isAuthed?: boolean
 }) {
   const [liked, setLiked] = useState(initialLiked)
   const [likeCount, setLikeCount] = useState(initialLikeCount)
@@ -39,6 +42,15 @@ export function PostActions({
     if (!res.ok) return
     const data = await res.json()
     if (typeof data.bookmarked === 'boolean') setBookmarked(data.bookmarked)
+  }
+
+  if (!isAuthed) {
+    return (
+      <div className="flex items-center gap-4 text-sm text-ink-faint">
+        <span className="flex items-center gap-1.5"><Heart size={18} /> {likeCount}</span>
+        <Link href="/login" className="ml-auto text-clay-deep hover:underline">Log in to like &amp; save</Link>
+      </div>
+    )
   }
 
   return (

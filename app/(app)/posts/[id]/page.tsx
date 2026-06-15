@@ -14,7 +14,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   const { id: slugOrId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // Public page: logged-out visitors get a read-only view (shareable links).
 
   // Resolve by slug; fall back to a legacy UUID URL and redirect to the canonical slug.
   let { data: post } = await (supabase as any)
@@ -35,11 +35,16 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   if (!post) redirect('/feed')
 
   const id = post.id
+  const isAuthed = !!user
 
-  const [{ data: like }, { data: bookmark }] = await Promise.all([
-    (supabase as any).from('likes').select('id').eq('user_id', user.id).eq('post_id', id).maybeSingle(),
-    (supabase as any).from('bookmarks').select('id').eq('user_id', user.id).eq('post_id', id).maybeSingle(),
-  ])
+  // Like/bookmark state only applies to a signed-in viewer.
+  let like: any = null, bookmark: any = null
+  if (user) {
+    ;[{ data: like }, { data: bookmark }] = await Promise.all([
+      (supabase as any).from('likes').select('id').eq('user_id', user.id).eq('post_id', id).maybeSingle(),
+      (supabase as any).from('bookmarks').select('id').eq('user_id', user.id).eq('post_id', id).maybeSingle(),
+    ])
+  }
 
   const author = post.users?.name ?? 'Unknown'
 
@@ -62,7 +67,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
             )}
             <span className="text-xs bg-surface-sunk text-ink-faint px-2 py-0.5 rounded-full">{post.genre}</span>
           </div>
-          {!post.is_gideon && (
+          {user && !post.is_gideon && (
             post.users?.id === user.id
               ? <PostOwnerMenu postId={post.id} title={post.title} content={post.content} />
               : post.users?.id
@@ -85,13 +90,21 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         )}
 
         <div className="pt-1">
-          <PostActions postId={id} initialLiked={!!like} initialBookmarked={!!bookmark} initialLikeCount={post.likes_count} />
+          <PostActions postId={id} initialLiked={!!like} initialBookmarked={!!bookmark} initialLikeCount={post.likes_count} isAuthed={isAuthed} />
         </div>
       </article>
 
+      {!isAuthed && (
+        <div className="card p-5 text-center space-y-2 border-clay/40 bg-clay-tint/30">
+          <p className="font-display text-xl text-ink">Join the conversation</p>
+          <p className="text-ink-faint text-sm">Sign up to like, save, comment, and connect with techies who think like you.</p>
+          <Link href="/login" className="btn btn-primary inline-flex mt-1">Log in / Sign up</Link>
+        </div>
+      )}
+
       <div className="card p-5">
         <h2 className="font-display text-lg text-ink mb-3">Comments</h2>
-        <CommentSection postId={id} currentUserId={user.id} />
+        <CommentSection postId={id} currentUserId={user?.id ?? ''} />
       </div>
     </div>
   )

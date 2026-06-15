@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { timeAgo } from '@/lib/time'
 
 interface Comment {
@@ -13,6 +14,7 @@ interface Comment {
 }
 
 export default function CommentSection({ postId, currentUserId }: { postId: string; currentUserId: string }) {
+  const isAuthed = !!currentUserId
   const [comments, setComments] = useState<Comment[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -63,7 +65,7 @@ export default function CommentSection({ postId, currentUserId }: { postId: stri
           <span className="text-ink-soft ml-2">{c.content}</span>
         </div>
         <div className="flex gap-3 mt-0.5">
-          {!isReply && (
+          {!isReply && isAuthed && (
             <button onClick={() => { setReplyTo(replyTo === c.id ? null : c.id); setReplyText('') }}
               className="text-ink-faint text-xs hover:text-ink">Reply</button>
           )}
@@ -92,12 +94,18 @@ export default function CommentSection({ postId, currentUserId }: { postId: stri
           {repliesOf(c.id).map(r => <Row key={r.id} c={r} isReply />)}
         </div>
       ))}
-      <div className="flex gap-2">
-        <input value={text} onChange={e => setText(e.target.value)} placeholder="Add a comment…"
-          onKeyDown={e => e.key === 'Enter' && submit(null, text)} className="input text-sm py-1.5" />
-        <button onClick={() => submit(null, text)} disabled={loading || !text.trim()}
-          className="btn btn-primary text-sm px-4 py-1.5">Post</button>
-      </div>
+      {isAuthed ? (
+        <div className="flex gap-2">
+          <input value={text} onChange={e => setText(e.target.value)} placeholder="Add a comment…"
+            onKeyDown={e => e.key === 'Enter' && submit(null, text)} className="input text-sm py-1.5" />
+          <button onClick={() => submit(null, text)} disabled={loading || !text.trim()}
+            className="btn btn-primary text-sm px-4 py-1.5">Post</button>
+        </div>
+      ) : (
+        <Link href="/login" className="block text-center text-sm text-clay-deep hover:underline py-2">
+          Log in to join the discussion
+        </Link>
+      )}
     </div>
   )
 }
