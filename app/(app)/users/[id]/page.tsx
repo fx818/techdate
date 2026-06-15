@@ -7,17 +7,27 @@ import { UserSafetyMenu } from '@/components/profile/UserSafetyMenu'
 import { PingButton } from '@/components/dating/PingButton'
 import { GENRES } from '@/lib/genres'
 import { activeLabel } from '@/lib/active'
+import { isUuid } from '@/lib/slug'
 
 export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+  const { id: handleOrId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  if (id === user.id) redirect('/profile')
 
-  const { data: profile } = await (supabase as any)
-    .from('users').select('id, name, photo_url, city, genres, xp, bio, last_active, streak_count').eq('id', id).maybeSingle()
+  const cols = 'id, name, username, photo_url, city, genres, xp, bio, last_active, streak_count'
+  // Resolve by username; fall back to a legacy UUID URL and redirect to the handle.
+  let { data: profile } = await (supabase as any)
+    .from('users').select(cols).eq('username', handleOrId).maybeSingle()
+  if (!profile && isUuid(handleOrId)) {
+    ({ data: profile } = await (supabase as any)
+      .from('users').select(cols).eq('id', handleOrId).maybeSingle())
+    if (profile) redirect(`/users/${profile.username}`)
+  }
   if (!profile) redirect('/feed')
+
+  const id = profile.id
+  if (id === user.id) redirect('/profile')
 
   const { data: blocked } = await (supabase as any).rpc('get_blocked_ids')
   const blockedIds = new Set((blocked ?? []).map((b: any) => b.user_id))
@@ -50,7 +60,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
     .from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id).eq('is_gideon', false)
 
   const { data: posts } = await (supabase as any)
-    .from('posts').select('*, users(id, name, photo_url)').eq('author_id', id).eq('is_gideon', false)
+    .from('posts').select('*, users(id, name, username, photo_url)').eq('author_id', id).eq('is_gideon', false)
     .order('created_at', { ascending: false }).limit(10)
 
   const postIds = (posts ?? []).map((p: any) => p.id)
@@ -93,7 +103,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
           </div>
         )}
         <div className="border-t border-line pt-4">
-          <PingButton otherUserId={id} initialState={pingState} matchId={existingMatch?.id ?? null} />
+          <PingButton otherUserId={id} otherUsername={profile.username} initialState={pingState} matchId={existingMatch?.id ?? null} />
         </div>
       </div>
 

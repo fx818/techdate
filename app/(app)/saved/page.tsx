@@ -11,7 +11,7 @@ export default async function SavedPage() {
 
   const { data: rows } = await (supabase as any)
     .from('bookmarks')
-    .select('created_at, post:posts(*, users(id, name, photo_url))')
+    .select('created_at, post:posts(*, users(id, name, username, photo_url))')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 

@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { GENRES } from '@/lib/genres'
+import { isValidUsername } from '@/lib/slug'
 import type { Preference } from '@/lib/supabase/types'
 
 const CITIES = ['Bangalore', 'Delhi', 'Noida', 'Gurgaon', 'Mumbai', 'Pune', 'Hyderabad', 'Chennai']
@@ -12,6 +13,7 @@ interface Props {
   userId: string
   initial: {
     name: string
+    username: string
     bio: string | null
     city: string
     genres: string[]
@@ -28,6 +30,7 @@ export default function EditProfile({ userId, initial }: Props) {
 
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(initial.name)
+  const [username, setUsername] = useState(initial.username)
   const [city, setCity] = useState(initial.city)
   const [bio, setBio] = useState(initial.bio ?? '')
   // Preference is preserved on save but no longer has UI (networking model, no dating filter).
@@ -67,12 +70,20 @@ export default function EditProfile({ userId, initial }: Props) {
 
   async function save() {
     if (!name.trim() || !city) { setError('Name and city are required'); return }
+    const handle = username.trim().toLowerCase()
+    if (!isValidUsername(handle)) { setError('Username: 3–20 chars, lowercase letters, numbers, underscore.'); return }
     if (genres.length < 3) { setError('Pick at least 3 interests'); return }
     setSaving(true)
     setError('')
+    // If the handle changed, make sure it isn't taken by someone else.
+    if (handle !== initial.username) {
+      const { data: taken } = await (supabase as any)
+        .from('users').select('id').eq('username', handle).neq('id', userId).maybeSingle()
+      if (taken) { setSaving(false); setError('That username is taken.'); return }
+    }
     const { error: updErr } = await (supabase as any)
       .from('users')
-      .update({ name: name.trim(), city, bio: bio.trim() || null, preference, genres, photos, photo_url: photos[0] ?? null })
+      .update({ name: name.trim(), username: handle, city, bio: bio.trim() || null, preference, genres, photos, photo_url: photos[0] ?? null })
       .eq('id', userId)
     setSaving(false)
     if (updErr) { setError(updErr.message); return }
@@ -129,6 +140,16 @@ export default function EditProfile({ userId, initial }: Props) {
         </div>
 
         <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="input" />
+        <div className="flex items-center rounded-lg border border-line-strong bg-surface focus-within:border-clay overflow-hidden">
+          <span className="pl-3 text-ink-faint text-sm select-none">@</span>
+          <input
+            value={username}
+            onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+            placeholder="username"
+            maxLength={20}
+            className="flex-1 bg-transparent px-2 py-2.5 text-ink outline-none"
+          />
+        </div>
         <select value={city} onChange={e => setCity(e.target.value)} className="input">
           <option value="">Select city</option>
           {CITIES.map(c => <option key={c} value={c}>{c}</option>)}

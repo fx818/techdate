@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { XpBadge } from '@/components/ui/XpBadge'
 import { GENRES } from '@/lib/genres'
+import { chatHref } from '@/lib/slug'
 
 interface RequestProfile {
   id: string
@@ -24,7 +25,7 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
   const [sentList, setSentList] = useState(sent)
   const [busy, setBusy] = useState<string | null>(null)
 
-  async function respond(otherId: string, action: 'accept' | 'decline' | 'withdraw') {
+  async function respond(otherId: string, action: 'accept' | 'decline' | 'withdraw', otherName = '') {
     setBusy(otherId)
     try {
       const res = await fetch('/api/requests', {
@@ -38,7 +39,7 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
       } else {
         setRecv(prev => prev.filter(r => r.id !== otherId))
         if (action === 'accept' && data.matchId) {
-          router.push(`/messages/${data.matchId}`)
+          router.push(chatHref(otherName, data.matchId))
         }
       }
     } finally {
@@ -117,7 +118,7 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
                     <div className="flex gap-2 pt-2">
                       <button onClick={() => respond(p.id, 'decline')} disabled={busy === p.id}
                         className="btn btn-ghost flex-1">Decline</button>
-                      <button onClick={() => respond(p.id, 'accept')} disabled={busy === p.id}
+                      <button onClick={() => respond(p.id, 'accept', p.name)} disabled={busy === p.id}
                         className="btn btn-primary flex-1">{busy === p.id ? '···' : 'Accept & chat'}</button>
                     </div>
                   ) : (

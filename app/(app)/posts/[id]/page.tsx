@@ -8,20 +8,33 @@ import CommentSection from '@/components/feed/CommentSection'
 import { PostOwnerMenu } from '@/components/feed/PostOwnerMenu'
 import { PostSafetyMenu } from '@/components/feed/PostSafetyMenu'
 import { formatFull } from '@/lib/time'
+import { isUuid } from '@/lib/slug'
 
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+  const { id: slugOrId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: post } = await (supabase as any)
+  // Resolve by slug; fall back to a legacy UUID URL and redirect to the canonical slug.
+  let { data: post } = await (supabase as any)
     .from('posts')
-    .select('*, users(id, name, photo_url)')
-    .eq('id', id)
+    .select('*, users(id, name, username, photo_url)')
+    .eq('slug', slugOrId)
     .maybeSingle()
 
+  if (!post && isUuid(slugOrId)) {
+    ({ data: post } = await (supabase as any)
+      .from('posts')
+      .select('*, users(id, name, username, photo_url)')
+      .eq('id', slugOrId)
+      .maybeSingle())
+    if (post) redirect(`/posts/${post.slug}`)
+  }
+
   if (!post) redirect('/feed')
+
+  const id = post.id
 
   const [{ data: like }, { data: bookmark }] = await Promise.all([
     (supabase as any).from('likes').select('id').eq('user_id', user.id).eq('post_id', id).maybeSingle(),
@@ -38,7 +51,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             {post.is_gideon ? <GideonBadge /> : (
-              <Link href={`/users/${post.users?.id}`} className="flex items-center gap-2.5">
+              <Link href={`/users/${post.users?.username ?? post.users?.id}`} className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep text-sm font-display overflow-hidden shrink-0">
                   {post.users?.photo_url
                     ? <img src={post.users.photo_url} alt={author} className="w-7 h-7 object-cover" />

@@ -8,6 +8,8 @@ Await is a hybrid tech-discussion + professional-networking platform for Indian 
 
 **Naming note:** internal route paths and DB tables keep their original dating-era names — `/discover` (the People page), `/requests` (Pings), `/matches` (Chats), the `swipes` table (a right "swipe" = a Ping), and the `matches` table (an accepted connection). Only user-facing labels/copy were reframed. `users.dating_unlocked` and `users.preference` are vestigial (still written, gate nothing). `components/dating/MatchModal.tsx` is dead code.
 
+**URL slugs (migration 020):** page URLs are human-readable, never raw UUIDs — `/users/<username>`, `/posts/<slug>`, `/messages/<other-handle>-<matchId>`. UUIDs stay the PKs and appear only in the DB + `/api/*` routes. Helpers in `lib/slug.ts` (`slugify`, `isUuid`, `isValidUsername`, `userHref`/`postHref`/`chatHref`, `matchIdFromSlug`). Each dynamic page resolves by slug/username (or the trailing uuid for chats) and **falls back to a legacy UUID lookup that redirects to the canonical slug**. `[id]`/`[matchId]` folder names are kept; the segment value is the slug. `users.username` (unique, `^[a-z0-9_]{2,30}$`) is set at onboarding + editable in `EditProfile`; `posts.slug` (unique) is generated from the title on create (`/api/posts` POST and `gideon/fetch.py`), suffixed on clash. Any query feeding a profile/post link must select `username`/`slug`.
+
 **Live URL:** https://techdate-eta.vercel.app
 **GitHub:** https://github.com/fx818/techdate
 **Supabase project:** `ynfkwndtmoajcmjppftp` (ap-south-1, Mumbai)
@@ -100,9 +102,9 @@ Header bell (`NotifBell`) → `/api/notifications` (unread count). `/notificatio
 
 ---
 
-## Database (19 migrations in `supabase/migrations/`, run in order)
+## Database (20 migrations in `supabase/migrations/`, run in order)
 
-001 users · 002 posts/comments/likes (+count triggers) · 003 xp_events · 004 swipes/matches · 005 messages · 006 matches INSERT RLS · 007 company_email · 008 streak cols + `avatars` bucket · 009 SECURITY DEFINER count triggers + `has_right_swipe` · 010 `get_incoming_requests` · 011 `get_sent_requests` · 012 swipe DELETE policy · 013 post `image_url` + `bookmarks` + `post-images` bucket · 014 `last_notifications_seen` · 015 `blocks` + `reports` + `get_blocked_ids` · 016 post/comment edit-delete RLS + matches DELETE RLS + `delete_own_account` · 017 `users.photos` · 018 delete posts on account deletion · 019 public `match_count(user)` fn.
+001 users · 002 posts/comments/likes (+count triggers) · 003 xp_events · 004 swipes/matches · 005 messages · 006 matches INSERT RLS · 007 company_email · 008 streak cols + `avatars` bucket · 009 SECURITY DEFINER count triggers + `has_right_swipe` · 010 `get_incoming_requests` · 011 `get_sent_requests` · 012 swipe DELETE policy · 013 post `image_url` + `bookmarks` + `post-images` bucket · 014 `last_notifications_seen` · 015 `blocks` + `reports` + `get_blocked_ids` · 016 post/comment edit-delete RLS + matches DELETE RLS + `delete_own_account` · 017 `users.photos` · 018 delete posts on account deletion · 019 public `match_count(user)` fn · 020 `users.username` + `posts.slug` (unique, NOT NULL, backfilled) for readable URLs.
 
 Storage buckets: `avatars`, `post-images` (public read, owner-scoped write).
 
@@ -136,7 +138,7 @@ Storage buckets: `avatars`, `post-images` (public read, owner-scoped write).
 
 ## Gideon content agent
 
-Python cron at `gideon/`, GitHub Actions (`.github/workflows/gideon.yml`), **every 12h** + `workflow_dispatch`. Fetches HN Algolia + dev.to per genre (config `gideon/genres.json`), dedupes by URL, inserts the **2 best (by HN points) posts/genre** with `is_gideon=true`. Secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. (`requirements.txt` pins must keep `supabase`/`httpx`/`gotrue` mutually compatible — `supabase>=2.7` + `httpx>=0.26`.)
+Python cron at `gideon/`, GitHub Actions (`.github/workflows/gideon.yml`), **every 12h** + `workflow_dispatch`. Fetches HN Algolia + dev.to per genre (config `gideon/genres.json`), dedupes by URL, inserts the **2 best (by HN points) posts/genre** with `is_gideon=true`. Each insert sets `slug`, `content` (dev.to `description` / HN `story_text` or a metadata blurb) and `image_url` (dev.to `cover_image`/`social_image`; HN has none) — so Gideon posts render like human posts, not bare title+link. Secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. (`requirements.txt` pins must keep `supabase`/`httpx`/`gotrue` mutually compatible — `supabase>=2.7` + `httpx>=0.26`.)
 
 ---
 

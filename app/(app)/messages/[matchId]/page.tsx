@@ -2,9 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ChatWindow from '@/components/messages/ChatWindow'
 import { ChatHeaderMenu } from '@/components/messages/ChatHeaderMenu'
+import { matchIdFromSlug } from '@/lib/slug'
 
 export default async function MessagesPage({ params }: { params: Promise<{ matchId: string }> }) {
-  const { matchId } = await params
+  const { matchId: slug } = await params
+  // The chat URL is "<other person's handle>-<matchId>"; resolve by the trailing uuid.
+  const matchId = matchIdFromSlug(slug)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')

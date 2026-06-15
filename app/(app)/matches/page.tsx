@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MessageSquare } from 'lucide-react'
+import { chatHref, userHref } from '@/lib/slug'
 
 export default async function ChatsPage() {
   const supabase = await createClient()
@@ -15,8 +16,8 @@ export default async function ChatsPage() {
       user1_id,
       user2_id,
       created_at,
-      user1:users!matches_user1_id_fkey(id, name, photo_url),
-      user2:users!matches_user2_id_fkey(id, name, photo_url)
+      user1:users!matches_user1_id_fkey(id, name, username, photo_url),
+      user2:users!matches_user2_id_fkey(id, name, username, photo_url)
     `)
     .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
@@ -46,7 +47,7 @@ export default async function ChatsPage() {
             return (
               <div key={match.id} className="flex items-center gap-3.5 card p-3.5">
                 {/* Tap avatar/name → view their profile */}
-                <Link href={`/users/${other?.id}`} className="flex items-center gap-3.5 flex-1 min-w-0 group">
+                <Link href={userHref(other?.username, other?.id)} className="flex items-center gap-3.5 flex-1 min-w-0 group">
                   <div className="w-12 h-12 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display text-lg overflow-hidden shrink-0">
                     {other?.photo_url ? (
                       <img src={other.photo_url} className="w-12 h-12 rounded-full object-cover" alt={other.name} />
@@ -60,7 +61,7 @@ export default async function ChatsPage() {
                   </div>
                 </Link>
                 {/* Message button → chat */}
-                <Link href={`/messages/${match.id}`} aria-label={`Message ${other?.name}`}
+                <Link href={chatHref(other?.username ?? other?.name ?? '', match.id)} aria-label={`Message ${other?.name}`}
                   className="w-10 h-10 rounded-full bg-clay-tint text-clay-deep flex items-center justify-center hover:bg-clay hover:text-white transition-colors shrink-0">
                   <MessageSquare size={18} />
                 </Link>

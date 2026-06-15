@@ -10,7 +10,7 @@ export default async function MyPostsPage() {
 
   const { data: posts } = await (supabase as any)
     .from('posts')
-    .select('*, users(id, name, photo_url)')
+    .select('*, users(id, name, username, photo_url)')
     .eq('author_id', user.id)
     .eq('is_gideon', false)
     .order('created_at', { ascending: false })

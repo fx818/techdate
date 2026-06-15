@@ -40,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+
+# python (gideon)
+__pycache__/
+*.pyc
+
+# supabase local temp
+supabase/.temp/

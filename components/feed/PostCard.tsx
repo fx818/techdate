@@ -8,6 +8,7 @@ import { timeAgo } from '@/lib/time'
 
 interface Post {
   id: string
+  slug: string
   title: string
   content: string | null
   url: string | null
@@ -17,7 +18,7 @@ interface Post {
   likes_count: number
   comments_count: number
   created_at: string
-  users: { id: string; name: string; photo_url: string | null } | null
+  users: { id: string; name: string; username: string; photo_url: string | null } | null
 }
 
 export function PostCard({
@@ -67,7 +68,7 @@ export function PostCard({
         {post.is_gideon ? (
           <GideonBadge />
         ) : (
-          <Link href={`/users/${post.users?.id}`} className="flex items-center gap-2.5 group/author">
+          <Link href={`/users/${post.users?.username ?? post.users?.id}`} className="flex items-center gap-2.5 group/author">
             <div className="w-7 h-7 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep text-sm font-display overflow-hidden shrink-0">
               {post.users?.photo_url
                 ? <img src={post.users.photo_url} alt={author} className="w-7 h-7 object-cover" />
@@ -80,7 +81,7 @@ export function PostCard({
         <span className="text-ink-faint text-xs ml-auto">{timeAgo(post.created_at)}</span>
       </div>
 
-      <Link href={`/posts/${post.id}`} className="block space-y-3 group">
+      <Link href={`/posts/${post.slug ?? post.id}`} className="block space-y-3 group">
         <h3 className="font-display text-xl text-ink leading-snug group-hover:text-clay-deep transition-colors">{post.title}</h3>
         {post.content && <p className="text-ink-soft text-sm leading-relaxed line-clamp-3">{post.content}</p>}
         {post.image_url && (
@@ -95,7 +96,7 @@ export function PostCard({
           <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
           {likeCount}
         </button>
-        <Link href={`/posts/${post.id}`} className="flex items-center gap-1.5 text-sm text-ink-faint hover:text-ink transition-colors">
+        <Link href={`/posts/${post.slug ?? post.id}`} className="flex items-center gap-1.5 text-sm text-ink-faint hover:text-ink transition-colors">
           <MessageSquare size={16} />
           {post.comments_count}
         </Link>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { seedVector } from '@/lib/matching/vector'
 import { GENRES } from '@/lib/genres'
+import { isValidUsername, suggestUsername } from '@/lib/slug'
 import type { Gender, Preference, Database } from '@/lib/supabase/types'
 
 type UserInsert = Database['public']['Tables']['users']['Insert']
@@ -14,6 +15,10 @@ const CITIES = ['Bangalore', 'Delhi', 'Noida', 'Gurgaon', 'Mumbai', 'Pune', 'Hyd
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
+  const [usernameEdited, setUsernameEdited] = useState(false)
+  const [usernameError, setUsernameError] = useState('')
+  const [checkingUsername, setCheckingUsername] = useState(false)
   const [city, setCity] = useState('')
   const [gender, setGender] = useState<Gender>('male')
   // Stored on the profile for future use; no dating-preference UI in the networking model.
@@ -33,6 +38,32 @@ export default function OnboardingPage() {
     )
   }
 
+  function onNameChange(value: string) {
+    setName(value)
+    if (!usernameEdited) setUsername(suggestUsername(value))
+  }
+
+  // Returns true if the chosen username is well-formed and not taken.
+  async function validateUsername(): Promise<boolean> {
+    const u = username.trim().toLowerCase()
+    if (!isValidUsername(u)) {
+      setUsernameError('3–20 chars: lowercase letters, numbers, underscore.')
+      return false
+    }
+    setCheckingUsername(true)
+    setUsernameError('')
+    const { data: taken } = await supabase.from('users').select('id').eq('username', u).maybeSingle()
+    setCheckingUsername(false)
+    if (taken) { setUsernameError('That username is taken.'); return false }
+    return true
+  }
+
+  async function continueFromStep1() {
+    if (!name || !city) return
+    if (!(await validateUsername())) return
+    setStep(2)
+  }
+
   async function submit() {
     if (selectedGenres.length < 3) {
       setError('Pick at least 3 genres')
@@ -50,6 +81,7 @@ export default function OnboardingPage() {
       email: user.email ?? null,
       phone: user.phone ?? null,
       name,
+      username: username.trim().toLowerCase(),
       bio,
       city,
       gender,
@@ -90,7 +122,22 @@ export default function OnboardingPage() {
               <h2 className="font-display text-3xl text-ink">Your profile</h2>
               <p className="text-ink-soft text-sm mt-1">Tell us who you are.</p>
             </div>
-            <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} className="input" />
+            <input placeholder="Full name" value={name} onChange={e => onNameChange(e.target.value)} className="input" />
+            <div className="space-y-1">
+              <div className="flex items-center rounded-lg border border-line-strong bg-surface focus-within:border-clay overflow-hidden">
+                <span className="pl-3 text-ink-faint text-sm select-none">@</span>
+                <input
+                  placeholder="username"
+                  value={username}
+                  onChange={e => { setUsernameEdited(true); setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')); setUsernameError('') }}
+                  maxLength={20}
+                  className="flex-1 bg-transparent px-2 py-2.5 text-ink outline-none"
+                />
+              </div>
+              {usernameError
+                ? <p className="text-clay-deep text-xs">{usernameError}</p>
+                : <p className="text-ink-faint text-xs">Your profile link: await.app/users/{username || 'username'}</p>}
+            </div>
             <select value={city} onChange={e => setCity(e.target.value)} className="input">
               <option value="">Select city</option>
               {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -108,9 +155,9 @@ export default function OnboardingPage() {
             </div>
             <textarea placeholder="Short bio (optional)" value={bio} onChange={e => setBio(e.target.value)}
               className="input h-24 resize-none" />
-            <button onClick={() => { if (name && city) setStep(2) }} disabled={!name || !city}
+            <button onClick={continueFromStep1} disabled={!name || !city || !username || checkingUsername}
               className="btn btn-primary w-full">
-              Continue
+              {checkingUsername ? 'Checking…' : 'Continue'}
             </button>
           </div>
         )}

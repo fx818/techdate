@@ -25,15 +25,20 @@ Two layers, one account:
 
 ## Features
 
+### 🔗 Human‑readable URLs
+- Every page URL is a **readable slug**, never a raw UUID: profiles at `/users/<username>`, posts at `/posts/<title-slug>`, chats at `/messages/<handle>-<id>`.
+- You pick a unique **@username** at onboarding (editable later); posts get a unique slug from their title. Legacy UUID links still resolve and redirect to the canonical slug.
+
 ### 🔐 Authentication & accounts
 - **Email + password** sign up / sign in (email confirmation required).
+- **Unique @username** chosen at onboarding (3–20 chars, availability‑checked); used for your public profile URL.
 - **Company‑email verification with a 24‑hour trial** — anyone can start with a personal email (Gmail, Outlook, etc.), but after 24 hours a work‑email verification is required to continue. Users who sign up with a company email are exempt (never asked to verify); the verification step also rejects known free providers.
 - **Forgot / reset password** flow via email recovery link.
 - **Self‑service account deletion** — removes your profile, posts, comments, matches, and messages (DPDP/privacy friendly).
 
 ### 📰 Discussion feed
 - **Post** text **and images** (uploaded to Supabase Storage), tagged by genre.
-- **Auto‑curated content** from the Gideon agent (HackerNews + dev.to), badged as "Gideon".
+- **Auto‑curated content** from the Gideon agent (HackerNews + dev.to), badged as "Gideon" — full posts with a **description** and (for dev.to) a **cover image**, modelled like a human post, not just a title + link.
 - **Search** posts by title/content (debounced, live).
 - **Filters** behind a single control: **Source** (All / Community / Gideon — *defaults to Community*), **Sort** (Latest / Most liked / Most discussed), **Topic** (your genres).
 - **Post detail view** with the full post, image, and the complete comment thread.
@@ -127,7 +132,7 @@ app/
 app/                Next.js routes (pages + API)
 components/         feed, dating, messages, profile, layout, ui
 lib/                supabase clients, xp, matching, auth, redis, time, notifications, genres
-supabase/migrations/  ordered SQL migrations (001–019)
+supabase/migrations/  ordered SQL migrations (001–020)
 gideon/             Python content agent + genre config
 proxy.ts            Next.js 16 middleware (auth redirects, x-pathname header)
 ```
@@ -181,7 +186,7 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 
 ## Database
 
-19 ordered migrations in `supabase/migrations/`. Run them in order (`npx supabase db push`).
+20 ordered migrations in `supabase/migrations/`. Run them in order (`npx supabase db push`).
 
 | # | Migration | Adds |
 |---|-----------|------|
@@ -204,6 +209,7 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 | 017 | profile_photos | `users.photos` array |
 | 018 | account_deletion_posts | delete posts on account deletion |
 | 019 | match_count | public `match_count(user)` function |
+| 020 | usernames_and_slugs | `users.username` + `posts.slug` (unique, backfilled) for readable URLs |
 
 > **RLS note:** every server query uses `(supabase as any).from(...)` — an intentional workaround because `@supabase/ssr`'s typed client doesn't propagate generics through `.from()`. Cross‑user gates that RLS can't express use `SECURITY DEFINER` functions.
 
@@ -214,7 +220,7 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 `gideon/` is a Python cron (no user account) that keeps the feed fresh so it's never empty.
 
 - Runs **every 12 hours** via GitHub Actions (`.github/workflows/gideon.yml`), or on demand (`workflow_dispatch`).
-- Fetches from **HackerNews Algolia API** + **dev.to API** per genre, dedupes by URL, and inserts the **2 highest‑scoring posts per genre** (`is_gideon = true`).
+- Fetches from **HackerNews Algolia API** + **dev.to API** per genre, dedupes by URL, and inserts the **2 highest‑scoring posts per genre** (`is_gideon = true`), each with a **slug**, a **description** (dev.to excerpt / HN story text or metadata blurb) and, for dev.to, a **cover image**.
 - Writes with the service‑role key (bypasses RLS).
 
 **GitHub Actions secrets required:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.

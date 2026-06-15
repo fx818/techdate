@@ -21,6 +21,7 @@ export interface Database {
           email: string | null
           phone: string | null
           name: string
+          username: string
           bio: string | null
           city: string
           gender: Gender
@@ -45,8 +46,10 @@ export interface Database {
           author_id: string | null
           is_gideon: boolean
           title: string
+          slug: string
           content: string | null
           url: string | null
+          image_url: string | null
           genre: string
           source: PostSource
           likes_count: number

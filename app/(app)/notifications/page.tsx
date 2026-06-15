@@ -25,7 +25,7 @@ export default async function NotificationsPage() {
       ) : (
         <div className="space-y-2.5">
           {items.map((n: any) => (
-            <Link key={n.id} href={`/posts/${n.id}`}
+            <Link key={n.id} href={`/posts/${n.slug ?? n.id}`}
               className={`flex items-center gap-3 card p-3.5 hover:border-clay transition-colors ${n.isNew ? 'border-clay/40 bg-clay-tint/30' : ''}`}>
               <div className="w-10 h-10 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display overflow-hidden shrink-0">
                 {n.authorPhoto

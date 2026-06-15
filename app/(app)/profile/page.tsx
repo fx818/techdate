@@ -15,7 +15,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('name, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count')
+    .select('name, username, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count')
     .eq('id', user.id)
     .single()
 
@@ -25,7 +25,7 @@ export default async function ProfilePage() {
 
   // Recent posts (preview 2) + their like/bookmark state
   const { data: myPosts } = await (supabase as any)
-    .from('posts').select('*, users(id, name, photo_url)').eq('author_id', user.id).eq('is_gideon', false)
+    .from('posts').select('*, users(id, name, username, photo_url)').eq('author_id', user.id).eq('is_gideon', false)
     .order('created_at', { ascending: false }).limit(2)
   const myPostIds = (myPosts ?? []).map((p: any) => p.id)
   let likedPostIds = new Set<string>(); let bookmarkedPostIds = new Set<string>()
@@ -58,12 +58,14 @@ export default async function ProfilePage() {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h1 className="font-display text-2xl text-ink leading-tight truncate">{profile.name}</h1>
+                <p className="text-clay-deep text-sm">@{profile.username}</p>
                 <p className="text-ink-faint text-sm">{profile.city}</p>
               </div>
               <EditProfile
                 userId={user.id}
                 initial={{
                   name: profile.name,
+                  username: profile.username,
                   bio: profile.bio,
                   city: profile.city,
                   genres: profile.genres ?? [],

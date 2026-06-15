@@ -29,7 +29,7 @@ export default async function FeedPage({
 
   let query = (supabase as any)
     .from('posts')
-    .select('*, users(id, name, photo_url)')
+    .select('*, users(id, name, username, photo_url)')
 
   // Genre: a specific topic, or fall back to the user's chosen genres
   if (genre !== 'all') query = query.eq('genre', genre)

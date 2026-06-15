@@ -3,15 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, MessageSquare } from 'lucide-react'
+import { chatHref } from '@/lib/slug'
 
 type PingState = 'none' | 'pinged' | 'incoming' | 'connected'
 
 export function PingButton({
   otherUserId,
+  otherUsername,
   initialState,
   matchId,
 }: {
   otherUserId: string
+  otherUsername: string
   initialState: PingState
   matchId?: string | null
 }) {
@@ -48,7 +51,7 @@ export function PingButton({
       })
       const data = await res.json()
       if (!res.ok) { setError('Something went wrong. Try again.'); return }
-      if (data.matchId) router.push(`/messages/${data.matchId}`)
+      if (data.matchId) router.push(chatHref(otherUsername, data.matchId))
       else setState('connected')
     } catch {
       setError('Network error. Try again.')
@@ -59,7 +62,7 @@ export function PingButton({
 
   if (state === 'connected') {
     return (
-      <button onClick={() => matchId && router.push(`/messages/${matchId}`)}
+      <button onClick={() => matchId && router.push(chatHref(otherUsername, matchId))}
         className="btn btn-primary w-full flex items-center justify-center gap-2">
         <MessageSquare size={18} /> Message
       </button>

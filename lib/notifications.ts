@@ -22,7 +22,7 @@ export async function getNotifications(supabase: any, userId: string) {
 
   const { data: posts } = await supabase
     .from('posts')
-    .select('id, title, created_at, users(id, name, photo_url)')
+    .select('id, slug, title, created_at, users(id, name, photo_url)')
     .in('author_id', visibleIds)
     .eq('is_gideon', false)
     .order('created_at', { ascending: false })
@@ -30,6 +30,7 @@ export async function getNotifications(supabase: any, userId: string) {
 
   const items = (posts ?? []).map((p: any) => ({
     id: p.id,
+    slug: p.slug,
     title: p.title,
     created_at: p.created_at,
     authorName: p.users?.name ?? 'Someone',

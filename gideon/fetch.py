@@ -1,6 +1,8 @@
 import json
 import os
+import re
 import sys
+import uuid
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from sources.hackernews import fetch_hn_posts
@@ -22,6 +24,19 @@ def get_existing_urls(supabase: Client, genre: str) -> set:
     result = supabase.table("posts").select("url").eq("genre", genre).eq("is_gideon", True).execute()
     return {row["url"] for row in result.data if row["url"]}
 
+def slugify(text: str, max_len: int = 60) -> str:
+    """Lowercase, non-alphanumerics -> hyphen, trimmed, capped. Always non-empty."""
+    s = re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")[:max_len].strip("-")
+    return s or "post"
+
+def unique_slug(supabase: Client, title: str) -> str:
+    """slugify(title), suffixed with a short random hex if the slug is taken."""
+    slug = slugify(title)
+    existing = supabase.table("posts").select("id").eq("slug", slug).limit(1).execute()
+    if existing.data:
+        slug = f"{slug}-{uuid.uuid4().hex[:6]}"
+    return slug
+
 def insert_posts(supabase: Client, posts: list, genre: str, existing_urls: set) -> int:
     """Insert new Gideon posts, skipping duplicates."""
     inserted = 0
@@ -33,7 +48,10 @@ def insert_posts(supabase: Client, posts: list, genre: str, existing_urls: set) 
         supabase.table("posts").insert({
             "is_gideon": True,
             "title": post["title"],
+            "slug": unique_slug(supabase, post["title"]),
             "url": post["url"],
+            "content": post.get("content") or None,
+            "image_url": post.get("image_url") or None,
             "genre": genre,
             "source": post["source"],
             "author_id": None,
