@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { StreakPing } from '@/components/layout/StreakPing'
 import { isPersonalEmail, isTrialExpired } from '@/lib/auth/email'
+import { isDisposableEmail } from '@/lib/auth/disposable'
 import { headers } from 'next/headers'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -38,9 +39,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Check company email requirement (skip on the verify-company page itself)
   if (profile && !pathname.startsWith('/verify-company')) {
     const email = user.email ?? ''
-    // Only personal-email users hit the gate; company-email signups are exempt.
+    // Personal-provider AND disposable/temp-mail signups must verify a real
+    // company email; genuine company-domain signups are exempt.
     const needsCompanyEmail =
-      isPersonalEmail(email) &&
+      (isPersonalEmail(email) || isDisposableEmail(email)) &&
       !profile.company_email_verified &&
       isTrialExpired(profile.created_at)
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { isPersonalEmail } from '@/lib/auth/email'
 
 export default function VerifyCompanyPage() {
@@ -9,26 +8,32 @@ export default function VerifyCompanyPage() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const supabase = createClient()
 
   async function sendVerification() {
+    // Quick client-side hint; the real checks (disposable + MX + ownership) run server-side.
     if (isPersonalEmail(email)) {
       setError('Please enter a company email — Gmail, Yahoo, Hotmail and similar are not accepted.')
       return
     }
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.updateUser(
-      { email },
-      { emailRedirectTo: `${location.origin}/auth/callback?type=email_change` }
-    )
-    if (error) {
-      setError(error.message)
+    try {
+      const res = await fetch('/api/verify-company', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Something went wrong. Try again.')
+        return
+      }
+      setSent(true)
+    } catch {
+      setError('Network error. Try again.')
+    } finally {
       setLoading(false)
-      return
     }
-    setSent(true)
-    setLoading(false)
   }
 
   if (sent) {

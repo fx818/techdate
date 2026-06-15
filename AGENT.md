@@ -47,7 +47,7 @@ Sign in → /feed (or /onboarding if no profile)
 Forgot password → resetPasswordForEmail → /auth/callback?type=recovery → /reset-password
 ```
 - Email + password only (no phone OTP).
-- **24-hour trial gate** (`lib/auth/email.ts::isTrialExpired`): personal-email users (`isPersonalEmail`, expanded free-provider list) are redirected to `/verify-company` after 24h until they verify a work email (`updateUser({email})` → `/auth/callback?type=email_change` → sets `company_email_verified`). Company-email signups are exempt; the verify-company page rejects personal emails.
+- **24-hour trial gate** (`lib/auth/email.ts::isTrialExpired`): personal-email **and** disposable-email users (`isPersonalEmail` + `lib/auth/disposable.ts::isDisposableEmail`) are redirected to `/verify-company` after 24h until they verify a work email. Company-domain signups are exempt. Verification is server-side via `POST /api/verify-company` (runtime nodejs): rejects personal providers, disposable/temp domains (~120k-domain blocklist from the `disposable-email-domains` pkg), and domains without MX/A records (`lib/auth/mx.ts::domainHasMx`); then `updateUser({email})` → `/auth/callback?type=email_change` → sets `company_email_verified`. The verify-company page is just UI that POSTs to the route. **Caveat:** this proves *inbox ownership at a non-free, non-disposable, mail-capable domain* — NOT actual employment (a cheap custom domain still passes), so don't over-claim "verified at a real company".
 - **Account deletion:** `/api/account` DELETE → `delete_own_account()` RPC (deletes the user's posts, then the auth user; cascades the rest) → signs out.
 - Supabase dashboard **Redirect URLs** must include `https://techdate-eta.vercel.app/auth/callback`.
 
