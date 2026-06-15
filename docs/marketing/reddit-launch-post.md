@@ -1,87 +1,80 @@
-# Await — Reddit launch post (first 100 users)
+# Await — Reddit / online launch copy (networking framing)
 
-> Goal: drive the first 100 founding members to a Google Form. Reddit hates ads — every version below is written founder-voice, problem-first, and honest. Lead with the insight, not the product. Engage in the comments; don't drop-and-run.
+> Companion to `2026-06-15-pilot-launch-first-100.md`. Product is a **tech-discussion + professional-networking** community (Ping → accept → Chat) — **not** dating. Founder-voice, problem-first, honest. Reddit hates ads: lead with the insight, engage in comments, don't drop-and-run.
 >
-> Replace `[FORM LINK]` with your Google Form URL before posting. Don't paste the live app URL in the post body on strict subs — put it in a comment if asked.
+> **Funnel:** link to a **live public post** (`/posts/<slug>` is now public) so people land in a real argument, not a login wall. Put the app link in a top comment on strict subs; never paste a raw promo in the body.
 
 ---
 
-## Positioning (the one idea everything ladders up to)
+## The three things to hammer
 
-**Dating apps reward looks and persistence. Await rewards being interesting.**
+1. **A real room, not a feed** — r/developersIndia is great but too big to ever get a reply; this is a smaller place where your post actually gets answered.
+2. **NCR-specific** — comp, culture, commute, service-vs-product for Delhi/Noida/Gurugram techies, in NCR dialect.
+3. **Connect on ideas, not photos** — Ping someone whose takes you've read, they accept, you chat. No recruiters, no LinkedIn cringe.
 
-You don't start by swiping strangers. You join a tech-discussion community, earn XP by actually participating, and only then does dating unlock — so the people you meet are people whose ideas you've already seen. Verified to real tech professionals (company email), request → accept instead of blind matching, no bots.
-
-The three things to hammer in any channel:
-1. **Merit-gated, not looks-gated** — you earn your way in by contributing.
-2. **Verified techies only** — company-email verification → no fakes, no spam.
-3. **Discussion-first** — it's a community that *leads to* dating, not a meat-market that pretends to be one.
-
-Urgency for the first 100: **founding members** (early access, founding badge, free premium at launch, and a real say in the roadmap). Small + curated early = higher signal for everyone.
+Founding-cohort urgency: small + early = you actually get replies and shape the place. Founding badge + roadmap input. (No "verified techies" claim — not real yet. No dating framing.)
 
 ---
 
-## PRIMARY POST — for r/developersIndia (and city subs like r/bangalore, r/delhi)
+## PRIMARY POST — r/developersIndia (and r/Noida, r/gurgaon, r/delhi)
 
 **Title (pick one):**
-- I got tired of dating apps where no one could hold a conversation about anything I actually care about — so I built one for tech people where you *earn* your way to matches.
-- A dating app that makes you prove you're interesting first. Built it, need the first 100 to break it.
-- Discussion-first dating for Indian techies: talk shop, earn your way in, then meet people who actually get it.
+- r/developersIndia is great but too big to ever get a reply — so I built a smaller room for NCR techies to actually argue tech. Roast it.
+- Made a tiny discussion community for Delhi-NCR techies (comp, culture, service-vs-product, real talk). Need the first 100 to break it.
+- A place where you Ping someone whose takes you've actually read — not a feed, a room. Built it solo, want brutal feedback.
 
 **Body:**
 
-Honest story: every dating app I've tried feels like a slot machine. Endless swiping, zero substance, and I could never tell if the person on the other end cared about any of the things I do. Meanwhile the best conversations I've ever had started in comment threads, Discord servers, HN — places where people show up for the *ideas* first.
+Honest story: the best tech conversations I've had started in comment threads — but the big subs/Discords are so large your post just vanishes, and LinkedIn is all cringe and recruiters. I wanted a smaller *room* where NCR techies actually talk shop and where you can connect with someone because you've read their takes, not because of a photo or a résumé.
 
-So I built **Await**, which flips the order. You don't start by swiping. You start by being part of a tech community:
+So I built **Await** — a tech-discussion community with lightweight networking on top:
 
-- **Post and discuss tech** — AI, web dev, devops, security, startups, databases, etc. (there's auto-curated content from HackerNews + dev.to so the feed is never empty on day one).
-- **Every like, comment, and post earns XP.**
-- **At 100 XP the dating layer unlocks** — and now you can connect, but only with other people who've also shown up and engaged.
-- It's **request → accept**, not blind mutual swiping, and everyone is a **verified tech professional** (company-email check), so no bots and no randoms.
+- **Post and discuss tech** — AI, web dev, devops, security, startups, databases, NCR comp/culture, the lot. (There's auto-curated HN + dev.to content so it's never an empty feed.)
+- **Connect by Ping → accept → chat** — you request, they accept, then you DM. No unsolicited messages, no blind matching.
+- **NCR-flavoured** — comp ranges by sector, service-vs-product, the Noida/Gurugram commute math, etc.
 
-The whole bet: **if you have to be interesting to unlock dating, the people you meet are actually worth meeting.** You're matching with someone whose takes you've already read — not a stranger and a vibe.
+The bet: a *small, replied-to* room beats a giant silent feed. If you post, you get an actual conversation.
 
-It's live and working — auth, feed, threaded discussion, matching, chat, the lot. What I need now is the part that actually matters: real people using it.
+It's live and working — feed, threaded discussion, profiles, Ping/Chat, the lot. What I need now is real people poking at it. I'm onboarding the **first 100 founding members** — early access, founding badge, and a direct line to shape the roadmap (I'll genuinely read and act on feedback).
 
-I'm onboarding the **first 100 founding members** through a short form. Founding members get early access, a founding-member badge, free premium when it launches, and a direct line to shape what this becomes — I'll genuinely read and act on the feedback.
+Here's a live thread to see the vibe (no signup needed to read): **[LIVE POST LINK]** — and the app's in my first comment.
 
-If "a tech community that happens to lead to dating" is something you'd want to exist, here's the form (60 seconds): **[FORM LINK]**
+Please roast it in the comments, including "why will this work when X didn't." I'd rather hear it now.
 
-And please — roast it in the comments. Including "why will this work when X didn't." I'd rather hear it now than later.
-
-**TL;DR:** discussion-first dating for techies — earn your way in by being interesting, verified professionals only, no swipe spam. First 100 founding members → **[FORM LINK]**
+**TL;DR:** a small room for NCR techies to actually argue tech + connect on ideas (Ping→chat), not a silent feed or a recruiter pit. First 100 founding members — read a live thread: **[LIVE POST LINK]**
 
 ---
 
-## VARIANT — for r/SideProject / r/indiehackers (builder audience)
+## VARIANT — r/SideProject / r/indiehackers (builder audience)
 
-**Title:** I built a dating app where you have to earn dating by being active in a tech community first. Looking for the first 100 to validate it.
+**Title:** Built a smaller, actually-gets-replies discussion community for Indian techies (with Ping→chat networking). Looking for the first 100.
 
 **Body:**
 
-Most dating apps optimize for swipes. I wanted to test a different hypothesis: **what if you had to contribute to a community before you could date in it?**
+Most "communities" are either dead Slacks or feeds too big to get a reply. I wanted to test: **does a small, fast-reply room with networking-on-top retain better than a big silent feed?**
 
-So I built **Await** — a tech discussion platform with a dating layer that unlocks at 100 XP (earned via posts/comments/likes). The idea is that gating dating behind genuine participation self-selects for people worth meeting, and turns "engagement" into something with an actual payoff.
+So I built **Await** — tech discussion + a Ping → accept → Chat layer (you connect with people whose posts you've read, not strangers). To keep the feed alive from day one, a small Python agent ("Gideon") pulls fresh HN + dev.to posts per topic.
 
-Stack, for the curious: Next.js 16 + Supabase (Postgres/RLS/Auth/Storage) + Upstash Redis + a Python content agent on GitHub Actions, all on free tiers. Interest-vector matching (cosine sim + activity recency), request/accept flow, company-email verification, block/report/unmatch, the usual safety stuff.
+Stack, for the curious: Next.js 16 + Supabase (Postgres/RLS/Auth/Storage) + Upstash Redis + a Python content agent on GitHub Actions, all free tier. Interest-vector ranking, request/accept flow, block/report/unmatch, human-readable slugs, public shareable post pages.
 
-It's live and feature-complete for an MVP. Now I'm hunting for the **first 100 users** to find out if the core loop actually holds up with real people. Founding members get early access + free premium at launch + roadmap input.
+Live and MVP-complete. Now hunting the **first 100** to see if the core loop holds with real people. Founding members get early access + roadmap input.
 
-Form (60s): **[FORM LINK]**
+See a live thread (no login to read): **[LIVE POST LINK]**
 
-Brutal feedback welcome — especially on the core hypothesis. Does "earn your way into dating" sound compelling or gimmicky to you?
+Brutal feedback welcome — especially: does "small room that actually replies" beat "big feed," in your experience?
 
 ---
 
-## Posting strategy / etiquette
+## Posting etiquette
 
-- **Use a real account with history.** Brand-new accounts get auto-filtered; comments-only karma helps.
-- **Check each sub's self-promo rules first.** Some require flair (e.g. "Showcase"/"I made this"), some ban links in the body — put the form link in a top comment if so.
-- **Best targets (in order):** r/developersIndia (core audience), r/SideProject, r/indiehackers, then city subs (r/bangalore, r/delhi, r/hyderabad) where dating-relevant. Avoid blasting all at once — space them out, tailor the title per sub.
-- **Timing:** weekday mornings IST tend to do well for r/developersIndia.
-- **Reply fast** for the first 1–2 hours (early engagement drives ranking). Treat top comments like a mini-AMA.
-- **Don't fake it.** No sockpuppet upvotes/comments — Reddit detects it and it'll tank you.
-- **Have the form ready:** ask only the essentials (name, email, city, primary tech interest, "what do you want from this"). Every extra field drops completion. Auto-reply with a thank-you + "you're in the first 100" to create momentum.
+- **Use a real account with history.** Brand-new accounts get auto-filtered; comment karma helps.
+- **Check each sub's self-promo rules.** Some need flair ("I made this"/"Showcase"), some ban body links — put the link in a top comment.
+- **Best targets (in order):** r/developersIndia → r/Noida / r/gurgaon / r/delhi → r/SideProject → r/indiehackers. Space them out; tailor the title per sub.
+- **Bank karma first:** spend 1–2 weeks leaving genuinely useful comments before posting any link.
+- **Timing:** weekday mornings IST for r/developersIndia.
+- **Reply fast** the first 1–2 hours (drives ranking); treat top comments as a mini-AMA.
+- **Never fake upvotes/comments** — Reddit detects it and tanks you.
+- **Link to a live thread, not a form** — people convert better landing in a real argument they can read without signing up.
 
-## A/B angles to test across posts
-- "Earn your way in" (merit) vs "verified techies only" (trust/quality) vs "no more swiping strangers" (anti-Tinder). Lead with whichever the target sub resonates with most.
+## A/B angles to test
+"Small room that actually replies" (anti-big-feed) vs "NCR-specific comp/culture talk" (local) vs "connect on ideas, Ping→chat" (anti-LinkedIn). Lead with whatever the target sub resonates with. **Do not** use any dating or "verified techies" angle.
