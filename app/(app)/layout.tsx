@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Header } from '@/components/layout/Header'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { StreakPing } from '@/components/layout/StreakPing'
+import { SessionWatcher } from '@/components/layout/SessionWatcher'
 import { isPersonalEmail, isTrialExpired } from '@/lib/auth/email'
 import { isDisposableEmail } from '@/lib/auth/disposable'
 import { headers } from 'next/headers'
@@ -54,6 +55,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-paper text-ink pb-24">
+      <SessionWatcher />
       <StreakPing />
       <Header
         name={profile?.name ?? ''}
