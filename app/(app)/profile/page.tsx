@@ -91,7 +91,7 @@ export default async function ProfilePage() {
         )}
       </div>
 
-      {/* Stat tiles — XP / Chats / Streak */}
+      {/* Stat tiles — XP / Peers / Streak */}
       <div className="grid grid-cols-3 gap-2">
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{profile.xp}</p>
@@ -99,7 +99,7 @@ export default async function ProfilePage() {
         </div>
         <Link href="/matches" className="card p-3 text-center hover:border-clay transition-colors">
           <p className="font-display text-xl text-ink leading-none">{matchCount ?? 0}</p>
-          <p className="text-ink-faint text-[11px] mt-1.5">💬 Chats</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">👥 Peers</p>
         </Link>
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{streak}</p>

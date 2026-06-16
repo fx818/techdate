@@ -66,7 +66,7 @@ XP and a 🔥 login streak are always visible in the header.
 - Scoped to your **city**; already‑connected, already‑pinged/skipped, blocked, and incoming‑ping users never reappear.
 - No gender/preference filter — it's professional networking, not dating.
 - **Multiple profile photos** with a swipeable carousel and an **"Active recently"** status.
-- **Connection count** is public (shown on every profile); your **Chats** list lets you open each person's profile or jump into the conversation.
+- **Peer count** is public (shown on every profile); your **Peers** list lets you open each person's profile or jump into the conversation.
 
 ### 🤝 Ping → Chat (connect)
 - **Two ways to Ping:** from the People deck, or the **Ping** button on anyone's profile.
@@ -88,8 +88,8 @@ XP and a 🔥 login streak are always visible in the header.
 - **Unmatch** from the chat header.
 
 ### 👤 Profiles
-- **Your profile:** identity card, a row of 3 stat tiles (XP · 💬 Chats · Streak), interests, **your recent posts with "View all" → `/profile/posts`**, saved posts, edit (multi‑photo upload), sign out, delete account.
-- **Public profiles** (`/users/[id]`): anyone's bio, interests, recent posts, a 4‑stat row (XP · Chats · Streak · Posts), and a **Ping** button (Ping → Ping sent → Accept → Message, state‑aware); author names/avatars across the app link here.
+- **Your profile:** identity card, a row of 3 stat tiles (XP · 👥 Peers · Streak), interests, **your recent posts with "View all" → `/profile/posts`**, saved posts, edit (multi‑photo upload), sign out, delete account.
+- **Public profiles** (`/users/[id]`): anyone's bio, interests, recent posts, a 4‑stat row (XP · Peers · Streak · Posts), and a **Ping** button (Ping → Ping sent → Accept → Message, state‑aware); author names/avatars across the app link here.
 
 ---
 

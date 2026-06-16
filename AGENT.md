@@ -6,7 +6,7 @@ Quick-start context for any AI agent working on this codebase. (App was renamed 
 
 Await is a hybrid tech-discussion + professional-networking platform for Indian Tier‑1 tech professionals. Users discuss tech (posts, comments, likes, earning XP) and connect via a **Ping → Chat** model: Ping someone → they accept → chat. The earlier romantic-dating framing was dropped — there is no gender/preference matching and no XP gate on connecting; messaging is open to all signed-up users. (See `docs/strategy/2026-06-15-mvp-launch-and-gtm-debate.md` for the rationale.)
 
-**Naming note:** internal route paths and DB tables keep their original dating-era names — `/discover` (the People page), `/requests` (Pings), `/matches` (Chats), the `swipes` table (a right "swipe" = a Ping), and the `matches` table (an accepted connection). Only user-facing labels/copy were reframed. `users.dating_unlocked` and `users.preference` are vestigial (still written, gate nothing). `components/dating/MatchModal.tsx` is dead code.
+**Naming note:** internal route paths and DB tables keep their original dating-era names — `/discover` (the People page), `/requests` (Pings), `/matches` (Peers), the `swipes` table (a right "swipe" = a Ping), and the `matches` table (an accepted connection). Only user-facing labels/copy were reframed. `users.dating_unlocked` and `users.preference` are vestigial (still written, gate nothing). `components/dating/MatchModal.tsx` is dead code.
 
 **Public post pages:** `/posts/<slug>` is publicly viewable (logged-out = read-only thread + join CTA; like/save/comment need login). Allowed by `proxy.ts` (adds `/posts` to the public allow-list) + `(app)/layout.tsx` (renders a lightweight `PublicHeader` shell for logged-out visitors on `/posts`, else redirects). `/users/<username>` is deliberately NOT public (profile privacy for the future matchmaking pivot). Guest-aware bits: `PostActions` (isAuthed → read-only + login CTA), `CommentSection` (isAuthed → comments read-only, compose becomes a login CTA).
 
@@ -34,7 +34,7 @@ Await is a hybrid tech-discussion + professional-networking platform for Indian 
 
 Tailwind v4 (CSS-config in `app/globals.css`, no `tailwind.config`). Tokens: `paper`/`surface` (cream), `ink`/`ink-soft`/`ink-faint` (warm near-black), `clay`/`clay-deep`/`clay-tint` (coral accent), `sage` (success), `line` (borders). Fonts: **Fraunces** (display, `font-display`) + **Hanken Grotesk** (UI) + Geist Mono. Shared primitives: `.card`, `.btn`/`.btn-primary`/`.btn-ghost`, `.input`, `.chip`, `animate-rise`/`animate-pop`.
 
-**Shell:** global `Header` (Await wordmark + XP/streak pill + notification bell + profile avatar) → sticky control bar where relevant (feed search, Pings tabs) → content; bottom `Navbar` has 4 tabs (Feed · **People** · **Pings** · **Chats**, mapping to `/feed` · `/discover` · `/requests` · `/matches`); profile is the header avatar; compose is a FAB on the feed.
+**Shell:** global `Header` (Await wordmark + XP/streak pill + notification bell + profile avatar) → sticky control bar where relevant (feed search, Pings tabs) → content; bottom `Navbar` has 4 tabs (Feed · **People** · **Pings** · **Peers**, mapping to `/feed` · `/discover` · `/requests` · `/matches`); profile is the header avatar; compose is a FAB on the feed.
 
 **Profiles:** `/profile` (own) and `/users/[id]` (public) share a layout: identity card + stat tiles + interests + recent posts. Own profile: 3 tiles (XP/💬 Chats/Streak). Public profile: 4 tiles (XP/Chats/Streak/Posts) + a `PingButton` (`components/dating/PingButton.tsx`) whose state is computed server-side — `none` (Ping to chat) / `pinged` (Ping sent) / `incoming` (Accept ping & chat) / `connected` (Message). Own profile previews 2 posts with "View all" → `/profile/posts`; saved posts at `/saved`.
 
@@ -60,14 +60,14 @@ Forgot password → resetPasswordForEmail → /auth/callback?type=recovery → /
 
 ---
 
-## Networking: People, Pings, Chats (Ping → accept → chat)
+## Networking: People, Pings, Peers (Ping → accept → chat)
 
 Open to all signed-up users — no XP gate, no gender/preference filter.
 
 - **People deck** (`app/(app)/discover/page.tsx`): candidates in the same `city`, excluding self + already-pinged/skipped + connected + blocked + people who pinged you. Ranked by `lib/matching/candidates.ts` (cosine 60% + XP tier 20% + recency 20%). The `SwipeDeck` UI reframes right-swipe as **Ping**, left as **Skip**.
 - **Two ways to Ping:** the People deck, or the `PingButton` on any `/users/[id]` profile.
 - **Ping → accept model:** a right-swipe (`/api/swipes`) = a pending **Ping** (NO auto-connect). `/api/requests` GET lists received + sent (via `get_incoming_requests` / `get_sent_requests` RPCs); POST handles `accept` (creates the match/connection + chat), `decline`, `withdraw` (deletes the swipe). **Pings** page has All/Received/Sent tabs.
-- **Connection count is public:** `match_count(p_user)` SECURITY DEFINER fn (count only, never who) — shown as "💬 Chats" on `/profile` and `/users/[id]`. The **Chats** list (`/matches`) links each row to the person's profile + a message button (`/messages/[matchId]`).
+- **Peer count is public:** `match_count(p_user)` SECURITY DEFINER fn (count only, never who) — shown as "👥 Peers" on `/profile` and `/users/[id]`. The **Peers** list (`/matches`) links each row to the person's profile + a message button (`/messages/[matchId]`).
 - **Ping limit:** 10/day free, Redis key `swipes:{userId}:{YYYY-MM-DD}` (86400s TTL); degrades open if Redis fails.
 - **Connections:** `matches` table, unique sorted pair `[u1,u2].sort()`; created only on accept.
 - **Multiple photos:** `users.photos text[]` (photo_url mirrors photos[0]); carousel in `ProfileCard`.

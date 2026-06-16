@@ -20,6 +20,11 @@ export async function getNotifications(supabase: any, userId: string) {
     .from('users').select('last_notifications_seen').eq('id', userId).single()
   const lastSeen = profile?.last_notifications_seen ? new Date(profile.last_notifications_seen).getTime() : 0
 
+  // Notifications the user has explicitly dismissed (hidden from their list).
+  const { data: dismissed } = await supabase
+    .from('dismissed_notifications').select('post_id').eq('user_id', userId)
+  const dismissedIds = new Set((dismissed ?? []).map((d: any) => d.post_id))
+
   const { data: posts } = await supabase
     .from('posts')
     .select('id, slug, title, created_at, users(id, name, photo_url)')
@@ -28,7 +33,9 @@ export async function getNotifications(supabase: any, userId: string) {
     .order('created_at', { ascending: false })
     .limit(30)
 
-  const items = (posts ?? []).map((p: any) => ({
+  const items = (posts ?? [])
+    .filter((p: any) => !dismissedIds.has(p.id))
+    .map((p: any) => ({
     id: p.id,
     slug: p.slug,
     title: p.title,

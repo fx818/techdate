@@ -107,7 +107,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* Stat tiles — XP / Chats / Streak / Posts */}
+      {/* Stat tiles — XP / Peers / Streak / Posts */}
       <div className="grid grid-cols-4 gap-2">
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{profile.xp}</p>
@@ -115,7 +115,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
         </div>
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{matchCount ?? 0}</p>
-          <p className="text-ink-faint text-[11px] mt-1.5">💬 Chats</p>
+          <p className="text-ink-faint text-[11px] mt-1.5">👥 Peers</p>
         </div>
         <div className="card p-3 text-center">
           <p className="font-display text-xl text-ink leading-none">{profile.streak_count ?? 0}</p>

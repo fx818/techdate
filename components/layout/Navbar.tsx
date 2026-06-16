@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Rss, Users, Send, MessageSquare } from 'lucide-react'
+import { Rss, Users, Send, UserCheck } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/feed', icon: Rss, label: 'Feed' },
   { href: '/discover', icon: Users, label: 'People' },
   { href: '/requests', icon: Send, label: 'Pings' },
-  { href: '/matches', icon: MessageSquare, label: 'Chats' },
+  { href: '/matches', icon: UserCheck, label: 'Peers' },
 ]
 
 export function Navbar() {
