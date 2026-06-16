@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SwipeDeck } from '@/components/dating/SwipeDeck'
 
-export default async function PeoplePage() {
+export default async function DiscoverPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -69,7 +69,7 @@ export default async function PeoplePage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-7">
       <div className="mb-5">
-        <h1 className="font-display text-3xl text-ink leading-none">People</h1>
+        <h1 className="font-display text-3xl text-ink leading-none">Discover</h1>
         <p className="text-ink-faint text-sm mt-1.5">Techies in {profile.city} who share your interests. Ping someone to start a chat.</p>
       </div>
       <SwipeDeck initialCandidates={candidates} />

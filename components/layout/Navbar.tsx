@@ -7,7 +7,7 @@ import { Rss, Users, Send, UserCheck } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/feed', icon: Rss, label: 'Feed' },
-  { href: '/discover', icon: Users, label: 'People' },
+  { href: '/discover', icon: Users, label: 'Discover' },
   { href: '/requests', icon: Send, label: 'Pings' },
   { href: '/matches', icon: UserCheck, label: 'Peers' },
 ]

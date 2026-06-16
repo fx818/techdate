@@ -19,7 +19,7 @@ Sign up → pick your interests → discuss tech (posts, comments, likes) → ea
 Two layers, one account:
 
 - **Discussion layer:** a feed of community posts + auto‑curated tech news, with likes, threaded comments, bookmarks, and search/filters.
-- **Networking layer:** an interest‑matched **People** deck and a **Ping → accept → Chat** flow. Open to all signed‑up users — no XP gate, no gender/preference filter.
+- **Networking layer:** an interest‑matched **Discover** deck and a **Ping → accept → Chat** flow. Open to all signed‑up users — no XP gate, no gender/preference filter.
 
 ---
 
@@ -61,15 +61,15 @@ Every interaction earns XP — a discussion reputation signal shown on your prof
 
 XP and a 🔥 login streak are always visible in the header.
 
-### 🧑‍🤝‍🧑 People (find techies to connect with)
-- **Interest‑matched People deck** ranked by interest‑vector cosine similarity (60%) + XP‑tier proximity (20%) + activity recency (20%).
+### 🧑‍🤝‍🧑 Discover (find techies to connect with)
+- **Interest‑matched Discover deck** ranked by interest‑vector cosine similarity (60%) + XP‑tier proximity (20%) + activity recency (20%).
 - Scoped to your **city**; already‑connected, already‑pinged/skipped, blocked, and incoming‑ping users never reappear.
 - No gender/preference filter — it's professional networking, not dating.
 - **Multiple profile photos** with a swipeable carousel and an **"Active recently"** status.
 - **Peer count** is public (shown on every profile); your **Peers** list lets you open each person's profile or jump into the conversation.
 
 ### 🤝 Ping → Chat (connect)
-- **Two ways to Ping:** from the People deck, or the **Ping** button on anyone's profile.
+- **Two ways to Ping:** from the Discover deck, or the **Ping** button on anyone's profile.
 - A Ping is a **request to chat** — no auto‑connect. The recipient **Accepts** (creates the connection + opens chat) or **Declines**; senders can **Withdraw** a pending Ping.
 - A dedicated **Pings** page with **All / Received / Sent** tabs.
 - Free users get **10 pings/day** (rate‑limited via Redis); the limit degrades gracefully if Redis is unavailable.
@@ -83,7 +83,7 @@ XP and a 🔥 login streak are always visible in the header.
 - Alerts you when **someone you're connected with posts** something; tap through to the post.
 
 ### 🛡️ Trust & safety
-- **Block** a user (removes them from your feed, People, notifications, and tears down any connection).
+- **Block** a user (removes them from your feed, Discover, notifications, and tears down any connection).
 - **Report** users, posts, or comments.
 - **Unmatch** from the chat header.
 

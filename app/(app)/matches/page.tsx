@@ -46,7 +46,7 @@ export default async function PeersPage() {
       {count === 0 ? (
         <div className="card p-8 text-center">
           <p className="font-display text-xl text-ink">No peers yet</p>
-          <p className="text-ink-faint text-sm mt-1">Ping someone from People or their profile to connect.</p>
+          <p className="text-ink-faint text-sm mt-1">Ping someone from Discover or their profile to connect.</p>
         </div>
       ) : (
         <PeersList peers={peers} />

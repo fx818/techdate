@@ -81,7 +81,7 @@ export function RequestList({ received, sent }: { received: RequestProfile[]; se
             {tab === 'sent' ? 'No pings sent' : tab === 'received' ? 'No pings received' : 'Nothing here yet'}
           </p>
           <p className="text-ink-faint text-sm mt-1">
-            {tab === 'sent' ? 'Ping someone from People or their profile to start a chat.' : 'When someone pings you, they’ll appear here.'}
+            {tab === 'sent' ? 'Ping someone from Discover or their profile to start a chat.' : 'When someone pings you, they’ll appear here.'}
           </p>
         </div>
       ) : (
