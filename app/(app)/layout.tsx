@@ -7,6 +7,7 @@ import { StreakPing } from '@/components/layout/StreakPing'
 import { SessionWatcher } from '@/components/layout/SessionWatcher'
 import { isPersonalEmail, isTrialExpired } from '@/lib/auth/email'
 import { isDisposableEmail } from '@/lib/auth/disposable'
+import { effectiveStreak } from '@/lib/streak'
 import { headers } from 'next/headers'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -33,7 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // One profile fetch, reused for the trial gate and the header.
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('company_email_verified, created_at, name, photo_url, xp, streak_count')
+    .select('company_email_verified, created_at, name, photo_url, xp, streak_count, last_login_date')
     .eq('id', user.id)
     .single()
 
@@ -61,7 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         name={profile?.name ?? ''}
         photoUrl={profile?.photo_url ?? null}
         xp={profile?.xp ?? 0}
-        streak={profile?.streak_count ?? 0}
+        streak={effectiveStreak(profile?.streak_count, profile?.last_login_date)}
       />
       {children}
       <Navbar />

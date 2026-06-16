@@ -9,6 +9,7 @@ import EditProfile from '@/components/profile/EditProfile'
 import { DeleteAccount } from '@/components/profile/DeleteAccount'
 import { isPersonalEmail, trialDaysLeft } from '@/lib/auth/email'
 import { isDisposableEmail } from '@/lib/auth/disposable'
+import { effectiveStreak } from '@/lib/streak'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -17,7 +18,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('name, username, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count, company_email_verified, created_at')
+    .select('name, username, photo_url, photos, city, genres, xp, bio, dating_unlocked, preference, streak_count, last_login_date, company_email_verified, created_at')
     .eq('id', user.id)
     .single()
 
@@ -48,7 +49,7 @@ export default async function ProfilePage() {
 
   const genreLabels = GENRES.filter(g => profile.genres?.includes(g.id)).map(g => g.label)
 
-  const streak = profile.streak_count ?? 0
+  const streak = effectiveStreak(profile.streak_count, profile.last_login_date)
 
   return (
     <div className="max-w-xl mx-auto px-4 py-7 space-y-5">

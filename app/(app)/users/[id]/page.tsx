@@ -8,6 +8,7 @@ import { PingButton } from '@/components/dating/PingButton'
 import { GENRES } from '@/lib/genres'
 import { activeLabel } from '@/lib/active'
 import { isUuid } from '@/lib/slug'
+import { effectiveStreak } from '@/lib/streak'
 
 export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: handleOrId } = await params
@@ -15,7 +16,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const cols = 'id, name, username, photo_url, city, genres, xp, bio, last_active, streak_count'
+  const cols = 'id, name, username, photo_url, city, genres, xp, bio, last_active, streak_count, last_login_date'
   // Resolve by username; fall back to a legacy UUID URL and redirect to the handle.
   let { data: profile } = await (supabase as any)
     .from('users').select(cols).eq('username', handleOrId).maybeSingle()
@@ -118,7 +119,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
           <p className="text-ink-faint text-[11px] mt-1.5">👥 Peers</p>
         </div>
         <div className="card p-3 text-center">
-          <p className="font-display text-xl text-ink leading-none">{profile.streak_count ?? 0}</p>
+          <p className="font-display text-xl text-ink leading-none">{effectiveStreak(profile.streak_count, profile.last_login_date)}</p>
           <p className="text-ink-faint text-[11px] mt-1.5">🔥 Streak</p>
         </div>
         <div className="card p-3 text-center">
