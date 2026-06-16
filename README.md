@@ -59,14 +59,14 @@ Every interaction earns XP — a discussion reputation signal shown on your prof
 | Complete your profile | 20 (one‑time) |
 | Daily login streak | 3 / day |
 
-XP and a 🔥 login streak are always visible in the header.
+XP and a 🔥 login streak are always visible in the header. Streaks roll over at **IST midnight** and read as 0 once a day is missed.
 
 ### 🧑‍🤝‍🧑 Discover (find techies to connect with)
 - **Interest‑matched Discover deck** ranked by interest‑vector cosine similarity (60%) + XP‑tier proximity (20%) + activity recency (20%).
 - Scoped to your **city**; already‑connected, already‑pinged/skipped, blocked, and incoming‑ping users never reappear.
 - No gender/preference filter — it's professional networking, not dating.
 - **Multiple profile photos** with a swipeable carousel and an **"Active recently"** status.
-- **Peer count** is public (shown on every profile); your **Peers** list lets you open each person's profile or jump into the conversation.
+- **Peer count** is public (shown on every profile); your **Peers** list lets you open each person's profile or jump into the conversation, and **search your peers** by name or @username.
 
 ### 🤝 Ping → Chat (connect)
 - **Two ways to Ping:** from the Discover deck, or the **Ping** button on anyone's profile.
@@ -81,6 +81,7 @@ XP and a 🔥 login streak are always visible in the header.
 ### 🔔 Notifications
 - A **bell in the header** with an unread badge.
 - Alerts you when **someone you're connected with posts** something; tap through to the post.
+- **Delete a notification** — swipe it left on mobile, or tap to reveal **View / Delete** on desktop. Dismissals persist across devices.
 
 ### 🛡️ Trust & safety
 - **Block** a user (removes them from your feed, Discover, notifications, and tears down any connection).
@@ -211,6 +212,9 @@ npx vitest run tests/lib/matching/vector.test.ts   # a single test file
 | 018 | account_deletion_posts | delete posts on account deletion |
 | 019 | match_count | public `match_count(user)` function |
 | 020 | usernames_and_slugs | `users.username` + `posts.slug` (unique, backfilled) for readable URLs |
+| 021 | award_xp_rpc | atomic `award_xp(p_action, p_xp)` SECURITY DEFINER RPC |
+| 022 | dismissed_notifications | per‑user deleted notifications |
+| 023 | fix_dismissed_notifications_junction | drop `user_id`→users FK (removes posts↔users junction that broke embeds) |
 
 > **RLS note:** every server query uses `(supabase as any).from(...)` — an intentional workaround because `@supabase/ssr`'s typed client doesn't propagate generics through `.from()`. Cross‑user gates that RLS can't express use `SECURITY DEFINER` functions.
 
