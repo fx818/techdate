@@ -27,6 +27,7 @@ Await is a hybrid tech-discussion + professional-networking platform for Indian 
 - **Region** — `vercel.json` pins `"regions": ["bom1"]` (Mumbai) to colocate functions with the Supabase DB (`ap-south-1`). Do NOT remove — functions in a US region make every query a ~250ms cross-planet round-trip (the app was unusably slow until this was set).
 - **Env hygiene** — values set via shells that re-encode stdin can carry a BOM and silently break the Supabase/Redis clients. `lib/redis/client.ts` defensively trims its env vars.
 - **Cross-user gates** that RLS can't express use `SECURITY DEFINER` SQL functions (pattern: `has_right_swipe`, `get_incoming_requests`, `get_sent_requests`, `get_blocked_ids`, `delete_own_account`, `match_count`).
+- **Never give a join/link table a composite PK that is exactly two FKs to existing tables** — PostgREST reads `(a_id, b_id)`-as-PK with FKs to both `a` and `b` as a many-to-many *junction* and auto-infers an `a ↔ b` relationship. That makes any **direct** embed between those tables (e.g. `posts.select('*, users(...)')` via `author_id`) ambiguous, and PostgREST then returns `null` for the whole query — which surfaced once as an app-wide empty feed + missing notifications (migration 022 → fixed in 023). Give such tables a **surrogate `id` primary key** (like `likes`/`bookmarks`) and enforce uniqueness with a separate `unique(a_id, b_id)` constraint. If you must keep a composite PK, disambiguate every affected embed with an FK hint, e.g. `users!posts_author_id_fkey(...)`.
 
 ---
 
