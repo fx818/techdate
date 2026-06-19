@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { PostCard } from '@/components/feed/PostCard'
 import { CreatePost } from '@/components/feed/CreatePost'
 import { FeedFilters } from '@/components/feed/FeedFilters'
+import { GettingStarted } from '@/components/feed/GettingStarted'
 
 export default async function FeedPage({
   searchParams,
@@ -15,7 +16,7 @@ export default async function FeedPage({
 
   // Independent reads in parallel (profile + blocked list) instead of a waterfall.
   const [{ data: profile }, { data: blocked }] = await Promise.all([
-    (supabase as any).from('users').select('genres, xp, dating_unlocked').eq('id', user.id).single(),
+    (supabase as any).from('users').select('genres, xp').eq('id', user.id).single(),
     (supabase as any).rpc('get_blocked_ids'),
   ])
 
@@ -24,7 +25,9 @@ export default async function FeedPage({
   const sp = await searchParams
   const q = (sp.q ?? '').trim()
   const genre = sp.genre ?? 'all'
-  const source = sp.source ?? 'community' // default to community posts only
+  // Default to 'all' (community + Gideon-curated) so a brand-new user never lands
+  // on an empty feed during cold-start. Users can narrow to Community-only via filters.
+  const source = sp.source ?? 'all'
   const sort = sp.sort ?? 'latest'
 
   let query = (supabase as any)
@@ -80,11 +83,16 @@ export default async function FeedPage({
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-5 space-y-4">
+        {/* First-run nudge for new users, only on the default unfiltered view. */}
+        {!q && genre === 'all' && source === 'all' && <GettingStarted xp={profile.xp ?? 0} />}
+
         {(posts ?? []).length === 0 ? (
           <div className="card p-8 text-center">
             <p className="font-display text-xl text-ink">{q ? 'No posts match your search' : 'Nothing here yet'}</p>
             <p className="text-ink-faint text-sm mt-1">
-              {q || genre !== 'all' || source !== 'all' ? 'Try clearing some filters.' : 'Tap + to post something.'}
+              {q || genre !== 'all' || source !== 'all'
+                ? 'Try clearing some filters.'
+                : 'Be the first to start a discussion — tap + to post.'}
             </p>
           </div>
         ) : (

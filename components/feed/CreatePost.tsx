@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, ImagePlus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -19,6 +19,13 @@ export function CreatePost({ userGenres, userId }: { userGenres: string[]; userI
   const [loading, setLoading] = useState(false)
 
   const availableGenres = GENRES.filter(g => userGenres.includes(g.id))
+
+  // Let other components (e.g. the first-run nudge) open the composer.
+  useEffect(() => {
+    const openComposer = () => setOpen(true)
+    window.addEventListener('await:new-post', openComposer)
+    return () => window.removeEventListener('await:new-post', openComposer)
+  }, [])
 
   async function uploadImage(file: File) {
     setUploading(true)

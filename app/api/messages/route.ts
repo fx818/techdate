@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/redis/client'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
@@ -38,6 +39,11 @@ export async function POST(req: NextRequest) {
   const { matchId, content } = await req.json()
   if (!matchId || !content?.trim()) {
     return NextResponse.json({ error: 'matchId and content required' }, { status: 400 })
+  }
+
+  // Anti-spam: cap messages per user per minute (degrades open if Redis is down).
+  if (!(await rateLimit('message', user.id, 30, 60))) {
+    return NextResponse.json({ error: "You're sending messages too fast. Slow down a moment." }, { status: 429 })
   }
 
   // Verify user is part of match

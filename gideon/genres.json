@@ -2,51 +2,61 @@
   "ai": {
     "hn_tags": ["machine-learning", "artificial-intelligence", "deep-learning"],
     "hn_query": "AI OR LLM OR GPT OR neural",
-    "devto_tags": ["ai", "machinelearning", "deeplearning"]
+    "devto_tags": ["ai", "machinelearning", "deeplearning"],
+    "lobsters_tags": ["ai"]
   },
   "llms": {
     "hn_tags": ["llm", "gpt", "language-model"],
     "hn_query": "LLM OR GPT OR Claude OR Gemini OR language model",
-    "devto_tags": ["llm", "gpt4", "openai"]
+    "devto_tags": ["llm", "gpt4", "openai"],
+    "lobsters_tags": ["ai"]
   },
   "webdev": {
     "hn_tags": ["web", "javascript", "react", "css"],
     "hn_query": "React OR Next.js OR web development OR frontend",
-    "devto_tags": ["webdev", "javascript", "react", "css"]
+    "devto_tags": ["webdev", "javascript", "react", "css"],
+    "lobsters_tags": ["web", "javascript", "css"]
   },
   "devops": {
     "hn_tags": ["devops", "docker", "kubernetes", "ci-cd"],
     "hn_query": "DevOps OR Docker OR Kubernetes OR CI/CD",
-    "devto_tags": ["devops", "docker", "kubernetes"]
+    "devto_tags": ["devops", "docker", "kubernetes"],
+    "lobsters_tags": ["devops"]
   },
   "mobile": {
     "hn_tags": ["ios", "android", "mobile"],
     "hn_query": "iOS OR Android OR React Native OR Flutter",
-    "devto_tags": ["android", "ios", "flutter", "reactnative"]
+    "devto_tags": ["android", "ios", "flutter", "reactnative"],
+    "lobsters_tags": ["mobile", "ios", "android"]
   },
   "cloud": {
     "hn_tags": ["aws", "gcp", "azure", "cloud"],
     "hn_query": "AWS OR GCP OR Azure OR cloud computing",
-    "devto_tags": ["aws", "cloud", "azure", "googlecloud"]
+    "devto_tags": ["aws", "cloud", "azure", "googlecloud"],
+    "lobsters_tags": ["devops", "distributed"]
   },
   "cybersecurity": {
     "hn_tags": ["security", "hacking", "cryptography"],
     "hn_query": "security OR vulnerability OR CVE OR hacking",
-    "devto_tags": ["security", "cybersecurity", "hacking"]
+    "devto_tags": ["security", "cybersecurity", "hacking"],
+    "lobsters_tags": ["security", "privacy", "cryptography"]
   },
   "opensource": {
     "hn_tags": ["open-source", "github"],
     "hn_query": "open source OR GitHub OR OSS",
-    "devto_tags": ["opensource", "github"]
+    "devto_tags": ["opensource", "github"],
+    "lobsters_tags": ["programming"]
   },
   "startups": {
     "hn_tags": ["startup", "entrepreneurship"],
     "hn_query": "startup OR founder OR YC OR seed round",
-    "devto_tags": ["startup", "entrepreneurship", "business"]
+    "devto_tags": ["startup", "entrepreneurship", "business"],
+    "lobsters_tags": ["culture"]
   },
   "databases": {
     "hn_tags": ["database", "postgresql", "sql", "nosql"],
     "hn_query": "database OR PostgreSQL OR MySQL OR MongoDB",
-    "devto_tags": ["database", "sql", "postgres", "mongodb"]
+    "devto_tags": ["database", "sql", "postgres", "mongodb"],
+    "lobsters_tags": ["databases"]
   }
 }

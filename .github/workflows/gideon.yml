@@ -2,7 +2,7 @@ name: Gideon Agent
 
 on:
   schedule:
-    - cron: '0 */12 * * *'   # every 12 hours (00:00 and 12:00 UTC)
+    - cron: '0 */6 * * *'    # every 6 hours — keeps the feed fresh
   workflow_dispatch:          # allow manual trigger
     inputs:
       reset:

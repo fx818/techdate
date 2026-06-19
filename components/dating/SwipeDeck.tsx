@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { X, Send } from 'lucide-react'
 import { ProfileCard } from './ProfileCard'
 import { DatingProfile } from '@/types/dating'
@@ -58,9 +59,12 @@ export function SwipeDeck({ initialCandidates }: { initialCandidates: DatingProf
 
   if (!current) {
     return (
-      <div className="text-center py-16 space-y-1.5">
-        <p className="font-display text-xl text-ink">No more people right now.</p>
-        <p className="text-ink-faint text-sm">Check back later, or meet people through the discussion feed.</p>
+      <div className="text-center py-16 space-y-3">
+        <div className="space-y-1.5">
+          <p className="font-display text-xl text-ink">No more people right now.</p>
+          <p className="text-ink-faint text-sm">As more techies join your city, they&apos;ll show up here.</p>
+        </div>
+        <Link href="/feed" className="btn btn-primary inline-flex">Join a discussion instead</Link>
       </div>
     )
   }

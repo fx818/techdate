@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { awardXp } from '@/lib/xp/award'
 import { updateVector } from '@/lib/matching/vector'
+import { rateLimit } from '@/lib/redis/client'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -22,6 +23,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Anti-spam: cap comments per user per hour (degrades open if Redis is down).
+  if (!(await rateLimit('comment', user.id, 30, 3600))) {
+    return NextResponse.json({ error: "You're commenting too fast. Take a breather and try again shortly." }, { status: 429 })
+  }
 
   const { id: postId } = await params
   const { content, parent_id } = await request.json()

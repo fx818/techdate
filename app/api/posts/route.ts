@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { awardXp } from '@/lib/xp/award'
 import { updateVector } from '@/lib/matching/vector'
 import { slugify } from '@/lib/slug'
+import { rateLimit } from '@/lib/redis/client'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -30,6 +31,11 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Anti-spam: cap posts per user per hour (degrades open if Redis is down).
+  if (!(await rateLimit('post', user.id, 10, 3600))) {
+    return NextResponse.json({ error: "You're posting too fast. Take a breather and try again shortly." }, { status: 429 })
+  }
 
   const { title, content, genre, image_url } = await request.json()
   if (!title || !genre) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })

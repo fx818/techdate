@@ -8,22 +8,28 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from sources.hackernews import fetch_hn_posts
 from sources.devto import fetch_devto_posts
+from sources.lobsters import fetch_lobsters_posts
 
 load_dotenv()
 
 SUPABASE_URL = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-MAX_POSTS_PER_GENRE = 2
+# How many posts to insert per genre per run. Configurable so we can dial feed
+# volume without a code change. Default raised from 2 → 5 to fix a static feed.
+MAX_POSTS_PER_GENRE = int(os.environ.get("GIDEON_MAX_POSTS_PER_GENRE", "5"))
 
 def load_genres() -> dict:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(script_dir, "genres.json")) as f:
         return json.load(f)
 
-def get_existing_urls(supabase: Client, genre: str) -> set:
-    """Fetch URLs already stored for this genre to avoid duplicates."""
-    result = supabase.table("posts").select("url").eq("genre", genre).eq("is_gideon", True).execute()
-    return {row["url"] for row in result.data if row["url"]}
+def get_existing(supabase: Client, genre: str) -> tuple[set, set]:
+    """Fetch URLs and normalized title keys already stored for this genre, so we
+    can skip both exact-URL dupes and near-dupes that share a title across sources."""
+    result = supabase.table("posts").select("url, title").eq("genre", genre).eq("is_gideon", True).execute()
+    urls = {row["url"] for row in result.data if row["url"]}
+    title_keys = {slugify(row["title"]) for row in result.data if row.get("title")}
+    return urls, title_keys
 
 _OG_PATTERNS = (
     r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
@@ -65,13 +71,17 @@ def unique_slug(supabase: Client, title: str) -> str:
         slug = f"{slug}-{uuid.uuid4().hex[:6]}"
     return slug
 
-def insert_posts(supabase: Client, posts: list, genre: str, existing_urls: set) -> int:
-    """Insert new Gideon posts, skipping duplicates."""
+def insert_posts(supabase: Client, posts: list, genre: str,
+                 existing_urls: set, existing_title_keys: set) -> int:
+    """Insert new Gideon posts, skipping URL dupes and near-dupes (same title)."""
     inserted = 0
     for post in posts:
         if not post["title"] or not post["url"]:
             continue
         if post["url"] in existing_urls:
+            continue
+        title_key = slugify(post["title"])
+        if title_key in existing_title_keys:
             continue
         image_url = post.get("image_url") or fetch_og_image(post.get("url"))
         supabase.table("posts").insert({
@@ -86,6 +96,7 @@ def insert_posts(supabase: Client, posts: list, genre: str, existing_urls: set) 
             "author_id": None,
         }).execute()
         existing_urls.add(post["url"])
+        existing_title_keys.add(title_key)
         inserted += 1
         if inserted >= MAX_POSTS_PER_GENRE:
             break
@@ -108,15 +119,17 @@ def run():
 
     for genre_id, config in genres.items():
         print(f"Fetching for genre: {genre_id}")
-        existing_urls = get_existing_urls(supabase, genre_id)
+        existing_urls, existing_title_keys = get_existing(supabase, genre_id)
 
         hn_posts = fetch_hn_posts(config["hn_query"], config["hn_tags"])
         devto_posts = fetch_devto_posts(config["devto_tags"])
+        lobsters_posts = fetch_lobsters_posts(config.get("lobsters_tags", []))
 
-        all_posts = hn_posts + devto_posts
+        all_posts = hn_posts + devto_posts + lobsters_posts
         all_posts.sort(key=lambda p: p.get("points", 0), reverse=True)
 
-        inserted = insert_posts(supabase, all_posts, genre_id, existing_urls)
+        inserted = insert_posts(supabase, all_posts, genre_id,
+                                existing_urls, existing_title_keys)
         print(f"  Inserted {inserted} posts for {genre_id}")
         total += inserted
 

@@ -31,3 +31,25 @@ export async function incrementDailySwipeCount(userId: string): Promise<number> 
   await redis.expire(key, 86400)
   return count
 }
+
+// Generic fixed-window rate limiter for write actions (posts, comments, messages,
+// reports). Best-effort: if Redis is unavailable, degrade OPEN (allow the action)
+// rather than block a real user over an infra hiccup — same policy as the swipe cap.
+// Returns true if the action is allowed, false if the limit is exceeded.
+export async function rateLimit(
+  action: string,
+  userId: string,
+  limit: number,
+  windowSec: number,
+): Promise<boolean> {
+  try {
+    const redis = getRedis()
+    const key = `rl:${action}:${userId}`
+    const count = await redis.incr(key)
+    if (count === 1) await redis.expire(key, windowSec)
+    return count <= limit
+  } catch (e) {
+    console.error(`rate limit check failed for ${action} (allowing):`, e)
+    return true
+  }
+}

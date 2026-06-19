@@ -46,10 +46,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     pathname.startsWith('/verify-company') || pathname.startsWith('/profile')
   if (profile && !onAllowedUnverifiedRoute) {
     const email = user.email ?? ''
+    // Personal emails get a 7-day trial before company verification is required.
+    // Disposable / temp-mail addresses are never legitimate here, so they get NO
+    // trial — gate them immediately so they can't use (or abuse) the app for a week.
     const needsCompanyEmail =
-      (isPersonalEmail(email) || isDisposableEmail(email)) &&
       !profile.company_email_verified &&
-      isTrialExpired(profile.created_at)
+      (isDisposableEmail(email) ||
+        (isPersonalEmail(email) && isTrialExpired(profile.created_at)))
 
     if (needsCompanyEmail) redirect('/verify-company')
   }

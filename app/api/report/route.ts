@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/redis/client'
 
 const VALID_TYPES = ['user', 'post', 'comment']
 
@@ -13,6 +14,11 @@ export async function POST(request: Request) {
 
   if (!VALID_TYPES.includes(target_type) || !target_id || !reason) {
     return NextResponse.json({ error: 'Bad request' }, { status: 400 })
+  }
+
+  // Anti-abuse: cap reports per user per hour to prevent report-bombing.
+  if (!(await rateLimit('report', user.id, 20, 3600))) {
+    return NextResponse.json({ error: 'Too many reports. Try again later.' }, { status: 429 })
   }
 
   const { error } = await (supabase as any).from('reports').insert({

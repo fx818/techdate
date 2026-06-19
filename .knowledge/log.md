@@ -1,0 +1,6 @@
+# Change Log
+
+Append-only history. Newest at the bottom. Not auto-loaded — consulted on demand.
+
+- 2026-06-18 — OKF memory bundle initialized via /okf-init (10 concepts: glossary + 9 arch). Seeded from current structure + AGENT.md/README/CLAUDE.md + context-store log; nav vocabulary grounded as Discover/Peers (fixed prior stale "People/Chats" framing).
+- 2026-06-19 — Product roadmap session (`docs/strategy/2026-06-19-product-roadmap.md`). Shipped Phase 1 launch-blockers: Gideon depth (cap 2→5 env-configurable, +Lobsters source, 6h cadence, title dedupe); feed cold-start (source default community→all, GettingStarted first-run nudge); rate limits (`rateLimit()` on posts/comments/messages/reports); moderation triage (mig 024: is_admin + reports.status + RLS; `/admin/reports`); kill-test metrics (mig 025: `admin_metrics()`; `/admin/metrics`); disposable emails now gated with no trial. Audit corrected stale facts: verification & block/report were already built; `middleware.ts` is actually `proxy.ts` (Next 16 rename); deleted dead `MatchModal.tsx`; removed unused `dating_unlocked` selects. New concept: arch-moderation. Verified: tsc clean, 19 tests pass, build compiles (local prerender fails only on missing env).
