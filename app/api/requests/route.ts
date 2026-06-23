@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPush } from '@/lib/push/send'
 
 // GET: list incoming pings (people who want to chat, awaiting your response)
 export async function GET() {
@@ -64,5 +65,8 @@ export async function POST(request: Request) {
     matchId = insertedMatch?.id ?? null
   }
 
+  if (matchId) {
+    void Promise.resolve().then(() => sendPush(requester_id, { title: 'Ping accepted', body: 'Your Ping was accepted — say hi', route: `/messages/${matchId}` })).catch(() => {})
+  }
   return NextResponse.json({ accepted: true, matchId })
 }

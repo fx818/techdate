@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDailySwipeCount, incrementDailySwipeCount } from '@/lib/redis/client'
 import type { SwipeDirection } from '@/lib/supabase/types'
+import { sendPush } from '@/lib/push/send'
 
 const FREE_SWIPE_LIMIT = 10
 
@@ -39,6 +40,10 @@ export async function POST(request: Request) {
     await incrementDailySwipeCount(user.id)
   } catch (e) {
     console.error('swipe counter increment failed:', e)
+  }
+
+  if (direction === 'right') {
+    void Promise.resolve().then(() => sendPush(swiped_id, { title: 'New Ping', body: 'Someone wants to connect on techDate', route: '/discover' })).catch(() => {})
   }
 
   // Pure request/accept model: a right-swipe sends a request. It does NOT

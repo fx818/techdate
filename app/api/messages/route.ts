@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/redis/client'
+import { sendPush } from '@/lib/push/send'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
@@ -64,6 +65,10 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (insertError) return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+
+  const recipientId = match.user1_id === user.id ? match.user2_id : match.user1_id
+  const snippet = content.trim().slice(0, 80)
+  void Promise.resolve().then(() => sendPush(recipientId, { title: 'New message', body: snippet, route: `/messages/${matchId}` })).catch(() => {})
 
   return NextResponse.json({ message })
 }

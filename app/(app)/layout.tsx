@@ -9,6 +9,7 @@ import { isPersonalEmail, isTrialExpired } from '@/lib/auth/email'
 import { isDisposableEmail } from '@/lib/auth/disposable'
 import { effectiveStreak } from '@/lib/streak'
 import { headers } from 'next/headers'
+import PushRegistrar from '@/components/PushRegistrar'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -59,6 +60,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-paper text-ink pb-24">
+      <PushRegistrar />
       <SessionWatcher />
       <StreakPing />
       <Header

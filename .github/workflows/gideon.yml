@@ -30,4 +30,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GIDEON_RESET: ${{ inputs.reset }}
+          APP_URL: ${{ secrets.APP_URL }}
+          GIDEON_PUSH_SECRET: ${{ secrets.GIDEON_PUSH_SECRET }}
         run: python gideon/fetch.py

@@ -72,9 +72,14 @@ def unique_slug(supabase: Client, title: str) -> str:
     return slug
 
 def insert_posts(supabase: Client, posts: list, genre: str,
-                 existing_urls: set, existing_title_keys: set) -> int:
-    """Insert new Gideon posts, skipping URL dupes and near-dupes (same title)."""
+                 existing_urls: set, existing_title_keys: set) -> tuple[int, list]:
+    """Insert new Gideon posts, skipping URL dupes and near-dupes (same title).
+
+    Returns (count, new_post_records) where new_post_records is a list of
+    {"id": ..., "title": ..., "genre": ...} dicts for the push notification step.
+    """
     inserted = 0
+    new_post_records: list = []
     for post in posts:
         if not post["title"] or not post["url"]:
             continue
@@ -84,7 +89,7 @@ def insert_posts(supabase: Client, posts: list, genre: str,
         if title_key in existing_title_keys:
             continue
         image_url = post.get("image_url") or fetch_og_image(post.get("url"))
-        supabase.table("posts").insert({
+        result = supabase.table("posts").insert({
             "is_gideon": True,
             "title": post["title"],
             "slug": unique_slug(supabase, post["title"]),
@@ -98,9 +103,18 @@ def insert_posts(supabase: Client, posts: list, genre: str,
         existing_urls.add(post["url"])
         existing_title_keys.add(title_key)
         inserted += 1
+        # Capture inserted row id for broadcast push
+        if result.data and len(result.data) > 0:
+            row_id = result.data[0].get("id")
+            if row_id:
+                new_post_records.append({
+                    "id": row_id,
+                    "title": post["title"],
+                    "genre": genre,
+                })
         if inserted >= MAX_POSTS_PER_GENRE:
             break
-    return inserted
+    return inserted, new_post_records
 
 def reset_gideon_posts(supabase: Client) -> None:
     """Delete every Gideon-authored post (opt-in via GIDEON_RESET) so a fresh
@@ -113,6 +127,7 @@ def run():
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     genres = load_genres()
     total = 0
+    all_new_posts: list = []
 
     if os.environ.get("GIDEON_RESET", "").lower() in ("1", "true", "yes"):
         reset_gideon_posts(supabase)
@@ -128,12 +143,28 @@ def run():
         all_posts = hn_posts + devto_posts + lobsters_posts
         all_posts.sort(key=lambda p: p.get("points", 0), reverse=True)
 
-        inserted = insert_posts(supabase, all_posts, genre_id,
-                                existing_urls, existing_title_keys)
+        inserted, new_post_records = insert_posts(supabase, all_posts, genre_id,
+                                                  existing_urls, existing_title_keys)
         print(f"  Inserted {inserted} posts for {genre_id}")
         total += inserted
+        all_new_posts.extend(new_post_records)
 
     print(f"Gideon done. Total inserted: {total}")
+
+    # Broadcast push notifications for newly inserted posts
+    app_url = os.environ.get("APP_URL", "").rstrip("/")
+    push_secret = os.environ.get("GIDEON_PUSH_SECRET", "")
+    if all_new_posts and app_url and push_secret:
+        try:
+            resp = httpx.post(
+                f"{app_url}/api/internal/gideon-push",
+                json={"posts": all_new_posts},
+                headers={"x-gideon-secret": push_secret},
+                timeout=30,
+            )
+            print(f"Gideon push notified: {resp.json()}")
+        except Exception as e:
+            print(f"Gideon push notification failed (non-fatal): {e}")
 
 if __name__ == "__main__":
     run()
