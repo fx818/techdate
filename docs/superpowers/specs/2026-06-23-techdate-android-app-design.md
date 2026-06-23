@@ -173,15 +173,51 @@ handshake needed — the WebView shares the logged-in session cookie.
 - Manual: build signed APK in Android Studio, sideload, verify push arrives on lock screen
   for a real Ping and a real message, and that tapping deep-links correctly.
 
-## Build & distribution (free)
+## Build & distribution (free) — explicit steps
 
-1. `npm run build` deploy stays as-is (Vercel free tier or current host).
-2. Create a free Firebase project → add Android app → download `google-services.json`,
-   generate a service-account key for FCM HTTP v1.
-3. `npx cap add android` → `npx cap sync`.
-4. Build a **signed APK** in Android Studio (local keystore, free) → sideload to phone.
-5. iOS: deferred. Revisit only if the user later opts to pay for an Apple Developer account
-   and has Mac/cloud-build access.
+All steps are free and require no Play Store / developer account. Prerequisites: Node + the
+existing repo, **Android Studio** installed (bundles the Android SDK + JDK), and the Next.js
+app deployed at a public URL.
+
+### Phase B1 — Capacitor scaffold
+1. `npm i -D @capacitor/cli` and `npm i @capacitor/core @capacitor/push-notifications`.
+2. `npx cap init techDate <appId>` (appId e.g. `com.anurag.techdate`) → writes
+   `capacitor.config.ts`.
+3. Set `server.url` to the public deploy URL (HTTPS) in `capacitor.config.ts`. (For LAN-only
+   dev testing, point at `http://<lan-ip>:3000` with `cleartext: true`.)
+4. `npx cap add android` → creates `mobile/android/` (or `android/` at root).
+
+### Phase B2 — Firebase / FCM (free)
+1. Create a free Firebase project at console.firebase.google.com.
+2. Add an **Android app** with the same package name as `appId`.
+3. Download **`google-services.json`** → place in `android/app/`.
+4. In Project Settings → Service Accounts → generate a private key → use its
+   `project_id` / `client_email` / `private_key` as the `FCM_*` server env vars.
+
+### Phase B3 — Signing key (free, one-time)
+1. In Android Studio: **Build → Generate Signed Bundle / APK → APK → Create new…** keystore,
+   or via CLI:
+   `keytool -genkey -v -keystore techdate.keystore -alias techdate -keyalg RSA -keysize 2048 -validity 10000`.
+2. **Save the keystore file + passwords** somewhere safe — the same key must sign every future
+   build, or updates won't install over the existing app.
+3. (Optional) wire the keystore into `android/app/build.gradle` `signingConfigs` so release
+   builds are signed automatically.
+
+### Phase B4 — Build the APK
+1. `npx cap sync` (copies config + plugins into the Android project).
+2. Android Studio: **Build → Generate Signed Bundle / APK → APK**, choose the keystore, select
+   **release** → produces `android/app/release/app-release.apk`.
+   (CLI equivalent: `cd android && ./gradlew assembleRelease`.)
+
+### Phase B5 — Install on phone (sideload)
+1. Transfer the APK to the phone (USB, or `adb install app-release.apk`).
+2. Allow **"Install from unknown sources"** when prompted (one-time per source).
+3. Launch, log in, **grant the notification permission**, then verify a real Ping / message /
+   Gideon post produces a lock-screen push that deep-links correctly.
+
+### iOS
+Deferred. Revisit only if the user later opts to pay for an Apple Developer account ($99/yr)
+and has Mac/cloud-build access.
 
 ## Out of scope (now)
 
