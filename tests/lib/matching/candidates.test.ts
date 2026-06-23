@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { cosineSimilarity } from '@/lib/matching/similarity'
-import { scoreCandidate, rankCandidates } from '@/lib/matching/candidates'
+import { scoreCandidate, rankCandidates, type Candidate } from '@/lib/matching/candidates'
 
 describe('cosineSimilarity', () => {
   it('returns 1 for identical vectors', () => {
@@ -49,7 +49,7 @@ describe('scoreCandidate', () => {
 describe('rankCandidates', () => {
   it('returns candidates sorted by score descending', () => {
     const user = { id: 'u0', interest_vector: { AI: 1 }, xp: 100, last_active: new Date() }
-    const candidates = [
+    const candidates: Candidate[] = [
       { id: 'low', interest_vector: { WebDev: 1 }, xp: 100, last_active: new Date() },
       { id: 'high', interest_vector: { AI: 0.9, DevOps: 0.1 }, xp: 100, last_active: new Date() },
     ]

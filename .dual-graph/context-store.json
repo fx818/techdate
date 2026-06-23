@@ -1,0 +1,15 @@
+[
+  {"type": "decision", "content": "Renamed Chats -> Peers in UI/docs; /messages stays a chat", "tags": ["naming", "peers"], "files": ["app/(app)/matches/page.tsx", "components/layout/Navbar.tsx"], "date": "2026-06-16"},
+  {"type": "feature", "content": "Peer search box filters connected peers by name/@username", "tags": ["peers", "search"], "files": ["components/dating/PeersList.tsx"], "date": "2026-06-16"},
+  {"type": "decision", "content": "Notifications are derived from posts; dismissals stored in DB table", "tags": ["notifications"], "files": ["lib/notifications.ts", "supabase/migrations/022_dismissed_notifications.sql"], "date": "2026-06-16"},
+  {"type": "feature", "content": "Deletable notifications: swipe mobile + tap-reveal View/Delete desktop", "tags": ["notifications", "delete"], "files": ["components/notifications/NotificationsList.tsx", "app/api/notifications/dismiss/route.ts"], "date": "2026-06-16"},
+  {"type": "fact", "content": "Migration 022 applied to remote DB; deployed to prod (READY)", "tags": ["deploy", "migration"], "files": ["supabase/migrations/022_dismissed_notifications.sql"], "date": "2026-06-16"},
+  {"type": "blocker", "content": "Empty feed/notifications: 022 junction table made posts->users embed ambiguous", "tags": ["postgrest", "bug"], "files": ["lib/notifications.ts", "app/(app)/feed/page.tsx"], "date": "2026-06-16"},
+  {"type": "decision", "content": "Migration 023 dropped dismissed_notifications.user_id FK to de-junction; fixed embeds", "tags": ["postgrest", "migration"], "files": ["supabase/migrations/023_fix_dismissed_notifications_junction.sql"], "date": "2026-06-16"},
+  {"type": "fact", "content": "Never give join tables a composite PK of exactly two FKs (PostgREST m2m trap)", "tags": ["postgrest", "gotcha"], "files": ["AGENT.md"], "date": "2026-06-16"},
+  {"type": "decision", "content": "Renamed People nav tab -> Discover to avoid People/Peers confusion", "tags": ["naming"], "files": ["components/layout/Navbar.tsx", "app/(app)/discover/page.tsx"], "date": "2026-06-16"},
+  {"type": "fix", "content": "SessionWatcher keeps Supabase token refreshing so idle links stop dying", "tags": ["auth", "session"], "files": ["components/layout/SessionWatcher.tsx", "app/(app)/layout.tsx"], "date": "2026-06-16"},
+  {"type": "fix", "content": "Streak day boundary now IST + date-keyed client trigger re-fires across days", "tags": ["streak"], "files": ["app/api/streak/route.ts", "components/layout/StreakPing.tsx"], "date": "2026-06-16"},
+  {"type": "feature", "content": "effectiveStreak shows 0 when last login older than yesterday (IST)", "tags": ["streak"], "files": ["lib/streak.ts"], "date": "2026-06-16"},
+  {"type": "decision", "content": "okf-memory plugin built in separate sibling folder, not in techDate", "tags": ["okf-memory", "plugin"], "files": [], "date": "2026-06-18"}
+]
