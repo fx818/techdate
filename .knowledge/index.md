@@ -17,11 +17,12 @@
 - [XP System](arch-xp.md) — awardXp ledger + weights; 100-XP unlock now vestigial — 2026-06-18
 - [Gideon Agent](arch-gideon.md) — Python cron seeding posts from HN + dev.to + Lobsters — 2026-06-19
 - [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–026, type-cast + PostgREST gotchas — 2026-06-23
-- [Push Notifications](arch-push.md) — FCM HTTP v1 push via service-account JWT; device_tokens table; best-effort fan-out in sendPush — 2026-06-23
+- [Push Notifications](arch-push.md) — FCM HTTP v1; device_tokens + /api/devices; sendPush wired into Pings/messages/Gideon broadcast; Capacitor Android shell — 2026-06-23
 
 ## Open threads
 - okf-memory plugin is being dogfooded here; this bundle is its first real `.knowledge/`.
 - `users.dating_unlocked` still vestigial — unused selects removed 2026-06-19; column + awardXp flip remain (drop needs a migration).
 - Product roadmap at `docs/strategy/2026-06-19-product-roadmap.md`. Phase 1 launch-blockers largely shipped 2026-06-19. Remaining: Phase 2 GTM/kill-test, Phase 3 features.
 - `users.is_admin` must be set manually in DB for any founder account before `/admin/*` works.
-- Android push foundation shipped 2026-06-23: `026_device_tokens.sql`, `lib/supabase/admin.ts`, `lib/push/fcm.ts`, `lib/push/send.ts`, 17 passing tests. **Next:** wire `sendPush` into swipes/requests/messages routes + build `app/api/devices/route.ts` + `app/api/internal/gideon-push/route.ts` + Capacitor mobile scaffold.
+- Android app fully implemented 2026-06-23 (branch `mobile-android-app`, not yet merged): push wired into swipes/requests/messages + Gideon broadcast endpoint, `/api/devices` registration, Capacitor `android/` shell + `PushRegistrar`. 69/69 tests green, tsc clean. **Remaining (manual, all free):** set `CAP_SERVER_URL` to the deploy URL, apply migration 026, Firebase project + `google-services.json` + FCM creds, keystore + APK build/sideload (see `mobile/MOBILE.md`).
+- Brand note: product renamed **Await** (infra/repo/appId stay `techdate`). Push notification copy + Capacitor `appName` still say "techDate" — minor copy drift to reconcile.
