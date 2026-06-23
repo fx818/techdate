@@ -15,7 +15,8 @@ needs a Mac, and iOS push needs a paid Apple Developer account at $99/yr).
 
 - **Free, no payments.** → Android-only. APK is free to build + sideload; the $25 Google
   fee is only for Play Store *publishing*, which we are not doing. FCM push is free.
-- **Push is must-have.** Alerts for new Pings and new messages must reach the lock screen.
+- **Push is must-have.** Alerts for new Pings, new messages, and every new Gideon post
+  (genre-matched) must reach the lock screen.
 - **Reuse the existing app.** No rewrite of feed / discover / peers / chat / profile / admin.
 - **Path to "later".** Approach must extend to iOS + store publishing if the user later
   chooses to pay, without throwing work away.
@@ -71,10 +72,36 @@ testing, `server.url` can point at the dev machine LAN IP (`http://<lan-ip>:3000
 | New Ping (someone right-swipes you) | `app/api/swipes/route.ts` | after a `right` swipe is recorded | the swiped user | "New Ping — someone wants to connect" → `/discover` (requests) |
 | Ping accepted (match created) | `app/api/requests/route.ts` | after match insert (~line 64) | the original requester (`requester_id`) | "Your Ping was accepted — say hi" → `/messages/[matchId]` |
 | New message | `app/api/messages/route.ts` | after message insert (~line 66) | the other match participant | "New message from {name}" → `/messages/[matchId]` |
+| New Gideon post | `gideon/fetch.py` → `POST /api/internal/gideon-push` | after Gideon's run inserts posts | every user whose `interest_vector` contains the post's genre | "{genre}: {post title}" → the post in `/feed` |
 
 Recipient for a message = whichever of `match.user1_id` / `match.user2_id` is **not** the
 sender. Send is **best-effort and non-blocking**: a push failure must never fail or slow the
 underlying API response (wrap in try/catch, do not await-block the response if avoidable).
+
+### Gideon broadcast push (genre-matched, one per post)
+
+Gideon is a **Python cron** (GitHub Actions, every 4h) with the Supabase service-role key —
+not part of the Next.js runtime. To keep all FCM logic in one place (TypeScript), Gideon does
+**not** send FCM directly. Instead:
+
+1. `gideon/fetch.py::insert_posts` already inserts posts; change the insert to `.select()` the
+   new row's `id` and collect `{ id, title, genre }` for each post actually inserted this run.
+2. After `run()` finishes, Gideon POSTs the collected batch to
+   **`POST /api/internal/gideon-push`** with a shared-secret header (`x-gideon-secret`).
+3. The endpoint (server-only, **no cookie auth** — validates the secret) iterates the posts.
+   For each post it finds users whose `interest_vector` contains the post's `genre` key, then
+   calls `sendPush(userId, { title, body, route })` reusing the same FCM path as Pings/messages.
+4. Granularity is **one push per post** (per the product decision); a user in N matching genres
+   may receive up to `N × posts_per_genre` pushes per run. This is intentional; a future
+   per-user mute/digest toggle is noted under Out of Scope.
+
+"Matching genres" = the post's `genre` (a `genres.json` key, e.g. `ai`) appears as a key in the
+user's `interest_vector` (which is seeded from the same genre keys at onboarding). Targeting and
+fan-out reuse the **service-role client** (the endpoint reads many users' tokens).
+
+**Efficiency note:** fan-out is per-user `sendPush`. At current scale this is fine; if Gideon
+volume or user count grows, migrate genre broadcast to **FCM topics** (`genre_<key>`) so one FCM
+message per post fans out server-side. Out of scope for the first cut.
 
 ## Data model
 
@@ -111,9 +138,16 @@ present. The FCM service-account key and Supabase service-role key live in serve
 - `app/api/swipes/route.ts` — call `sendPush` on new right-swipe (edit)
 - `app/api/requests/route.ts` — call `sendPush` on match creation (edit)
 - `app/api/messages/route.ts` — call `sendPush` on new message (edit)
+- `app/api/internal/gideon-push/route.ts` — secret-protected broadcast endpoint; resolves
+  genre-matched users per post and fans out via `sendPush` (new)
+- `gideon/fetch.py` — `.select()` inserted post ids; POST the batch to `/api/internal/gideon-push`
+  after the run (edit)
+- `.github/workflows/gideon.yml` — pass `APP_URL` + `GIDEON_PUSH_SECRET` to the cron (edit)
 - `mobile/` — Capacitor project: `capacitor.config.ts` (`server.url`, appId, appName),
   Android platform, `google-services.json`, app icon + splash assets (new)
-- Env: `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- Env: `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `GIDEON_PUSH_SECRET` (shared between the endpoint and the Gideon GitHub Action), `APP_URL`
+  (Gideon's base URL for the endpoint call)
 
 ## Token / device bridge detail
 
@@ -133,6 +167,9 @@ handshake needed — the WebView shares the logged-in session cookie.
     on `UNREGISTERED` response, no-op when recipient has zero tokens, never throws to caller.
   - Hook points — message/ping/accept routes still return success when `sendPush` throws
     (best-effort guarantee).
+  - `app/api/internal/gideon-push` — rejects requests with a missing/wrong `x-gideon-secret`
+    (401), sends one push per post only to users whose `interest_vector` contains the post's
+    genre, skips users with no matching genre, and is resilient to individual `sendPush` failures.
 - Manual: build signed APK in Android Studio, sideload, verify push arrives on lock screen
   for a real Ping and a real message, and that tapping deep-links correctly.
 
@@ -151,6 +188,9 @@ handshake needed — the WebView shares the logged-in session cookie.
 - iOS app of any kind (cost + Mac requirement).
 - Play Store / App Store publishing.
 - React Native rewrite.
-- Push for events other than new Ping, Ping accepted, and new message (e.g. likes, comments,
-  streak reminders) — can be added later by reusing `sendPush`.
+- Push for events other than new Ping, Ping accepted, new message, and new Gideon post (e.g.
+  likes, comments, streak reminders) — can be added later by reusing `sendPush`.
+- Per-user mute / digest / quiet-hours controls for Gideon push (one-per-post is intentional
+  for now; revisit if it proves too noisy).
+- Migrating Gideon genre broadcast from per-user fan-out to FCM topics.
 ```
