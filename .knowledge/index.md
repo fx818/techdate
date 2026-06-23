@@ -3,12 +3,12 @@
 > Read this first. Open a concept file only when your task touches that area.
 > Cross-session memory in Open Knowledge Format. Concepts are current truth (overwritten); `log.md` is history (appended).
 
-**techDate** — Next.js 16 + Supabase + Redis app: a verified-techie discussion community with lightweight professional networking (Ping → Peer). Tests: Vitest.
+**Await** — Next.js 16 + Supabase + Redis app: a verified-techie discussion community with lightweight professional networking (Ping → Peer). Tests: Vitest.
 
 ## Concepts
 - [Glossary](glossary.md) — project vocabulary (Ping, Peer, Discover, Gideon, …) — 2026-06-18
 - [Auth & Sessions](arch-auth.md) — cookie auth, proxy.ts guard, real email verification, idle keep-alive — 2026-06-19
-- [Feed & Posts](arch-feed.md) — posts/comments/likes, default=all, first-run nudge, Gideon seeds — 2026-06-19
+- [Feed & Posts](arch-feed.md) — posts/comments/likes, default source+genre=all (all posts), first-run nudge, Gideon seeds — 2026-06-23
 - [Matching](arch-matching.md) — interest_vector + cosine candidate scoring — 2026-06-18
 - [Peers & Connections](arch-peers.md) — Ping → accept → Peer; Discover, requests, chat — 2026-06-19
 - [Moderation & Admin](arch-moderation.md) — blocks, reports, rate limits, founder triage + kill-test dashboards — 2026-06-19

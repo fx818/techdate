@@ -34,9 +34,9 @@ export default async function FeedPage({
     .from('posts')
     .select('*, users(id, name, username, photo_url)')
 
-  // Genre: a specific topic, or fall back to the user's chosen genres
+  // Genre: a specific topic. Default ('all') shows every post across all genres
+  // so the landing feed is truly "all posts", matching the "All topics" filter label.
   if (genre !== 'all') query = query.eq('genre', genre)
-  else query = query.in('genre', profile.genres)
 
   // Source: community posts vs Gideon-curated
   if (source === 'gideon') query = query.eq('is_gideon', true)

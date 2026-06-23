@@ -3,7 +3,7 @@ type: architecture
 title: Feed & Posts
 description: Posts/comments/likes with trigger-maintained counts, saved/bookmarks, Gideon seeds
 tags: [feed, posts, comments, likes, saved]
-timestamp: 2026-06-19T00:00:00Z
+timestamp: 2026-06-23T00:00:00Z
 ---
 
 # Feed & Posts
@@ -12,7 +12,7 @@ The discussion surface. Routes: `app/(app)/feed`, `app/(app)/posts`, `app/(app)/
 
 - **Posts / comments / likes** live in `002_posts_comments_likes`. `likes_count` and `comments_count` are auto-incremented by DB triggers — do not hand-maintain them.
 - Each like/comment/post awards XP via `awardXp` and updates the user's [interest_vector](arch-matching.md).
-- **Feed source filter default = `all`** (community + Gideon), set in `app/(app)/feed/page.tsx` and `components/feed/FeedFilters.tsx`. Changed from `community` on 2026-06-19 so new users never see an empty feed during cold-start; users can still narrow to Community-only.
+- **Filters default to `all`/`all`** (`app/(app)/feed/page.tsx`, `components/feed/FeedFilters.tsx`): the landing feed shows every community + Gideon post across all genres, so cold-start users never hit an empty feed. The query is filtered only when a specific source (Community/Gideon) or a specific genre is selected; `profile.genres` seeds the topic chips and CreatePost, not the default query.
 - **First-run nudge:** `components/feed/GettingStarted.tsx` shows for low-activity users (xp < 25, dismissible via localStorage) with CTAs to post (fires `await:new-post` window event that `CreatePost` listens for) or visit Discover.
 - **Rate limits:** post and comment creation are capped per user via `rateLimit()` (`lib/redis/client.ts`) — see [moderation](arch-moderation.md).
 - **Saved / bookmarks:** migration `013_images_bookmarks`.
