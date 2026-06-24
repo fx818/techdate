@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1009209627504",
+    "project_id": "await-18651",
+    "storage_bucket": "await-18651.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1009209627504:android:7a00ffd06948fd1903b5b5",
+        "android_client_info": {
+          "package_name": "com.await.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc6XIyuh3wMyX64FlNA4vHVLskWNSqbYU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

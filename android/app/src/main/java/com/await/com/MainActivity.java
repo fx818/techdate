@@ -1,4 +1,4 @@
-package com.anurag.techdate;
+package com.await.com;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -100,7 +100,7 @@ describe('POST /api/swipes — push hooks', () => {
     expect(sendPush).toHaveBeenCalledOnce()
     expect(sendPush).toHaveBeenCalledWith('target-user', {
       title: 'New Ping',
-      body: 'Someone wants to connect on techDate',
+      body: 'Someone wants to connect on Await',
       route: '/discover',
     })
   })

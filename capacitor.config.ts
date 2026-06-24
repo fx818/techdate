@@ -5,8 +5,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'com.anurag.techdate',
-  appName: 'techDate',
+  appId: 'com.await.com',
+  appName: 'Await',
   // webDir is unused in server.url mode but is required by the Capacitor schema.
   webDir: 'public',
   server: {

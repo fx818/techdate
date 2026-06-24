@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   }
 
   if (direction === 'right') {
-    void Promise.resolve().then(() => sendPush(swiped_id, { title: 'New Ping', body: 'Someone wants to connect on techDate', route: '/discover' })).catch(() => {})
+    void Promise.resolve().then(() => sendPush(swiped_id, { title: 'New Ping', body: 'Someone wants to connect on Await', route: '/discover' })).catch(() => {})
   }
 
   // Pure request/accept model: a right-swipe sends a request. It does NOT

@@ -9,10 +9,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.anurag.techdate"
+    namespace = "com.await.com"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.anurag.techdate"
+        applicationId "com.await.com"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
