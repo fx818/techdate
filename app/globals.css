@@ -163,3 +163,35 @@ body {
 .animate-pop {
   animation: pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* ---- Startup splash (Await) — calm fade-in + rise on warm paper ---- */
+.await-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-paper);
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+.await-splash--out {
+  opacity: 0;
+  pointer-events: none;
+}
+.await-splash__mark {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 12vw, 4rem);
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  animation: await-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.await-splash__dot { color: var(--color-clay); }
+@keyframes await-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .await-splash__mark { animation: none; }
+}

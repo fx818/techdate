@@ -9,6 +9,8 @@ const config: CapacitorConfig = {
   appName: 'Await',
   // webDir is unused in server.url mode but is required by the Capacitor schema.
   webDir: 'public',
+  // Warm-paper background so the launch frame is never black (matches the splash).
+  backgroundColor: '#f4f2eaff',
   server: {
     url: process.env.CAP_SERVER_URL || 'https://techdate-eta.vercel.app',
     cleartext: false,
@@ -16,6 +18,16 @@ const config: CapacitorConfig = {
   plugins: {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
+    },
+    SplashScreen: {
+      // Held until the web app calls hide() (see components/AwaitSplash.tsx),
+      // so the cream splash covers the whole remote-load gap. Cream, no spinner.
+      launchAutoHide: false,
+      backgroundColor: '#f4f2ea',
+      showSpinner: false,
+      androidSplashResourceName: 'splash',
+      splashFullScreen: true,
+      splashImmersive: false,
     },
   },
 }

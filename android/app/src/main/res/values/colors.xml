@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Warm-paper splash background (matches the web splash + capacitor.config). -->
+    <color name="await_paper">#f4f2ea</color>
+</resources>
