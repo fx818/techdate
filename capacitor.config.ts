@@ -1,5 +1,6 @@
-// TODO: set CAP_SERVER_URL to your public deploy URL (e.g. Vercel) before building.
-// Example: CAP_SERVER_URL=https://tech-date.vercel.app npx cap sync
+// The shell loads the deployed Next.js site. Default is the current Vercel prod
+// URL; override per-build with CAP_SERVER_URL=https://... npx cap sync android
+// if the deploy moves to a custom domain.
 
 import type { CapacitorConfig } from '@capacitor/cli'
 
@@ -9,7 +10,7 @@ const config: CapacitorConfig = {
   // webDir is unused in server.url mode but is required by the Capacitor schema.
   webDir: 'public',
   server: {
-    url: process.env.CAP_SERVER_URL || 'https://REPLACE_WITH_YOUR_DEPLOY_URL',
+    url: process.env.CAP_SERVER_URL || 'https://techdate-eta.vercel.app',
     cleartext: false,
   },
   plugins: {

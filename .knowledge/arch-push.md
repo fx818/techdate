@@ -21,7 +21,8 @@ Android push via **FCM HTTP v1**. No native SDKs added to Next.js; the Capacitor
 - `components/PushRegistrar.tsx` — `'use client'`, renders null, mounted in `app/(app)/layout.tsx`. Native-only (`Capacitor.isNativePlatform()` guard, dynamic `import('@capacitor/push-notifications')` so web/SSR bundles stay clean). On `registration` → `fetch('/api/devices', POST)` same-origin (cookie auth). On `pushNotificationActionPerformed` → `window.location.assign(data.route)`. All wrapped in try/catch.
 
 ## Capacitor shell
-- `capacitor.config.ts` — `appId com.anurag.techdate`, `server.url` from `CAP_SERVER_URL` (placeholder until the deploy URL is set), `cleartext:false`. `android/` native project generated via `npx cap add android`.
+- `capacitor.config.ts` — `appId com.anurag.techdate`, `server.url` = `CAP_SERVER_URL` env or baked default `https://techdate-eta.vercel.app` (Vercel prod), `cleartext:false`. `android/` native project generated via `npx cap add android`; config synced in.
+- Release signing wired in `android/app/build.gradle` to read `android/keystore.properties` (gitignored; `keystore.properties.example` template) → `./gradlew assembleRelease` yields a signed APK once the keystore exists. Google-Services classpath already present.
 - Thin shell: loads the deployed Next.js site in a WebView; only adds push + splash + icon. No frontend rewrite. iOS deliberately out of scope (cost + Mac).
 - Manual setup checklist (Firebase, google-services.json, keystore, APK build, sideload, apply migration 026): `mobile/MOBILE.md`.
 

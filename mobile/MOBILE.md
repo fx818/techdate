@@ -1,153 +1,63 @@
-# techDate Android — Manual Setup Checklist
+# techDate Android — Setup Checklist
 
-Everything below runs on **your local machine**. None of it can be automated in CI
-because it needs Android Studio, a Firebase account, and a signing keystore.
+## Already done in the repo (no action needed)
+- ✅ Capacitor shell + `android/` native project generated.
+- ✅ Deploy URL baked into `capacitor.config.ts` (`https://techdate-eta.vercel.app`) and synced into the native project. Override only if the domain changes: `CAP_SERVER_URL=https://… npx cap sync android`.
+- ✅ Google-Services gradle plugin + classpath wired (FCM-ready once `google-services.json` is added).
+- ✅ Release signing wired to read `android/keystore.properties` (gitignored) — once you create that file + the keystore, `./gradlew assembleRelease` produces a **signed** APK directly.
 
----
-
-## Prerequisites
-
-- [ ] Node 18+ and this repo checked out locally.
-- [ ] **Android Studio** installed (bundles the Android SDK and JDK — both free).
-- [ ] Next.js app deployed at a public HTTPS URL (e.g. Vercel free tier).
-      Note that URL — it is used in several steps below.
+## What only YOU can do (needs your accounts / a local Android toolchain)
+These can't be automated here: they require interactive login to **your** Google/Firebase + Supabase, and a JDK + Android SDK on your machine.
 
 ---
 
-## Step 1 — Apply the Supabase migration
+### Step 1 — Apply the Supabase migration
+Supabase dashboard → **SQL Editor** → run `supabase/migrations/026_device_tokens.sql` (creates `device_tokens` + RLS + index).
 
-1. Open the Supabase dashboard for this project → **SQL Editor**.
-2. Run `supabase/migrations/026_device_tokens.sql` (creates the `device_tokens`
-   table + RLS policy + index).
+### Step 2 — Create a free Firebase project + `google-services.json`
+1. <https://console.firebase.google.com> → create project (free Spark plan).
+2. **Add app → Android**, package name **`com.anurag.techdate`** (must match `appId`).
+3. Download **`google-services.json`** → place at `android/app/google-services.json`.
 
----
+### Step 3 — Get the FCM service-account key (server creds)
+Firebase Console → Project Settings → **Service Accounts** → **Generate new private key** (JSON). Use its `project_id` / `client_email` / `private_key` below.
 
-## Step 2 — Set environment variables on the server
-
-Add these to your Vercel project (or wherever the Next.js app is deployed):
-
+### Step 4 — Set server env vars (Vercel project settings)
 | Variable | Value |
 |---|---|
-| `FCM_PROJECT_ID` | from the Firebase service-account JSON (`project_id`) |
-| `FCM_CLIENT_EMAIL` | from the Firebase service-account JSON (`client_email`) |
-| `FCM_PRIVATE_KEY` | from the Firebase service-account JSON (`private_key`), including `-----BEGIN...` |
-| `SUPABASE_SERVICE_ROLE_KEY` | from Supabase → Settings → API → service_role key |
-| `GIDEON_PUSH_SECRET` | any long random string — also set in GitHub Actions secret of the same name |
-| `APP_URL` | your public deploy URL, e.g. `https://tech-date.vercel.app` (no trailing slash) |
+| `FCM_PROJECT_ID` | service-account JSON `project_id` |
+| `FCM_CLIENT_EMAIL` | service-account JSON `client_email` |
+| `FCM_PRIVATE_KEY` | service-account JSON `private_key` (keep the `-----BEGIN…` and `\n`s) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role key |
+| `GIDEON_PUSH_SECRET` | any long random string — **also** add it as a GitHub Actions secret of the same name |
+| `APP_URL` | `https://techdate-eta.vercel.app` (no trailing slash) — also a GitHub Actions secret |
 
----
+> `APP_URL` + `GIDEON_PUSH_SECRET` must exist as **GitHub repo secrets** too (the Gideon cron reads them) — Settings → Secrets and variables → Actions.
 
-## Step 3 — Create a free Firebase project and get google-services.json
-
-1. Go to <https://console.firebase.google.com> and create a new project (free Spark plan).
-2. Inside the project: **Add app → Android**.
-   - Package name: `com.anurag.techdate`  ← must match `capacitor.config.ts` `appId`.
-3. Download the generated **`google-services.json`**.
-4. Place it at `android/app/google-services.json` in this repo.
-
----
-
-## Step 4 — Get the FCM service-account key (for the server)
-
-1. Firebase Console → Project Settings → **Service Accounts** tab.
-2. Click **Generate new private key** → downloads a JSON file.
-3. Copy `project_id`, `client_email`, and `private_key` into the server env vars
-   from Step 2.
-
----
-
-## Step 5 — Add the Android platform (first time only)
-
-Run once in the repo root after `npm install`:
-
-```bash
-# Set the deploy URL so the Capacitor config is correct before adding android
-CAP_SERVER_URL=https://YOUR_DEPLOY_URL npx cap add android
-```
-
-This creates the `android/` native project.  If you already have `android/`,
-skip this step and go to Step 6.
-
-> On Windows PowerShell:
-> ```powershell
-> $env:CAP_SERVER_URL="https://YOUR_DEPLOY_URL"; npx cap add android
-> ```
-
----
-
-## Step 6 — Sync Capacitor
-
-After any change to `capacitor.config.ts` or Capacitor plugins, run:
-
-```bash
-CAP_SERVER_URL=https://YOUR_DEPLOY_URL npx cap sync android
-```
-
----
-
-## Step 7 — Create a signing keystore (one-time, free)
-
-```bash
-keytool -genkey -v -keystore techdate.keystore \
-  -alias techdate \
-  -keyalg RSA \
-  -keysize 2048 \
-  -validity 10000
-```
-
-**Keep this file and the passwords safe.** The same keystore must sign every
-future build — losing it means uninstalling the old app before sideloading an update.
-
----
-
-## Step 8 — Build a signed release APK
-
-**Option A — Android Studio (GUI):**
-1. Open `android/` in Android Studio.
-2. **Build → Generate Signed Bundle / APK → APK**.
-3. Select the `techdate.keystore`, enter alias + passwords, choose **release**.
-4. Output: `android/app/release/app-release.apk`.
-
-**Option B — CLI:**
+### Step 5 — Create the signing keystore (one-time, free; needs a JDK)
 ```bash
 cd android
-./gradlew assembleRelease
-# APK at android/app/build/outputs/apk/release/app-release-unsigned.apk
-# (sign it with apksigner if not wired into build.gradle)
+keytool -genkey -v -keystore techdate.keystore -alias techdate -keyalg RSA -keysize 2048 -validity 10000
+cp keystore.properties.example keystore.properties   # then edit the passwords
 ```
+Fill `android/keystore.properties` with your store/key passwords. **Keep the keystore + passwords forever** — the same key must sign every update.
 
----
-
-## Step 9 — Sideload the APK onto an Android phone
-
+### Step 6 — Build the signed APK (needs Android Studio / Android SDK)
 ```bash
-adb install android/app/release/app-release.apk
+CAP_SERVER_URL=https://techdate-eta.vercel.app npx cap sync android   # only if config changed
+cd android && ./gradlew assembleRelease
+# → android/app/build/outputs/apk/release/app-release.apk  (signed, because keystore.properties is present)
 ```
+Or open `android/` in Android Studio → **Build → Generate Signed Bundle / APK → APK → release**.
 
-Or transfer the APK file to the phone and open it from Files.
-Allow **"Install from unknown sources"** when prompted (one-time per source app).
-
----
-
-## Step 10 — Verify push end-to-end
-
-1. Launch the app, log in.
-2. When prompted, **grant the Notifications permission**.
-3. From another account, send a Ping to the logged-in user → a lock-screen
-   notification should appear within seconds.
-4. Tap the notification → the app should open and navigate to `/discover`.
-5. Repeat with a message → notification should deep-link to `/messages/[matchId]`.
-6. Wait for the next Gideon cron run (every 4h) or trigger it manually → a
-   genre-matched Gideon post should produce a lock-screen push to `/feed`.
+### Step 7 — Sideload + verify
+```bash
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+Allow "Install from unknown sources" once. Then: log in → grant the Notifications permission → from another account send a Ping (lock-screen push → taps to `/discover`), send a message (→ `/messages/[matchId]`), and confirm a genre-matched Gideon post pushes to `/feed` after a cron run.
 
 ---
 
 ## Notes
-
-- **iOS** is out of scope: building/sideloading requires a Mac and $99/yr Apple
-  Developer account. Revisit when ready to pay.
-- **Play Store** publishing costs a one-time $25 Google Play developer fee.
-  Until then, distribute APKs directly via `adb` or file transfer.
-- To update the app: bump the `versionCode` in `android/app/build.gradle`, re-sign,
-  and `adb install -r app-release.apk` (the `-r` flag reinstalls without uninstalling,
-  preserving app data, as long as the signing key is the same).
+- **iOS** is out of scope (Mac + $99/yr Apple account). **Play Store** publishing is a one-time $25 fee; until then distribute the APK directly.
+- Updating: bump `versionCode` in `android/app/build.gradle`, rebuild, `adb install -r` (preserves data as long as the signing key is unchanged).
