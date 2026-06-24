@@ -47,7 +47,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         await sendPush(user.id, {
           title: `${post.genre}: new post`,
           body: post.title,
-          route: '/feed',
+          route: `/posts/${post.id}`,
         })
       } catch {
         // best-effort: sendPush never throws, but guard anyway

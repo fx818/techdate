@@ -128,7 +128,7 @@ describe('POST /api/internal/gideon-push', () => {
       expect(mockSendPush).toHaveBeenCalledWith('user-ai', {
         title: 'ai: new post',
         body: 'AI is fun',
-        route: '/feed',
+        route: '/posts/p1',
       })
     })
 
