@@ -3,7 +3,7 @@ type: architecture
 title: Push Notifications (Android / FCM)
 description: FCM HTTP v1 push via service-account JWT; device_tokens table; sendPush fan-out wired into Pings/messages/Gideon; Capacitor Android shell
 tags: [push, fcm, android, device-tokens, supabase, admin-client, capacitor, gideon]
-timestamp: 2026-06-23T12:00:00Z
+timestamp: 2026-06-24T00:00:00Z
 ---
 
 # Push Notifications (Android / FCM)
