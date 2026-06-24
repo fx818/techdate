@@ -17,7 +17,7 @@
 - [XP System](arch-xp.md) — awardXp ledger + weights; 100-XP unlock now vestigial — 2026-06-18
 - [Gideon Agent](arch-gideon.md) — Python cron seeding posts from HN + dev.to + Lobsters — 2026-06-19
 - [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–027, type-cast + PostgREST gotchas — 2026-06-24
-- [Push Notifications](arch-push.md) — FCM HTTP v1; device_tokens + /api/devices; sendPush wired into Pings/messages/Gideon broadcast; Capacitor shell (URL baked, signed-build wired) — 2026-06-24
+- [Push Notifications](arch-push.md) — FCM HTTP v1; device_tokens + /api/devices; sendPush wired into Pings/messages/Gideon broadcast (deep-links to /posts/[id]); Capacitor shell + startup splash + "A." app icon — 2026-06-24
 
 ## Open threads
 - okf-memory plugin is being dogfooded here; this bundle is its first real `.knowledge/`.
