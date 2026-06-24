@@ -1,14 +1,14 @@
 ---
 type: architecture
 title: Database
-description: Supabase/Postgres, RLS, migrations 001–026, type-cast + PostgREST gotchas
+description: Supabase/Postgres, RLS, migrations 001–027, type-cast + PostgREST gotchas
 tags: [database, supabase, postgres, rls, migrations, redis]
-timestamp: 2026-06-23T00:00:00Z
+timestamp: 2026-06-24T00:00:00Z
 ---
 
 # Database
 
-Supabase Postgres. Migrations in `supabase/migrations/`, run in order, **001 → 026**. All tables have RLS enabled. App server routes use the **anon-key client (cookie auth)**, not the service role key. The **push send path** uses a separate service-role client (`lib/supabase/admin.ts`) to read other users' `device_tokens`.
+Supabase Postgres. Migrations in `supabase/migrations/`, run in order, **001 → 027**. All tables have RLS enabled. App server routes use the **anon-key client (cookie auth)**, not the service role key. The **push send path** uses a separate service-role client (`lib/supabase/admin.ts`) to read other users' `device_tokens`.
 
 ## Core tables (origin migrations)
 - `001_users` — profile, `interest_vector` (jsonb), `xp`, `dating_unlocked`, `is_premium`
@@ -23,6 +23,7 @@ Later migrations add: company email/verify (007), streak storage (008), requests
 - **024_admin_report_triage** — `users.is_admin` (bool, set manually), `reports.status` ('open'|'resolved'), `is_admin()` SECURITY DEFINER fn, RLS letting admins read/update all reports.
 - **025_admin_metrics** — `admin_metrics()` SECURITY DEFINER fn returning kill-test KPIs (signups, posters, repeat posters, 7d-active, pings, matches, rolling week-1→week-4 retention cohort) as JSON; admin-gated. Surfaced at `/admin/metrics` and `/admin/reports`. See [moderation](arch-moderation.md).
 - **026_device_tokens** — `device_tokens(id uuid PK, user_id → users, token text, platform text default 'android', created_at)`, unique `(user_id, token)`, RLS own-rows-only, index on `user_id`. See [push](arch-push.md).
+- **027_allow_lobsters_source** — widened `posts_source_check` to allow `'lobsters'` (was `hackernews|devto|xcom|user`). The Lobsters source was added to Gideon 2026-06-19 but the constraint was never updated, so every Gideon run **crashed** (postgrest 23514) the moment it tried to insert a Lobsters post. See [gideon](arch-gideon.md).
 
 ## Gotchas (do not relearn the hard way)
 - **Type-inference workaround:** `createServerClient<Database>` from `@supabase/ssr` does not propagate the generic through `.from()`. Every server-side query must use `(supabase as any).from(...)`. Intentional, project-wide — do not remove. Same applies to `createBrowserClient` in `lib/supabase/client.ts`.
