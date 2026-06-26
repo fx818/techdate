@@ -33,4 +33,25 @@ await render(mark({ size: 1024, bg: cream, glyph: clay, dot: clay, fontSize: 560
 await render(mark({ size: 2732, bg: cream, glyph: ink, dot: clay, fontSize: 300, text: 'Await' }), 'splash.png')
 await render(mark({ size: 2732, bg: cream, glyph: ink, dot: clay, fontSize: 300, text: 'Await' }), 'splash-dark.png')
 
+// --- Notification small icon (white "A" silhouette on transparent) ---
+// Android tints the status-bar icon using its alpha only, so it MUST be a
+// solid white glyph on a transparent background. Written straight into the
+// Android res tree at each density.
+const white = '#ffffff'
+const statSizes = [
+  ['mdpi', 24],
+  ['hdpi', 36],
+  ['xhdpi', 48],
+  ['xxhdpi', 72],
+  ['xxxhdpi', 96],
+]
+const statDir = 'android/app/src/main/res'
+for (const [dpi, px] of statSizes) {
+  const svg = mark({ size: px, bg: null, glyph: white, dot: white, fontSize: Math.round(px * 0.78), withDot: false })
+  const dir = `${statDir}/drawable-${dpi}`
+  fs.mkdirSync(dir, { recursive: true })
+  await sharp(Buffer.from(svg)).png().toFile(`${dir}/ic_stat_await.png`)
+  console.log(`wrote ${dir}/ic_stat_await.png`)
+}
+
 console.log('done')

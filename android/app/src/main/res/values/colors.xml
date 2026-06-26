@@ -2,4 +2,6 @@
 <resources>
     <!-- Warm-paper splash background (matches the web splash + capacitor.config). -->
     <color name="await_paper">#f4f2ea</color>
+    <!-- Notification accent (tints the small icon + colored line). -->
+    <color name="await_clay">#cc7a57</color>
 </resources>
