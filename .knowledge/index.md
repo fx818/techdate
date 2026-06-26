@@ -7,7 +7,7 @@
 
 ## Concepts
 - [Glossary](glossary.md) — project vocabulary (Ping, Peer, Discover, Gideon, …) — 2026-06-18
-- [Auth & Sessions](arch-auth.md) — cookie auth, proxy.ts guard, real email verification, idle keep-alive — 2026-06-19
+- [Auth & Sessions](arch-auth.md) — cookie auth, proxy.ts guard (matcher excludes PWA static files), real email verification, idle keep-alive — 2026-06-26
 - [Feed & Posts](arch-feed.md) — posts/comments/likes, default source+genre=all (all posts), first-run nudge, Gideon seeds — 2026-06-23
 - [Matching](arch-matching.md) — interest_vector + cosine candidate scoring — 2026-06-18
 - [Peers & Connections](arch-peers.md) — Ping → accept → Peer; Discover, requests, chat — 2026-06-19
