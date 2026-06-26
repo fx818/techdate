@@ -1,6 +1,11 @@
 // The shell loads the deployed Next.js site. Default is the current Vercel prod
 // URL; override per-build with CAP_SERVER_URL=https://... npx cap sync android
 // if the deploy moves to a custom domain.
+//
+// NOTE: the PWA service worker (Serwist, see next.config.ts) is served from and
+// scoped to THIS origin. If the deploy moves to a new domain, also update the
+// Supabase preconnect hint in app/layout.tsx — otherwise the WebView loads the
+// new origin with no cached shell and the preconnect points at nothing.
 
 import type { CapacitorConfig } from '@capacitor/cli'
 
