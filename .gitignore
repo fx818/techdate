@@ -49,3 +49,7 @@ __pycache__/
 
 # supabase local temp
 supabase/.temp/
+
+# Serwist-generated service worker
+/public/sw.js
+/public/swe-worker-*.js

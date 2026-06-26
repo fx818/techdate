@@ -37,6 +37,8 @@ export default function RootLayout({
       className={`${fraunces.variable} ${hanken.variable} ${geistMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
+        <link rel="preconnect" href="https://ynfkwndtmoajcmjppftp.supabase.co" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://ynfkwndtmoajcmjppftp.supabase.co" />
         <AwaitSplash />
         {children}
       </body>
