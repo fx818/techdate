@@ -82,5 +82,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api|auth).*)'],
+  // Excludes Next internals, api/auth, AND the PWA static files (service worker,
+  // manifest, icons) — otherwise the auth guard 307-redirects /sw.js to /login
+  // and the service worker can never register for logged-out visits.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|api|auth|sw.js|swe-worker|manifest.webmanifest|icon-192.png|icon-512.png).*)',
+  ],
 }
