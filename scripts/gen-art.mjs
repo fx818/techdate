@@ -24,11 +24,11 @@ const render = async (svg, out) => {
 }
 
 // Adaptive icon foreground — clay "A." only (transparent), kept inside the safe zone
-await render(mark({ size: 1024, bg: null, glyph: clay, dot: clay, fontSize: 430 }), 'icon-foreground.png')
+await render(mark({ size: 1024, bg: null, glyph: clay, dot: clay, fontSize: 480 }), 'icon-foreground.png')
 // Adaptive icon background — solid cream
 await render(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="${cream}"/></svg>`, 'icon-background.png')
 // Full-bleed icon (legacy / non-adaptive / iOS) — cream bg + clay "A."
-await render(mark({ size: 1024, bg: cream, glyph: clay, dot: clay, fontSize: 560 }), 'icon-only.png')
+await render(mark({ size: 1024, bg: cream, glyph: clay, dot: clay, fontSize: 620 }), 'icon-only.png')
 // Native splash — cream bg + "Await." (ink word, clay period)
 await render(mark({ size: 2732, bg: cream, glyph: ink, dot: clay, fontSize: 300, text: 'Await' }), 'splash.png')
 await render(mark({ size: 2732, bg: cream, glyph: ink, dot: clay, fontSize: 300, text: 'Await' }), 'splash-dark.png')
