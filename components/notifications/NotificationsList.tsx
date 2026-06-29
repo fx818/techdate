@@ -121,7 +121,7 @@ function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
         onTouchEnd={onTouchEnd}
         style={{ transform: `translateX(${offset}px)`, transition: drag ? 'none' : 'transform 0.2s ease' }}
         className={`relative flex items-center gap-3 card p-3.5 cursor-pointer select-none ${
-          n.isNew ? 'border-clay/40 bg-clay-tint/30' : ''
+          n.isNew ? 'border-clay/40 bg-clay-tint' : ''
         }`}
       >
         <div className="w-10 h-10 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display overflow-hidden shrink-0">
