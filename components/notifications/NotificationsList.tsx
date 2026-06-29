@@ -7,11 +7,13 @@ import { timeAgo } from '@/lib/time'
 
 type Item = {
   id: string
-  slug: string | null
+  type: string
   title: string
+  body: string | null
+  route: string | null
   created_at: string
-  authorName: string
-  authorPhoto: string | null
+  actorName: string | null
+  actorPhoto: string | null
   isNew: boolean
 }
 
@@ -28,7 +30,7 @@ export default function NotificationsList({ items }: { items: Item[] }) {
       await fetch('/api/notifications/dismiss', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId: id }),
+        body: JSON.stringify({ id }),
       })
     } catch {
       /* best-effort; it'll reappear on next load if the write failed */
@@ -83,7 +85,7 @@ function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
     setRevealed(r => !r)
   }
 
-  const href = `/posts/${n.slug ?? n.id}`
+  const href = n.route ?? '/notifications'
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
@@ -123,15 +125,13 @@ function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
         }`}
       >
         <div className="w-10 h-10 rounded-full bg-clay-tint flex items-center justify-center text-clay-deep font-display overflow-hidden shrink-0">
-          {n.authorPhoto
-            ? <img src={n.authorPhoto} alt={n.authorName} className="w-10 h-10 object-cover" />
-            : n.authorName[0]?.toUpperCase()}
+          {n.actorPhoto
+            ? <img src={n.actorPhoto} alt={n.actorName ?? ''} className="w-10 h-10 object-cover" />
+            : (n.actorName?.[0]?.toUpperCase() ?? '•')}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-ink">
-            <span className="font-medium">{n.authorName}</span> posted
-          </p>
-          <p className="text-ink-soft text-sm truncate">{n.title}</p>
+          <p className="text-sm text-ink font-medium truncate">{n.title}</p>
+          {n.body && <p className="text-ink-soft text-sm truncate">{n.body}</p>}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <span className="text-ink-faint text-xs">{timeAgo(n.created_at)}</span>
