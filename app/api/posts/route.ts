@@ -5,6 +5,7 @@ import { awardXp } from '@/lib/xp/award'
 import { updateVector } from '@/lib/matching/vector'
 import { slugify } from '@/lib/slug'
 import { rateLimit } from '@/lib/redis/client'
+import { notify } from '@/lib/notifications/notify'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -66,6 +67,24 @@ export async function POST(request: Request) {
       const updatedVector = updateVector(profile.interest_vector, genre, 0.15)
       await (supabase as any).from('users').update({ interest_vector: updatedVector }).eq('id', user.id)
     }
+
+    // Bell-only fan-out: tell each Peer (matched user) that the author posted.
+    // No push — Peer posts have never pushed (avoids notification spam).
+    const { data: matches } = await (supabase as any)
+      .from('matches')
+      .select('user1_id, user2_id')
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+    const peerIds = (matches ?? []).map((m: any) => (m.user1_id === user.id ? m.user2_id : m.user1_id))
+    await Promise.all(peerIds.map((peerId: string) =>
+      notify(peerId, {
+        type: 'peer_post',
+        title: post.title,
+        route: `/posts/${post.slug ?? post.id}`,
+        postId: post.id,
+        actorId: user.id,
+        push: false,
+      })
+    ))
   })
 
   return NextResponse.json({ post }, { status: 201 })
