@@ -55,14 +55,24 @@ export default function NotificationsList({ items }: { items: Item[] }) {
   )
 }
 
+// Rightward (left-to-right) drag past this distance deletes the row outright.
+const DELETE_THRESHOLD = 88
+
 function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
   const [revealed, setRevealed] = useState(false)
   const [drag, setDrag] = useState(0)
+  const [exiting, setExiting] = useState(false)
   const startX = useRef(0)
   const moved = useRef(false)
+  const deleted = useRef(false)
 
   const base = revealed ? -REVEAL : 0
-  const offset = Math.max(-REVEAL, Math.min(0, base + drag))
+  const raw = base + drag
+  // Revealed: clamp to the [-REVEAL, 0] action-panel range (swipe right closes).
+  // Not revealed: allow leftward reveal AND rightward (positive) drag for delete.
+  const offset = revealed
+    ? Math.max(-REVEAL, Math.min(0, raw))
+    : Math.max(-REVEAL, raw)
 
   function onTouchStart(e: React.TouchEvent) {
     startX.current = e.touches[0].clientX
@@ -74,7 +84,13 @@ function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
     setDrag(delta)
   }
   function onTouchEnd() {
-    // Snap open if dragged past the halfway point, else closed.
+    // Left-to-right swipe past the threshold (when closed) deletes directly.
+    if (!revealed && drag > DELETE_THRESHOLD) {
+      setExiting(true)
+      setDrag(0)
+      return
+    }
+    // Otherwise: snap the action panel open if dragged left past halfway, else closed.
     setRevealed(offset < -REVEAL / 2)
     setDrag(0)
   }
@@ -85,10 +101,25 @@ function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
     setRevealed(r => !r)
   }
 
+  // The slide-out animation fires onTransitionEnd for both transform and opacity —
+  // guard so the actual delete runs exactly once.
+  function onTransitionEnd() {
+    if (exiting && !deleted.current) {
+      deleted.current = true
+      onDelete()
+    }
+  }
+
   const href = n.route ?? '/notifications'
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
+      {/* Delete affordance behind the card on the LEFT — shows as the row is
+          swiped right; the swipe itself deletes (no button). */}
+      <div className="absolute inset-y-0 left-0 flex items-center px-5 bg-clay text-white">
+        <Trash2 size={18} />
+      </div>
+
       {/* Action panel behind the card, revealed on the right */}
       <div className="absolute inset-y-0 right-0 flex">
         <Link
@@ -119,7 +150,12 @@ function NotificationRow({ n, onDelete }: { n: Item; onDelete: () => void }) {
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        style={{ transform: `translateX(${offset}px)`, transition: drag ? 'none' : 'transform 0.2s ease' }}
+        onTransitionEnd={onTransitionEnd}
+        style={{
+          transform: exiting ? 'translateX(110%)' : `translateX(${offset}px)`,
+          opacity: exiting ? 0 : 1,
+          transition: drag ? 'none' : 'transform 0.2s ease, opacity 0.2s ease',
+        }}
         className={`relative flex items-center gap-3 card p-3.5 cursor-pointer select-none ${
           n.isNew ? 'border-clay/40 bg-clay-tint' : ''
         }`}
