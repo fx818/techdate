@@ -3,7 +3,7 @@ type: architecture
 title: Push Notifications (Android / FCM)
 description: FCM HTTP v1 push via service-account JWT; device_tokens table; sendPush fan-out wired into Pings/messages/Gideon; Capacitor Android shell + PWA caching + branded notification icon
 tags: [push, fcm, android, device-tokens, supabase, admin-client, capacitor, gideon, pwa, serwist]
-timestamp: 2026-06-26T00:00:00Z
+timestamp: 2026-06-29T00:00:00Z
 ---
 
 # Push Notifications (Android / FCM)
@@ -49,7 +49,7 @@ The shell loads the remote site, so repeat launches were network-gated. Added **
 - Service-role key (`SUPABASE_SERVICE_ROLE_KEY`) + FCM creds are server-only env vars.
 
 ## Hook points (wired)
-All fire-and-forget via `void Promise.resolve().then(() => sendPush(...)).catch(()=>{})` (microtask defer so even a sync throw can't touch the response):
+**As of 2026-06-29 these sites call `lib/notifications/notify.ts::notify()`, not `sendPush` directly** — `notify()` writes the in-app bell row (stored `notifications` table, mig 028) AND fires `sendPush`, so push + bell share one source of truth (see [notifications](arch-notifications.md)). The transient events still microtask-defer via `void Promise.resolve().then(() => notify(...)).catch(()=>{})`; gideon awaits `notify(...)` in its per-user loop. Peer-post fan-out calls `notify(..., {push:false})` (bell-only). The push payload mapping below is unchanged:
 - `app/api/swipes/route.ts` — right-swipe → push to `swiped_id` ("New Ping", route `/discover`). Left-swipe does not push.
 - `app/api/requests/route.ts` — accept that creates a match → push to `requester_id` ("Ping accepted", route `/messages/{matchId}`).
 - `app/api/messages/route.ts` — new message → push to the other participant ("New message", body = content snippet ≤80 chars, route `/messages/{matchId}`).

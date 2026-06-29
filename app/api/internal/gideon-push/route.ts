@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendPush } from '@/lib/push/send'
+import { notify } from '@/lib/notifications/notify'
 
 interface GideonPost {
   id: string
@@ -44,13 +44,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (!(post.genre in iv)) continue
 
       try {
-        await sendPush(user.id, {
+        await notify(user.id, {
+          type: 'gideon_post',
           title: `${post.genre}: new post`,
           body: post.title,
           route: `/posts/${post.id}`,
+          postId: post.id,
+          push: true,
         })
       } catch {
-        // best-effort: sendPush never throws, but guard anyway
+        // best-effort: notify never throws, but guard anyway
       }
       sent++
     }

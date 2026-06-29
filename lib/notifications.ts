@@ -1,48 +1,33 @@
-// Computes "a person you matched with posted something" notifications.
-// No notifications table needed: derive from matches + posts, with unread
-// determined by the user's last_notifications_seen timestamp.
+// In-app notification center: reads the stored `notifications` table.
+// Unread is derived from users.last_notifications_seen (badge clears when the
+// notifications page is opened). Inserts happen via lib/notifications/notify.ts.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getNotifications(supabase: any, userId: string) {
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('user1_id, user2_id')
-    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-
-  const otherIds = (matches ?? []).map((m: any) => (m.user1_id === userId ? m.user2_id : m.user1_id))
-  if (otherIds.length === 0) return { items: [], unread: 0 }
-
-  const { data: blocked } = await supabase.rpc('get_blocked_ids')
-  const blockedIds = new Set((blocked ?? []).map((b: any) => b.user_id))
-  const visibleIds = otherIds.filter((id: string) => !blockedIds.has(id))
-  if (visibleIds.length === 0) return { items: [], unread: 0 }
-
   const { data: profile } = await supabase
     .from('users').select('last_notifications_seen').eq('id', userId).single()
-  const lastSeen = profile?.last_notifications_seen ? new Date(profile.last_notifications_seen).getTime() : 0
+  const lastSeen = profile?.last_notifications_seen
+    ? new Date(profile.last_notifications_seen).getTime() : 0
 
-  // Notifications the user has explicitly dismissed (hidden from their list).
-  const { data: dismissed } = await supabase
-    .from('dismissed_notifications').select('post_id').eq('user_id', userId)
-  const dismissedIds = new Set((dismissed ?? []).map((d: any) => d.post_id))
-
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('id, slug, title, created_at, users(id, name, photo_url)')
-    .in('author_id', visibleIds)
-    .eq('is_gideon', false)
+  // actor is disambiguated by FK name because notifications has TWO FKs to users
+  // (user_id + actor_id) — an un-hinted users(...) embed would be ambiguous.
+  const { data: rows } = await supabase
+    .from('notifications')
+    .select('id, type, title, body, route, created_at, actor:users!notifications_actor_id_fkey(name, photo_url)')
+    .eq('user_id', userId)
+    .is('dismissed_at', null)
     .order('created_at', { ascending: false })
     .limit(30)
 
-  const items = (posts ?? [])
-    .filter((p: any) => !dismissedIds.has(p.id))
-    .map((p: any) => ({
-    id: p.id,
-    slug: p.slug,
-    title: p.title,
-    created_at: p.created_at,
-    authorName: p.users?.name ?? 'Someone',
-    authorPhoto: p.users?.photo_url ?? null,
-    isNew: new Date(p.created_at).getTime() > lastSeen,
+  const items = (rows ?? []).map((r: any) => ({
+    id: r.id,
+    type: r.type,
+    title: r.title,
+    body: r.body ?? null,
+    route: r.route ?? null,
+    actorName: r.actor?.name ?? null,
+    actorPhoto: r.actor?.photo_url ?? null,
+    created_at: r.created_at,
+    isNew: new Date(r.created_at).getTime() > lastSeen,
   }))
 
   return { items, unread: items.filter((i: any) => i.isNew).length }

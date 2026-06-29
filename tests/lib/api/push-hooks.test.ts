@@ -4,8 +4,8 @@ import { NextRequest } from 'next/server'
 // ---------------------------------------------------------------------------
 // Hoisted mocks — must be set up before any module imports
 // ---------------------------------------------------------------------------
-const { sendPush, getUser, mockFrom } = vi.hoisted(() => {
-  const sendPush = vi.fn().mockResolvedValue(undefined)
+const { notify, getUser, mockFrom } = vi.hoisted(() => {
+  const notify = vi.fn().mockResolvedValue(undefined)
   const getUser = vi.fn().mockResolvedValue({ data: { user: { id: 'current-user' } } })
 
   // Supabase chain helpers — rewired in beforeEach as needed
@@ -20,10 +20,10 @@ const { sendPush, getUser, mockFrom } = vi.hoisted(() => {
     eq: mockEq,
   })
 
-  return { sendPush, getUser, mockFrom, mockSingle, mockSelect, mockInsert, mockEq }
+  return { notify, getUser, mockFrom, mockSingle, mockSelect, mockInsert, mockEq }
 })
 
-vi.mock('@/lib/push/send', () => ({ sendPush }))
+vi.mock('@/lib/notifications/notify', () => ({ notify }))
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockResolvedValue({
@@ -62,14 +62,14 @@ function jsonRequest(url: string, body: unknown): NextRequest {
 // ---------------------------------------------------------------------------
 // SWIPES
 // ---------------------------------------------------------------------------
-describe('POST /api/swipes — push hooks', () => {
+describe('POST /api/swipes — notify hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    sendPush.mockResolvedValue(undefined)
+    notify.mockResolvedValue(undefined)
     getUser.mockResolvedValue({ data: { user: { id: 'swiper-id' } } })
   })
 
-  it('right-swipe fires sendPush to swiped_id with route /discover', async () => {
+  it('right-swipe fires notify to swiped_id with type ping + route /discover', async () => {
     // from('users') -> premium check -> { data: { is_premium: false } }
     // from('swipes') -> insert -> { error: null }
     mockFrom.mockImplementation((table: string) => {
@@ -97,15 +97,17 @@ describe('POST /api/swipes — push hooks', () => {
     // Give the fire-and-forget microtask a chance to run
     await Promise.resolve()
 
-    expect(sendPush).toHaveBeenCalledOnce()
-    expect(sendPush).toHaveBeenCalledWith('target-user', {
+    expect(notify).toHaveBeenCalledOnce()
+    expect(notify).toHaveBeenCalledWith('target-user', {
+      type: 'ping',
       title: 'New Ping',
       body: 'Someone wants to connect on Await',
       route: '/discover',
+      actorId: 'swiper-id',
     })
   })
 
-  it('left-swipe does NOT call sendPush', async () => {
+  it('left-swipe does NOT call notify', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'users') {
         return {
@@ -123,11 +125,11 @@ describe('POST /api/swipes — push hooks', () => {
     const res = await swipesPost(req)
     expect(res.status).toBe(200)
     await Promise.resolve()
-    expect(sendPush).not.toHaveBeenCalled()
+    expect(notify).not.toHaveBeenCalled()
   })
 
-  it('route still returns 200 even if sendPush throws synchronously', async () => {
-    sendPush.mockImplementation(() => { throw new Error('boom') })
+  it('route still returns 200 even if notify throws synchronously', async () => {
+    notify.mockImplementation(() => { throw new Error('boom') })
 
     mockFrom.mockImplementation((table: string) => {
       if (table === 'users') {
@@ -151,10 +153,10 @@ describe('POST /api/swipes — push hooks', () => {
 // ---------------------------------------------------------------------------
 // REQUESTS
 // ---------------------------------------------------------------------------
-describe('POST /api/requests — push hooks', () => {
+describe('POST /api/requests — notify hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    sendPush.mockResolvedValue(undefined)
+    notify.mockResolvedValue(undefined)
     getUser.mockResolvedValue({ data: { user: { id: 'acceptor-id' } } })
   })
 
@@ -180,7 +182,7 @@ describe('POST /api/requests — push hooks', () => {
     })
   }
 
-  it('accept with new match calls sendPush(requester_id, route /messages/<id>)', async () => {
+  it('accept with new match calls notify(requester_id, type ping_accepted, route /messages/<id>)', async () => {
     makeRequestsSupabase({ data: { id: 'match-abc' }, error: null })
 
     const req = jsonRequest('http://localhost/api/requests', { requester_id: 'req-user', action: 'accept' })
@@ -192,15 +194,17 @@ describe('POST /api/requests — push hooks', () => {
 
     await Promise.resolve()
 
-    expect(sendPush).toHaveBeenCalledOnce()
-    expect(sendPush).toHaveBeenCalledWith('req-user', {
+    expect(notify).toHaveBeenCalledOnce()
+    expect(notify).toHaveBeenCalledWith('req-user', {
+      type: 'ping_accepted',
       title: 'Ping accepted',
       body: 'Your Ping was accepted — say hi',
       route: '/messages/match-abc',
+      actorId: 'acceptor-id',
     })
   })
 
-  it('decline does NOT call sendPush', async () => {
+  it('decline does NOT call notify', async () => {
     mockFrom.mockImplementation(() => ({
       insert: vi.fn().mockResolvedValue({ error: null }),
     }))
@@ -212,10 +216,10 @@ describe('POST /api/requests — push hooks', () => {
     expect(json.accepted).toBe(false)
 
     await Promise.resolve()
-    expect(sendPush).not.toHaveBeenCalled()
+    expect(notify).not.toHaveBeenCalled()
   })
 
-  it('accept when matchId is null (race fallback returned null) does NOT call sendPush', async () => {
+  it('accept when matchId is null (race fallback returned null) does NOT call notify', async () => {
     // match insert fails, fallback select also returns null
     const singleFail = vi.fn().mockResolvedValue({ data: null, error: new Error('dup') })
     const singleFallback = vi.fn().mockResolvedValue({ data: null, error: null })
@@ -243,11 +247,11 @@ describe('POST /api/requests — push hooks', () => {
     const res = await requestsPost(req)
     expect(res.status).toBe(200)
     await Promise.resolve()
-    expect(sendPush).not.toHaveBeenCalled()
+    expect(notify).not.toHaveBeenCalled()
   })
 
-  it('route still returns 200 even if sendPush throws synchronously', async () => {
-    sendPush.mockImplementation(() => { throw new Error('push-boom') })
+  it('route still returns 200 even if notify throws synchronously', async () => {
+    notify.mockImplementation(() => { throw new Error('push-boom') })
     makeRequestsSupabase({ data: { id: 'match-xyz' }, error: null })
 
     const req = jsonRequest('http://localhost/api/requests', { requester_id: 'req-user', action: 'accept' })
@@ -259,12 +263,12 @@ describe('POST /api/requests — push hooks', () => {
 // ---------------------------------------------------------------------------
 // MESSAGES
 // ---------------------------------------------------------------------------
-describe('POST /api/messages — push hooks', () => {
+describe('POST /api/messages — notify hooks', () => {
   const MATCH_ID = 'match-999'
 
   beforeEach(() => {
     vi.clearAllMocks()
-    sendPush.mockResolvedValue(undefined)
+    notify.mockResolvedValue(undefined)
     getUser.mockResolvedValue({ data: { user: { id: 'user-A' } } })
   })
 
@@ -300,7 +304,7 @@ describe('POST /api/messages — push hooks', () => {
     })
   }
 
-  it('sends push to the other match participant with content snippet and correct route', async () => {
+  it('sends notify to the other match participant with content snippet and correct route', async () => {
     makeMessagesSupabase({
       matchData: { user1_id: 'user-A', user2_id: 'user-B' },
       insertedMessage: { id: 'msg-1', content: 'hello' },
@@ -312,11 +316,13 @@ describe('POST /api/messages — push hooks', () => {
 
     await Promise.resolve()
 
-    expect(sendPush).toHaveBeenCalledOnce()
-    expect(sendPush).toHaveBeenCalledWith('user-B', {
+    expect(notify).toHaveBeenCalledOnce()
+    expect(notify).toHaveBeenCalledWith('user-B', {
+      type: 'message',
       title: 'New message',
       body: 'hello',
       route: `/messages/${MATCH_ID}`,
+      actorId: 'user-A',
     })
   })
 
@@ -333,10 +339,10 @@ describe('POST /api/messages — push hooks', () => {
 
     await Promise.resolve()
 
-    expect(sendPush).toHaveBeenCalledWith('user-A', expect.objectContaining({ route: `/messages/${MATCH_ID}` }))
+    expect(notify).toHaveBeenCalledWith('user-A', expect.objectContaining({ route: `/messages/${MATCH_ID}` }))
   })
 
-  it('trims content to 80 chars for the push body', async () => {
+  it('trims content to 80 chars for the notify body', async () => {
     const longMsg = 'a'.repeat(120)
     makeMessagesSupabase({
       matchData: { user1_id: 'user-A', user2_id: 'user-B' },
@@ -349,11 +355,11 @@ describe('POST /api/messages — push hooks', () => {
 
     await Promise.resolve()
 
-    const call = sendPush.mock.calls[0]
+    const call = notify.mock.calls[0]
     expect(call[1].body.length).toBe(80)
   })
 
-  it('does NOT call sendPush when insert fails', async () => {
+  it('does NOT call notify when insert fails', async () => {
     makeMessagesSupabase({
       matchData: { user1_id: 'user-A', user2_id: 'user-B' },
       insertError: new Error('db error'),
@@ -364,11 +370,11 @@ describe('POST /api/messages — push hooks', () => {
     expect(res.status).toBe(500)
 
     await Promise.resolve()
-    expect(sendPush).not.toHaveBeenCalled()
+    expect(notify).not.toHaveBeenCalled()
   })
 
-  it('route still returns 200 even if sendPush throws synchronously', async () => {
-    sendPush.mockImplementation(() => { throw new Error('push-fail') })
+  it('route still returns 200 even if notify throws synchronously', async () => {
+    notify.mockImplementation(() => { throw new Error('push-fail') })
     makeMessagesSupabase({
       matchData: { user1_id: 'user-A', user2_id: 'user-B' },
       insertedMessage: { id: 'msg-4', content: 'test' },
