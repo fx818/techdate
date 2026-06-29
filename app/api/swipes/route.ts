@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDailySwipeCount, incrementDailySwipeCount } from '@/lib/redis/client'
 import type { SwipeDirection } from '@/lib/supabase/types'
-import { sendPush } from '@/lib/push/send'
+import { notify } from '@/lib/notifications/notify'
 
 const FREE_SWIPE_LIMIT = 10
 
@@ -43,7 +43,13 @@ export async function POST(request: Request) {
   }
 
   if (direction === 'right') {
-    void Promise.resolve().then(() => sendPush(swiped_id, { title: 'New Ping', body: 'Someone wants to connect on Await', route: '/discover' })).catch(() => {})
+    void Promise.resolve().then(() => notify(swiped_id, {
+      type: 'ping',
+      title: 'New Ping',
+      body: 'Someone wants to connect on Await',
+      route: '/discover',
+      actorId: user.id,
+    })).catch(() => {})
   }
 
   // Pure request/accept model: a right-swipe sends a request. It does NOT

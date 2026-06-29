@@ -2,15 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
 // --- hoisted mocks ---
-const { mockSendPush, mockFrom, mockSelect } = vi.hoisted(() => {
+const { mockNotify, mockFrom, mockSelect } = vi.hoisted(() => {
   const mockSelect = vi.fn()
   const mockFrom = vi.fn().mockReturnValue({ select: mockSelect })
-  const mockSendPush = vi.fn().mockResolvedValue(undefined)
-  return { mockSendPush, mockFrom, mockSelect }
+  const mockNotify = vi.fn().mockResolvedValue(undefined)
+  return { mockNotify, mockFrom, mockSelect }
 })
 
-vi.mock('@/lib/push/send', () => ({
-  sendPush: (...args: unknown[]) => mockSendPush(...args),
+vi.mock('@/lib/notifications/notify', () => ({
+  notify: (...args: unknown[]) => mockNotify(...args),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -52,7 +52,7 @@ beforeEach(() => {
     error: null,
   })
   mockFrom.mockReturnValue({ select: mockSelect })
-  mockSendPush.mockResolvedValue(undefined)
+  mockNotify.mockResolvedValue(undefined)
 })
 
 describe('POST /api/internal/gideon-push', () => {
@@ -94,7 +94,7 @@ describe('POST /api/internal/gideon-push', () => {
       expect(res.status).toBe(200)
       const json = await res.json()
       expect(json.sent).toBe(0)
-      expect(mockSendPush).not.toHaveBeenCalled()
+      expect(mockNotify).not.toHaveBeenCalled()
     })
 
     it('returns { sent: 0 } when posts key is missing from body', async () => {
@@ -124,11 +124,14 @@ describe('POST /api/internal/gideon-push', () => {
       const json = await res.json()
       expect(json.sent).toBe(1)
 
-      expect(mockSendPush).toHaveBeenCalledTimes(1)
-      expect(mockSendPush).toHaveBeenCalledWith('user-ai', {
+      expect(mockNotify).toHaveBeenCalledTimes(1)
+      expect(mockNotify).toHaveBeenCalledWith('user-ai', {
+        type: 'gideon_post',
         title: 'ai: new post',
         body: 'AI is fun',
         route: '/posts/p1',
+        postId: 'p1',
+        push: true,
       })
     })
 
@@ -140,7 +143,7 @@ describe('POST /api/internal/gideon-push', () => {
         )
       )
       // user-webdev should NOT be called
-      expect(mockSendPush).not.toHaveBeenCalledWith(
+      expect(mockNotify).not.toHaveBeenCalledWith(
         'user-webdev',
         expect.anything()
       )
@@ -160,7 +163,7 @@ describe('POST /api/internal/gideon-push', () => {
       )
       const json = await res.json()
       expect(json.sent).toBe(2)
-      expect(mockSendPush).toHaveBeenCalledTimes(2)
+      expect(mockNotify).toHaveBeenCalledTimes(2)
     })
 
     it('skips users with null interest_vector', async () => {
@@ -180,8 +183,8 @@ describe('POST /api/internal/gideon-push', () => {
       )
       const json = await res.json()
       expect(json.sent).toBe(1)
-      expect(mockSendPush).toHaveBeenCalledWith('user-ai', expect.anything())
-      expect(mockSendPush).not.toHaveBeenCalledWith('user-null-iv', expect.anything())
+      expect(mockNotify).toHaveBeenCalledWith('user-ai', expect.anything())
+      expect(mockNotify).not.toHaveBeenCalledWith('user-null-iv', expect.anything())
     })
 
     it('skips users with non-object interest_vector (array)', async () => {
@@ -214,7 +217,7 @@ describe('POST /api/internal/gideon-push', () => {
         error: null,
       })
 
-      mockSendPush
+      mockNotify
         .mockRejectedValueOnce(new Error('FCM down'))
         .mockResolvedValueOnce(undefined)
 
@@ -227,7 +230,7 @@ describe('POST /api/internal/gideon-push', () => {
       const json = await res.json()
       // Both were attempted
       expect(json.sent).toBe(2)
-      expect(mockSendPush).toHaveBeenCalledTimes(2)
+      expect(mockNotify).toHaveBeenCalledTimes(2)
     })
 
     it('returns { sent: 0 } when supabase query fails', async () => {
@@ -241,7 +244,7 @@ describe('POST /api/internal/gideon-push', () => {
       )
       const json = await res.json()
       expect(json.sent).toBe(0)
-      expect(mockSendPush).not.toHaveBeenCalled()
+      expect(mockNotify).not.toHaveBeenCalled()
     })
   })
 })
