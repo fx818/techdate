@@ -12,11 +12,12 @@ from sources.lobsters import fetch_lobsters_posts
 from sources.reddit import fetch_reddit_posts
 from sources.arxiv import fetch_arxiv_posts
 from sources.github import fetch_github_posts
+from judge import load_config, judge_post, select_with_judge
 
 load_dotenv()
 
-SUPABASE_URL = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 # How many posts to insert per genre per run. Configurable so we can dial feed
 # volume without a code change. Default raised from 2 → 5 to fix a static feed.
 MAX_POSTS_PER_GENRE = int(os.environ.get("GIDEON_MAX_POSTS_PER_GENRE", "5"))
@@ -74,23 +75,31 @@ def unique_slug(supabase: Client, title: str) -> str:
         slug = f"{slug}-{uuid.uuid4().hex[:6]}"
     return slug
 
-def insert_posts(supabase: Client, posts: list, genre: str,
-                 existing_urls: set, existing_title_keys: set) -> tuple[int, list]:
-    """Insert new Gideon posts, skipping URL dupes and near-dupes (same title).
-
-    Returns (count, new_post_records) where new_post_records is a list of
-    {"id": ..., "title": ..., "genre": ...} dicts for the push notification step.
-    """
-    inserted = 0
-    new_post_records: list = []
+def dedup_candidates(posts: list, existing_urls: set, existing_title_keys: set) -> list:
+    """Filter candidates to those with a title+url that aren't URL dupes or
+    same-title near-dupes (within the batch and against what's already stored).
+    Mutates the two sets so later candidates see earlier ones."""
+    unique: list = []
     for post in posts:
-        if not post["title"] or not post["url"]:
+        if not post.get("title") or not post.get("url"):
             continue
         if post["url"] in existing_urls:
             continue
         title_key = slugify(post["title"])
         if title_key in existing_title_keys:
             continue
+        existing_urls.add(post["url"])
+        existing_title_keys.add(title_key)
+        unique.append(post)
+    return unique
+
+
+def insert_records(supabase: Client, posts: list, genre: str) -> tuple[int, list]:
+    """Insert already-selected posts (dedup + judging done upstream). Returns
+    (count, new_post_records) where each record is {"id","title","genre"} for push."""
+    inserted = 0
+    new_post_records: list = []
+    for post in posts:
         image_url = post.get("image_url") or fetch_og_image(post.get("url"))
         result = supabase.table("posts").insert({
             "is_gideon": True,
@@ -103,20 +112,11 @@ def insert_posts(supabase: Client, posts: list, genre: str,
             "source": post["source"],
             "author_id": None,
         }).execute()
-        existing_urls.add(post["url"])
-        existing_title_keys.add(title_key)
         inserted += 1
-        # Capture inserted row id for broadcast push
         if result.data and len(result.data) > 0:
             row_id = result.data[0].get("id")
             if row_id:
-                new_post_records.append({
-                    "id": row_id,
-                    "title": post["title"],
-                    "genre": genre,
-                })
-        if inserted >= MAX_POSTS_PER_GENRE:
-            break
+                new_post_records.append({"id": row_id, "title": post["title"], "genre": genre})
     return inserted, new_post_records
 
 def reset_gideon_posts(supabase: Client) -> None:
@@ -151,6 +151,15 @@ def run():
     total = 0
     all_new_posts: list = []
 
+    # Load the LLM-judge config once. Active only when enabled AND a key is set;
+    # otherwise we fall back to ranked-top-N insert (fail open).
+    judge_config = load_config(supabase)
+    judge_active = bool(judge_config and judge_config.get("enabled"))
+    if judge_active and not judge_config.get("api_key"):
+        print("  judge: enabled but no api_key set — inserting unjudged (fail open)")
+        judge_active = False
+    print(f"  judge: {'ACTIVE' if judge_active else 'inactive'}")
+
     if os.environ.get("GIDEON_RESET", "").lower() in ("1", "true", "yes"):
         reset_gideon_posts(supabase)
 
@@ -170,8 +179,15 @@ def run():
             reddit_posts, arxiv_posts, github_posts,
         ])
 
-        inserted, new_post_records = insert_posts(supabase, all_posts, genre_id,
-                                                  existing_urls, existing_title_keys)
+        unique = dedup_candidates(all_posts, existing_urls, existing_title_keys)
+        if judge_active:
+            selected = select_with_judge(
+                unique, MAX_POSTS_PER_GENRE, lambda c: judge_post(c, judge_config)
+            )
+        else:
+            selected = unique[:MAX_POSTS_PER_GENRE]
+
+        inserted, new_post_records = insert_records(supabase, selected, genre_id)
         print(f"  Inserted {inserted} posts for {genre_id}")
         total += inserted
         all_new_posts.extend(new_post_records)
