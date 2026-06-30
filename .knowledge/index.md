@@ -11,7 +11,7 @@
 - [Feed & Posts](arch-feed.md) — posts/comments/likes, default source+genre=all (all posts), first-run nudge, Gideon seeds — 2026-06-23
 - [Matching](arch-matching.md) — interest_vector + cosine candidate scoring — 2026-06-18
 - [Peers & Connections](arch-peers.md) — Ping → accept → Peer; Discover, requests, chat — 2026-06-19
-- [Moderation & Admin](arch-moderation.md) — blocks, reports, rate limits, founder triage + kill-test dashboards — 2026-06-19
+- [Moderation & Admin](arch-moderation.md) — blocks, reports, rate limits, founder triage + kill-test dashboards (live in prod; profile-page entry) — 2026-06-30
 - [Notifications](arch-notifications.md) — stored event-sourced bell (table 028); notify() = bell+push single source of truth; dismiss via dismissed_at — 2026-06-29
 - [Streaks](arch-streaks.md) — IST day boundary; effectiveStreak reads 0 when stale — 2026-06-18
 - [XP System](arch-xp.md) — awardXp ledger + weights; 100-XP unlock now vestigial — 2026-06-18

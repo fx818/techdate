@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { RefreshButton } from '@/components/admin/RefreshButton'
 
 // Founder-only kill-test dashboard. All numbers come from the admin_metrics()
 // RPC (admin-gated in SQL). The two headline gates mirror the launch memo:
@@ -30,11 +31,21 @@ export default async function AdminMetricsPage() {
   const passRepeat = m.repeat_posters >= 20
   const passRetention = m.cohort_eligible > 0 && retentionPct >= 30
 
+  // "+N this week" sub — omitted entirely when the weekly delta is 0 (a "+0" reads as noise).
+  const wk = (n: number) => (n > 0 ? `+${n} this week` : undefined)
+
   const Stat = ({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) => (
     <div className="card p-4">
       <p className="text-ink-faint text-xs uppercase tracking-widest">{label}</p>
       <p className="font-display text-3xl text-ink mt-1 leading-none">{value}</p>
       {sub && <p className="text-ink-faint text-xs mt-1.5">{sub}</p>}
+    </div>
+  )
+
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div>
+      <h2 className="text-ink-faint text-xs uppercase tracking-widest mb-2.5">{title}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">{children}</div>
     </div>
   )
 
@@ -52,11 +63,14 @@ export default async function AdminMetricsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-7 space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-ink leading-none">Kill-test</h1>
-        <p className="text-ink-faint text-sm mt-1.5">
-          Launch go/no-go. Generated {new Date(m.generated_at).toLocaleString()}.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl text-ink leading-none">Kill-test</h1>
+          <p className="text-ink-faint text-sm mt-1.5">
+            Launch go/no-go. Generated {new Date(m.generated_at).toLocaleString()}.
+          </p>
+        </div>
+        <RefreshButton />
       </div>
 
       <div className="space-y-3">
@@ -68,14 +82,28 @@ export default async function AdminMetricsPage() {
             : 'No cohort old enough yet (need users who joined 3–4 weeks ago).'} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <Stat label="Signups" value={m.signups_total} sub={`+${m.signups_7d} this week`} />
+      <Section title="People">
+        <Stat label="Signups" value={m.signups_total} sub={wk(m.signups_7d)} />
+        <Stat label="Active (today)" value={m.active_today} />
         <Stat label="Active (7d)" value={m.active_7d} />
-        <Stat label="Posters" value={m.posters_total} sub={`${m.repeat_posters} repeat`} />
-        <Stat label="Community posts" value={m.community_posts_total} sub={`+${m.community_posts_7d} this week`} />
+      </Section>
+
+      <Section title="Content">
+        <Stat label="Community posts" value={m.community_posts_total} sub={wk(m.community_posts_7d)} />
+        <Stat label="Posters" value={m.posters_total} sub={m.repeat_posters > 0 ? `${m.repeat_posters} repeat` : undefined} />
+        <Stat label="Seeded posts" value={m.gideon_posts_total} sub="Gideon" />
+      </Section>
+
+      <Section title="Engagement">
+        <Stat label="Comments" value={m.comments_total} sub={wk(m.comments_7d)} />
+        <Stat label="Likes" value={m.likes_total} sub={wk(m.likes_7d)} />
+        <Stat label="Messages" value={m.messages_total} sub={wk(m.messages_7d)} />
+      </Section>
+
+      <Section title="Network">
         <Stat label="Pings sent" value={m.pings_total} />
         <Stat label="Connections" value={m.matches_total} />
-      </div>
+      </Section>
     </div>
   )
 }
