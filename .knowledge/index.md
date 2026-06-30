@@ -11,12 +11,12 @@
 - [Feed & Posts](arch-feed.md) — posts/comments/likes, default source+genre=all (all posts), first-run nudge, Gideon seeds — 2026-06-23
 - [Matching](arch-matching.md) — interest_vector + cosine candidate scoring — 2026-06-18
 - [Peers & Connections](arch-peers.md) — Ping → accept → Peer; Discover, requests, chat — 2026-06-19
-- [Moderation & Admin](arch-moderation.md) — blocks, reports, rate limits, founder triage + kill-test dashboards (live in prod; profile-page entry) — 2026-06-30
+- [Moderation & Admin](arch-moderation.md) — blocks, reports, rate limits, founder triage + kill-test + Gideon judge dashboards (Reports/Metrics/Gideon judge in profile Admin section) — 2026-06-30
 - [Notifications](arch-notifications.md) — stored event-sourced bell (table 028); notify() = bell+push single source of truth; dismiss via dismissed_at — 2026-06-29
 - [Streaks](arch-streaks.md) — IST day boundary; effectiveStreak reads 0 when stale — 2026-06-18
 - [XP System](arch-xp.md) — awardXp ledger + weights; 100-XP unlock now vestigial — 2026-06-18
-- [Gideon Agent](arch-gideon.md) — Python cron seeding posts from 6 sources (HN, dev.to, Lobsters, Reddit OAuth, arXiv, GitHub) + normalized ranking — 2026-06-30
-- [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–029, type-cast + PostgREST gotchas — 2026-06-30
+- [Gideon Agent](arch-gideon.md) — Python cron seeding posts from 6 sources + normalized ranking + optional LLM judge quality gate (migration 031) — 2026-06-30
+- [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–031, type-cast + PostgREST gotchas — 2026-06-30
 - [Push Notifications](arch-push.md) — FCM HTTP v1; device_tokens + /api/devices; event sites now call notify() (bell+push) not sendPush directly; Capacitor shell + startup splash + "A." app icon; PWA/Serwist caching, black-flash fix, branded notification small icon — 2026-06-29
 
 ## Open threads

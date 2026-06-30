@@ -1,9 +1,9 @@
 ---
 type: architecture
 title: Moderation & Admin
-description: Blocks, reports, rate limits, and the founder-only triage + kill-test dashboards
-tags: [moderation, safety, blocks, reports, admin, ratelimit]
-timestamp: 2026-06-30T00:00:00Z
+description: Blocks, reports, rate limits, and founder-only triage + kill-test + Gideon judge dashboards
+tags: [moderation, safety, blocks, reports, admin, ratelimit, gideon]
+timestamp: 2026-06-30T12:00:00Z
 ---
 
 # Moderation & Admin
@@ -18,7 +18,8 @@ Safety surface for a solo-founder launch with live DMs. Block + report existed s
 `rateLimit(action, userId, limit, windowSec)` in `lib/redis/client.ts` — fixed-window Upstash counter (`rl:{action}:{userId}`), **degrades open** if Redis is down (never blocks a real user over infra). Applied: posts 10/h, comments 30/h, messages 30/min, reports 20/h. (Swipes/Pings keep their separate daily cap.)
 
 ## Admin (founder-only)
-- Gated by `users.is_admin` (set manually in DB; migration 024) + `is_admin()` SQL fn; enforced by RLS and a page-level redirect (`!profile.is_admin` → `/feed`). Migrations 024+025 **applied to prod 2026-06-30** (had never been applied before then); founder account `admin@admin.com` seeded with `is_admin=true`.
-- **Entry point:** the profile page (`app/(app)/profile/page.tsx`) renders an **Admin** section with Reports + Metrics links, gated on `profile.is_admin` (selected in its query) — only admins see it. No navbar entry (bottom nav is shared by all users).
-- **`/admin/reports`** (`app/(app)/admin/reports/page.tsx`) — report queue, open first; `components/admin/ResolveReportButton.tsx` flips status via `PATCH /api/admin/reports/[id]`. Empty-state ("No reports") when none filed.
-- **`/admin/metrics`** (`app/(app)/admin/metrics/page.tsx`) — kill-test dashboard from the `admin_metrics()` RPC (migration 025, extended by 030): the two launch gates (≥20 repeat posters; ≥30% week-1→week-4 retention) plus grouped tiles — People (signups/active-today/active-7d), Content (community posts/posters/seeded-Gideon), Engagement (comments/likes/messages), Network (pings/connections). `+N this week` subs hidden when 0; `RefreshButton` (client) calls `router.refresh()` to recompute. The RPC is `is_admin()`-gated and returns null to non-admins → page shows "Metrics unavailable". See [database](arch-database.md).
+- Gated by `users.is_admin` (set manually in DB; migration 024) + `is_admin()` SQL fn; enforced by RLS and a page-level redirect (`!profile.is_admin` → `/feed`). Migrations 024+025 **applied to prod 2026-06-30**; founder account `admin@admin.com` seeded with `is_admin=true`.
+- **Entry point:** profile page (`app/(app)/profile/page.tsx`) Admin section — Reports + Metrics + **Gideon judge** links, gated on `profile.is_admin`. No navbar entry.
+- **`/admin/reports`** (`app/(app)/admin/reports/page.tsx`) — report queue; `ResolveReportButton` flips status via `PATCH /api/admin/reports/[id]`.
+- **`/admin/metrics`** (`app/(app)/admin/metrics/page.tsx`) — kill-test dashboard from `admin_metrics()` RPC (migrations 025+030): two launch gates (≥20 repeat posters; ≥30% week-1→week-4 retention) + People/Content/Engagement/Network tiles. `RefreshButton` calls `router.refresh()`. See [database](arch-database.md).
+- **`/admin/gideon`** (`app/(app)/admin/gideon/page.tsx`) — edit the Gideon LLM judge singleton (`gideon_judge_config`, migration 031). Loads config via `gideon_judge_config_get()` (masked — `key_set`+`key_last4` only, never raw key). Form at `components/admin/JudgeConfigForm.tsx` (client); saves via `POST /api/admin/judge` → `gideon_judge_config_save()` RPC. Body validated by `parseJudgeConfigInput` (`lib/admin/judgeConfig.ts`). Blank `api_key` = keep existing. API route has its own `getUser()` + `is_admin` check independent of the page gate. See [gideon](arch-gideon.md).

@@ -1,4 +1,1 @@
-supabase/migrations/030_admin_metrics_engagement.sql
-components/admin/RefreshButton.tsx
-app/(app)/admin/metrics/page.tsx
-apply-030.mjs
+.superpowers/sdd/progress.md

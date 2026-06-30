@@ -178,6 +178,10 @@ export default async function ProfilePage() {
               <span className="text-ink font-medium flex items-center gap-2">📊 Metrics</span>
               <span className="text-ink-faint">›</span>
             </Link>
+            <Link href="/admin/gideon" className="card p-4 flex items-center justify-between hover:border-clay transition-colors">
+              <span className="text-ink font-medium flex items-center gap-2">🤖 Gideon judge</span>
+              <span className="text-ink-faint">›</span>
+            </Link>
           </div>
         </div>
       )}
