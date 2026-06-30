@@ -79,10 +79,14 @@ def judge_post(post: dict, config: dict) -> tuple[bool, int, str]:
         return (True, -1, JUDGE_FALLBACK_REASON)
 
 
-def select_with_judge(candidates: list, max_n: int, judge_fn) -> list:
+def select_with_judge(candidates: list, max_n: int, judge_fn) -> tuple[list, list]:
     """Walk candidates in ranked order, judging each; collect those that pass
-    until max_n are kept or the pool is exhausted (backfill)."""
+    until max_n are kept or the pool is exhausted (backfill). Returns
+    (kept, dropped); dropped is a list of {"post", "score", "reason"} for the
+    candidates judged-and-dropped during the walk (not those skipped after the
+    quota filled)."""
     kept: list = []
+    dropped: list = []
     for c in candidates:
         keep, score, reason = judge_fn(c)
         verdict = "KEEP" if keep else "DROP"
@@ -91,4 +95,6 @@ def select_with_judge(candidates: list, max_n: int, judge_fn) -> list:
             kept.append(c)
             if len(kept) >= max_n:
                 break
-    return kept
+        else:
+            dropped.append({"post": c, "score": score, "reason": reason})
+    return kept, dropped
