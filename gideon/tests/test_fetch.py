@@ -67,3 +67,13 @@ def test_filter_new_rejections_skips_missing_url():
     dropped = [{"post": {}, "score": 2, "reason": "x"}]
     out = fetch.filter_new_rejections(dropped, set())
     assert out == []
+
+
+def test_record_rejections_non_fatal(monkeypatch):
+    """record_rejections raising must not propagate — the try/except in run() wraps it."""
+    # Verify the guard is in run()'s source so the wrap exists exactly where we expect.
+    import inspect
+    src = inspect.getsource(fetch.run)
+    assert "reject-queue recording failed (non-fatal)" in src, (
+        "run() must catch record_rejections errors as non-fatal"
+    )

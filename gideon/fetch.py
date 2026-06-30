@@ -258,9 +258,12 @@ def run():
             selected, dropped = select_with_judge(
                 unique, MAX_POSTS_PER_GENRE, lambda c: judge_post(c, judge_config)
             )
-            recorded = record_rejections(supabase, dropped, genre_id, reject_skip_urls)
-            if recorded:
-                print(f"  Queued {recorded} rejected posts for {genre_id}")
+            try:
+                recorded = record_rejections(supabase, dropped, genre_id, reject_skip_urls)
+                if recorded:
+                    print(f"  Queued {recorded} rejected posts for {genre_id}")
+            except Exception as e:
+                print(f"  reject-queue recording failed (non-fatal): {e}")
         else:
             selected = unique[:MAX_POSTS_PER_GENRE]
 
