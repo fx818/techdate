@@ -3,7 +3,7 @@ type: architecture
 title: Moderation & Admin
 description: Blocks, reports, rate limits, and founder-only triage + kill-test + Gideon judge dashboards
 tags: [moderation, safety, blocks, reports, admin, ratelimit, gideon]
-timestamp: 2026-06-30T12:00:00Z
+timestamp: 2026-06-30T18:00:00Z
 ---
 
 # Moderation & Admin
@@ -22,4 +22,5 @@ Safety surface for a solo-founder launch with live DMs. Block + report existed s
 - **Entry point:** profile page (`app/(app)/profile/page.tsx`) Admin section — Reports + Metrics + **Gideon judge** links, gated on `profile.is_admin`. No navbar entry.
 - **`/admin/reports`** (`app/(app)/admin/reports/page.tsx`) — report queue; `ResolveReportButton` flips status via `PATCH /api/admin/reports/[id]`.
 - **`/admin/metrics`** (`app/(app)/admin/metrics/page.tsx`) — kill-test dashboard from `admin_metrics()` RPC (migrations 025+030): two launch gates (≥20 repeat posters; ≥30% week-1→week-4 retention) + People/Content/Engagement/Network tiles. `RefreshButton` calls `router.refresh()`. See [database](arch-database.md).
-- **`/admin/gideon`** (`app/(app)/admin/gideon/page.tsx`) — edit the Gideon LLM judge singleton (`gideon_judge_config`, migration 031). Loads config via `gideon_judge_config_get()` (masked — `key_set`+`key_last4` only, never raw key). Form at `components/admin/JudgeConfigForm.tsx` (client); saves via `POST /api/admin/judge` → `gideon_judge_config_save()` RPC. Body validated by `parseJudgeConfigInput` (`lib/admin/judgeConfig.ts`). Blank `api_key` = keep existing. API route has its own `getUser()` + `is_admin` check independent of the page gate. See [gideon](arch-gideon.md).
+- **`/admin/gideon`** (`app/(app)/admin/gideon/page.tsx`) — edit the Gideon LLM judge singleton (`gideon_judge_config`, migration 031). Loads config via `gideon_judge_config_get()` (masked — `key_set`+`key_last4` only, never raw key). Form at `components/admin/JudgeConfigForm.tsx` (client); saves via `POST /api/admin/judge` → `gideon_judge_config_save()` RPC. Body validated by `parseJudgeConfigInput` (`lib/admin/judgeConfig.ts`). Blank `api_key` = keep existing. API route has its own `getUser()` + `is_admin` check independent of the page gate. Also shows a "Rejected queue (N)" count link. See [gideon](arch-gideon.md).
+- **`/admin/gideon/rejections`** (`app/(app)/admin/gideon/rejections/page.tsx`) — the judge's reject-review queue (`gideon_rejections`, migration 032). Lists drops newest-first with score + reason; `components/admin/RejectionActions.tsx` (client) **Approve**/**Delete** → `POST /api/admin/gideon/rejections/[id]` ({action} validated by `parseRejectionAction`, `lib/admin/rejectionAction.ts`) → `gideon_approve_rejection` / `gideon_dismiss_rejection` RPC. Delete permanently tombstones the URL. See [gideon](arch-gideon.md), [database](arch-database.md).

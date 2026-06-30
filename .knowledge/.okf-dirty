@@ -1,1 +1,8 @@
 .superpowers/sdd/progress.md
+tests/lib/admin/rejectionAction.test.ts
+lib/admin/rejectionAction.ts
+app/api/admin/gideon/rejections/[id]/route.ts
+components/admin/RejectionActions.tsx
+app/(app)/admin/gideon/rejections/page.tsx
+app/(app)/admin/gideon/page.tsx
+.superpowers/sdd/task-5-report.md

@@ -15,8 +15,8 @@
 - [Notifications](arch-notifications.md) — stored event-sourced bell (table 028); notify() = bell+push single source of truth; dismiss via dismissed_at — 2026-06-29
 - [Streaks](arch-streaks.md) — IST day boundary; effectiveStreak reads 0 when stale — 2026-06-18
 - [XP System](arch-xp.md) — awardXp ledger + weights; 100-XP unlock now vestigial — 2026-06-18
-- [Gideon Agent](arch-gideon.md) — Python cron seeding posts from 6 sources + normalized ranking + optional LLM judge quality gate (migration 031) — 2026-06-30
-- [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–031, type-cast + PostgREST gotchas — 2026-06-30
+- [Gideon Agent](arch-gideon.md) — Python cron seeding posts from 6 sources + normalized ranking + optional LLM judge gate + admin reject-review queue (migrations 031–032) — 2026-06-30
+- [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–032, type-cast + PostgREST gotchas — 2026-06-30
 - [Push Notifications](arch-push.md) — FCM HTTP v1; device_tokens + /api/devices; event sites now call notify() (bell+push) not sendPush directly; Capacitor shell + startup splash + "A." app icon; PWA/Serwist caching, black-flash fix, branded notification small icon — 2026-06-29
 
 ## Open threads

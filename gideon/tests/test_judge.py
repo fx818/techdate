@@ -65,28 +65,45 @@ def test_judge_post_fail_open_on_bad_json(monkeypatch):
     assert keep is True
 
 
-# --- select_with_judge (backfill) ---
+# --- select_with_judge (backfill + dropped capture) ---
 
 def test_select_with_judge_stops_at_n():
     cands = [{"title": f"p{i}", "url": f"u{i}"} for i in range(10)]
-    # every candidate passes
-    kept = judge.select_with_judge(cands, 3, lambda c: (True, 9, "ok"))
-    assert len(kept) == 3
+    kept, dropped = judge.select_with_judge(cands, 3, lambda c: (True, 9, "ok"))
     assert [c["title"] for c in kept] == ["p0", "p1", "p2"]
+    assert dropped == []
 
 
 def test_select_with_judge_backfills_past_drops():
     cands = [{"title": f"p{i}", "url": f"u{i}"} for i in range(6)]
-    # drop the first two, keep the rest
     def jf(c):
         keep = c["title"] not in ("p0", "p1")
         return (keep, 9 if keep else 1, "x")
-    kept = judge.select_with_judge(cands, 2, jf)
+    kept, dropped = judge.select_with_judge(cands, 2, jf)
     assert [c["title"] for c in kept] == ["p2", "p3"]
+    assert [d["post"]["title"] for d in dropped] == ["p0", "p1"]
 
 
 def test_select_with_judge_exhausts_pool_when_few_pass():
     cands = [{"title": f"p{i}", "url": f"u{i}"} for i in range(4)]
-    # only p1 passes; pool exhausts before reaching N=3
-    kept = judge.select_with_judge(cands, 3, lambda c: (c["title"] == "p1", 9, "x"))
+    kept, dropped = judge.select_with_judge(cands, 3, lambda c: (c["title"] == "p1", 9, "x"))
     assert [c["title"] for c in kept] == ["p1"]
+    assert [d["post"]["title"] for d in dropped] == ["p0", "p2", "p3"]
+
+
+def test_select_with_judge_dropped_carries_score_and_reason():
+    cands = [{"title": "p0", "url": "u0"}]
+    kept, dropped = judge.select_with_judge(cands, 5, lambda c: (False, 2, "weak"))
+    assert kept == []
+    assert dropped == [{"post": {"title": "p0", "url": "u0"}, "score": 2, "reason": "weak"}]
+
+
+def test_select_with_judge_does_not_capture_unreached_candidates():
+    # quota of 2 fills at p2; p3 is never judged, so it is NOT a drop.
+    cands = [{"title": f"p{i}", "url": f"u{i}"} for i in range(4)]
+    seq = {"p0": True, "p1": False, "p2": True, "p3": True}
+    kept, dropped = judge.select_with_judge(
+        cands, 2, lambda c: (seq[c["title"]], 9 if seq[c["title"]] else 1, "r")
+    )
+    assert [c["title"] for c in kept] == ["p0", "p2"]
+    assert [d["post"]["title"] for d in dropped] == ["p1"]

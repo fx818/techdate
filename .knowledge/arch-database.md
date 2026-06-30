@@ -1,14 +1,14 @@
 ---
 type: architecture
 title: Database
-description: Supabase/Postgres, RLS, migrations 001–031, type-cast + PostgREST gotchas
+description: Supabase/Postgres, RLS, migrations 001–032, type-cast + PostgREST gotchas
 tags: [database, supabase, postgres, rls, migrations, redis]
-timestamp: 2026-06-30T12:00:00Z
+timestamp: 2026-06-30T18:00:00Z
 ---
 
 # Database
 
-Supabase Postgres. Migrations in `supabase/migrations/`, run in order, **001 → 031**. All tables have RLS enabled. App server routes use the **anon-key client (cookie auth)**, not the service role key. The **push send path** uses a separate service-role client (`lib/supabase/admin.ts`) to read other users' `device_tokens`.
+Supabase Postgres. Migrations in `supabase/migrations/`, run in order, **001 → 032**. All tables have RLS enabled. App server routes use the **anon-key client (cookie auth)**, not the service role key. The **push send path** uses a separate service-role client (`lib/supabase/admin.ts`) to read other users' `device_tokens`.
 
 ## Core tables (origin migrations)
 - `001_users` — profile, `interest_vector` (jsonb), `xp`, `dating_unlocked`, `is_premium`
@@ -28,6 +28,7 @@ Later migrations add: company email/verify (007), streak storage (008), requests
 - **028_notifications** — added `notifications` table (stored event-sourced bell; single-column `id` PK to avoid the 023 two-FK junction trap; RLS select/update/delete-own, NO insert policy → inserts via service-role admin client) and **dropped `dismissed_notifications`** (obsolete; dismissal now sets `notifications.dismissed_at`). See [notifications](arch-notifications.md).
 - **029_allow_new_gideon_sources** — widened `posts_source_check` again to add `'reddit'`, `'arxiv'`, `'github'` (full set now `hackernews|devto|xcom|user|lobsters|reddit|arxiv|github`). Same trap as 027: Gideon gained 3 sources 2026-06-30 but the constraint wasn't updated, so the first prod run **crashed** (23514) on the first GitHub insert. Applied to prod via the aws-1 pooler; re-run then inserted github/arxiv/devto/lobsters cleanly. See [gideon](arch-gideon.md).
 - **031_gideon_judge_config** — `gideon_judge_config` singleton table (`id=1` CHECK, `enabled`, `api_key`, `base_url`, `model`, `criteria`, `pass_threshold 0–10`, RLS admin-only). Two SECURITY DEFINER RPCs: `gideon_judge_config_get()` returns masked JSON (`key_set`+`key_last4`, never raw key); `gideon_judge_config_save(p_enabled, p_base_url, p_model, p_criteria, p_threshold, p_api_key)` keeps existing key when `p_api_key=''`. Gideon reads the full row via service-role client (bypasses RLS). **Applied to prod 2026-06-30** via the aws-1 pooler (row seeded `enabled=false`; both RPCs present). See [gideon](arch-gideon.md), [moderation](arch-moderation.md).
+- **032_gideon_reject_queue** — `gideon_rejections` (id uuid, `url` UNIQUE, title/content/image_url/genre/source, `score`, `reason`, created_at) + `gideon_dismissed_urls` (url PK tombstones). Both RLS admin-only SELECT; all mutations via SECURITY DEFINER RPCs. `gideon_approve_rejection(p_id)` inserts the reject into `posts` (generated unique slug, `is_gideon=true`) then deletes the row; `gideon_dismiss_rejection(p_id)` tombstones the URL then deletes the row. Gideon writes rejects + reads tombstones via the service-role client. See [gideon](arch-gideon.md), [moderation](arch-moderation.md).
 
 ## Gotchas (do not relearn the hard way)
 - **Type-inference workaround:** `createServerClient<Database>` from `@supabase/ssr` does not propagate the generic through `.from()`. Every server-side query must use `(supabase as any).from(...)`. Intentional, project-wide — do not remove. Same applies to `createBrowserClient` in `lib/supabase/client.ts`.
