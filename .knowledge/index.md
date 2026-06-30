@@ -16,7 +16,7 @@
 - [Streaks](arch-streaks.md) — IST day boundary; effectiveStreak reads 0 when stale — 2026-06-18
 - [XP System](arch-xp.md) — awardXp ledger + weights; 100-XP unlock now vestigial — 2026-06-18
 - [Gideon Agent](arch-gideon.md) — Python cron seeding posts from 6 sources (HN, dev.to, Lobsters, Reddit OAuth, arXiv, GitHub) + normalized ranking — 2026-06-30
-- [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–028, type-cast + PostgREST gotchas — 2026-06-29
+- [Database](arch-database.md) — Supabase/Postgres, RLS, migrations 001–029, type-cast + PostgREST gotchas — 2026-06-30
 - [Push Notifications](arch-push.md) — FCM HTTP v1; device_tokens + /api/devices; event sites now call notify() (bell+push) not sendPush directly; Capacitor shell + startup splash + "A." app icon; PWA/Serwist caching, black-flash fix, branded notification small icon — 2026-06-29
 
 ## Open threads
