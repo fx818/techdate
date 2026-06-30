@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await (supabase as any)
     .from('users')
-    .select('name, username, photo_url, photos, city, genres, xp, bio, preference, streak_count, last_login_date, company_email_verified, created_at')
+    .select('name, username, photo_url, photos, city, genres, xp, bio, preference, streak_count, last_login_date, company_email_verified, created_at, is_admin')
     .eq('id', user.id)
     .single()
 
@@ -164,6 +164,23 @@ export default async function ProfilePage() {
         <span className="text-ink font-medium flex items-center gap-2">🔖 Saved posts</span>
         <span className="text-ink-faint">›</span>
       </a>
+
+      {/* Admin (founder only) */}
+      {profile.is_admin && (
+        <div>
+          <h2 className="text-ink-faint text-xs uppercase tracking-widest mb-2.5">Admin</h2>
+          <div className="space-y-1">
+            <Link href="/admin/reports" className="card p-4 flex items-center justify-between hover:border-clay transition-colors">
+              <span className="text-ink font-medium flex items-center gap-2">🛡️ Reports</span>
+              <span className="text-ink-faint">›</span>
+            </Link>
+            <Link href="/admin/metrics" className="card p-4 flex items-center justify-between hover:border-clay transition-colors">
+              <span className="text-ink font-medium flex items-center gap-2">📊 Metrics</span>
+              <span className="text-ink-faint">›</span>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Account */}
       <div className="pt-2 space-y-1">
