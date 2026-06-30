@@ -51,7 +51,7 @@ Each user has an `interest_vector: Record<string, number>` in their `users` row.
 
 ### Gideon Agent
 
-Python cron at `gideon/` runs via GitHub Actions (`.github/workflows/gideon.yml`) every 4 hours. Fetches from HN Algolia API + dev.to API per genre, deduplicates by URL, inserts up to 6 posts/genre with `is_gideon=true`. Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as GitHub Actions secrets.
+Python cron at `gideon/` runs via GitHub Actions (`.github/workflows/gideon.yml`) every 6 hours. Fetches from 6 sources per genre — HN Algolia API, dev.to API, Lobsters (`gideon/sources/lobsters.py`), Reddit (`gideon/sources/reddit.py`, app-only OAuth via `oauth.reddit.com` per subreddit — the public `.json` host 403-blocks datacenter IPs), arXiv (`gideon/sources/arxiv.py`, newest papers, AI-ish genres only), and GitHub (`gideon/sources/github.py`, repo search by topic). Each source fails safe (returns `[]` on error). Posts are ranked by `merge_normalized` (per-source 0–1 score so big-number sources like GitHub/Reddit don't drown out arXiv), deduplicated by URL + normalized title, then up to `GIDEON_MAX_POSTS_PER_GENRE` (default 5) inserted with `is_gideon=true`. Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as GitHub Actions secrets; Reddit needs `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` (free "script" app — without them the Reddit source no-ops); `GITHUB_TOKEN` (auto-provided by Actions) raises the GitHub search rate limit.
 
 ### Database Schema
 

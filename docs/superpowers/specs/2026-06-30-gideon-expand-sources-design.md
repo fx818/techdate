@@ -30,8 +30,19 @@ breaks under an unattended cron).
 
 ### 1. `gideon/sources/reddit.py` — `fetch_reddit_posts(subreddits: list, limit=8)`
 
-- For each subreddit: `GET https://www.reddit.com/r/{sub}/hot.json?limit={limit}&raw_json=1`
-  with a descriptive `User-Agent` header (Reddit returns 429 for empty/default UAs).
+> **Auth note (revised during implementation):** Reddit's public `.json` host
+> `www.reddit.com` returns **`403 Blocked`** for datacenter/cloud IPs (incl. GitHub
+> Actions), so the unauthenticated approach is dead weight in the cron. The module
+> uses Reddit's **free app-only OAuth** instead: a client-credentials token from
+> `https://www.reddit.com/api/v1/access_token`, then reads listings from
+> `https://oauth.reddit.com/r/{sub}/hot` (works from datacenter IPs). Requires
+> `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` env (a free Reddit "script" app);
+> when absent the module prints a skip notice and returns `[]` (graceful no-op,
+> same pattern as arXiv's blank-query short-circuit).
+
+- Fetch an app-only token once per call (reused across subreddits). No creds → `[]`.
+- For each subreddit: `GET https://oauth.reddit.com/r/{sub}/hot?limit={limit}&raw_json=1`
+  with `Authorization: bearer {token}` and a descriptive `User-Agent`.
 - Per child post:
   - Skip `stickied` and `over_18`.
   - `title` = `data.title`.

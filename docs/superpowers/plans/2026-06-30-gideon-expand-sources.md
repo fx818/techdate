@@ -11,6 +11,7 @@
 ## Global Constraints
 
 - **No new pip dependencies** — `httpx` only (already in `gideon/requirements.txt`); arXiv uses stdlib `xml.etree.ElementTree`.
+- **Reddit uses free app-only OAuth** (revised during impl): `www.reddit.com/.json` 403-blocks datacenter IPs, so the module reads `oauth.reddit.com` with a client-credentials token from `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` env. Absent creds → prints skip notice, returns `[]` (graceful no-op). These two are new optional GitHub Actions secrets.
 - **No DB schema change, no migration** — new posts reuse existing `posts` columns.
 - **Every source fails safe** — returns `[]` on any error; never raises into the cron.
 - **Standard post dict contract:** every source returns a list of `{title, url, content, image_url, points, source}`.
@@ -25,8 +26,8 @@
 - Create: `gideon/sources/reddit.py`
 
 **Interfaces:**
-- Consumes: nothing (leaf module).
-- Produces: `fetch_reddit_posts(subreddits: list, limit: int = 8) -> list[dict]`, each dict `{title, url, content, image_url, points, source="reddit"}`.
+- Consumes: optional env `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`.
+- Produces: `fetch_reddit_posts(subreddits: list, limit: int = 8) -> list[dict]`, each dict `{title, url, content, image_url, points, source="reddit"}`. No creds → `[]`.
 
 - [ ] **Step 1: Write the module**
 
@@ -34,27 +35,62 @@ Create `gideon/sources/reddit.py`:
 
 ```python
 import html
+import os
 
 import httpx
 
 UA = "GideonBot/1.0 (+await; content aggregator)"
+TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
+OAUTH_BASE = "https://oauth.reddit.com"
 
 
 def _clean(text: str) -> str:
     return " ".join((text or "").split()).strip()
 
 
+def _get_token() -> str | None:
+    """App-only (userless) OAuth token via client-credentials. Returns None when creds
+    are absent or the request fails — caller then yields no posts (fail-safe). Needed
+    because www.reddit.com/.json returns 403 Blocked for datacenter IPs (the cron's
+    GitHub Actions runners); oauth.reddit.com works with a token."""
+    client_id = os.environ.get("REDDIT_CLIENT_ID")
+    client_secret = os.environ.get("REDDIT_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        print("reddit: REDDIT_CLIENT_ID/SECRET not set — skipping Reddit source")
+        return None
+    try:
+        r = httpx.post(
+            TOKEN_URL,
+            auth=(client_id, client_secret),
+            data={"grant_type": "client_credentials"},
+            headers={"User-Agent": UA},
+            timeout=10,
+        )
+        r.raise_for_status()
+        return r.json().get("access_token")
+    except Exception as e:
+        print(f"reddit token error: {e}")
+        return None
+
+
 def fetch_reddit_posts(subreddits: list, limit: int = 8) -> list:
-    """Fetch hot posts from each subreddit's public .json endpoint. Fails safe per
-    subreddit (continues on error) so one bad sub never breaks the run. Same dict
-    contract as the other sources."""
+    """Fetch hot posts per subreddit via Reddit's app-only OAuth API. Requires
+    REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET; without them returns [] (graceful no-op).
+    Fails safe per subreddit so one bad sub never breaks the run. Same dict contract
+    as the other sources."""
+    if not subreddits:
+        return []
+    token = _get_token()
+    if not token:
+        return []
+    headers = {"Authorization": f"bearer {token}", "User-Agent": UA}
     posts = []
-    for sub in (subreddits or []):
+    for sub in subreddits:
         try:
             r = httpx.get(
-                f"https://www.reddit.com/r/{sub}/hot.json",
+                f"{OAUTH_BASE}/r/{sub}/hot",
                 params={"limit": limit, "raw_json": 1},
-                headers={"User-Agent": UA},
+                headers=headers,
                 timeout=10,
             )
             r.raise_for_status()
@@ -110,7 +146,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run the self-check**
 
 Run (from repo root): `python gideon/sources/reddit.py`
-Expected: prints `reddit: N posts` with N ≥ 1 and 1–3 sample lines, no assertion error. (If Reddit rate-limits from your IP it prints a fetch error and `reddit: 0 posts` — that is the fail-safe path, acceptable; re-run later.)
+Expected (no creds set): prints `reddit: REDDIT_CLIENT_ID/SECRET not set — skipping Reddit source` then `reddit: 0 posts`, exit 0, no assertion error. With creds set: `reddit: N posts` (N ≥ 1) and 1–3 sample lines. Real parsing is verified once creds exist (locally via env, or in the cron).
 
 - [ ] **Step 3: Commit**
 
@@ -522,11 +558,24 @@ git commit -m "feat(gideon): normalized cross-source merge + wire Reddit/arXiv/G
 ### Task 6: End-to-end run, docs, knowledge sync
 
 **Files:**
+- Modify: `.github/workflows/gideon.yml` (env block, lines ~28–34)
 - Modify: `CLAUDE.md` (Gideon Agent section, line ~54)
 - Modify: `.knowledge/arch-gideon.md`, `.knowledge/index.md`, `.knowledge/log.md` (via `/okf-sync`)
 
 **Interfaces:**
 - Consumes: everything from Tasks 1–5.
+
+- [ ] **Step 0: Wire new secrets into the GitHub Actions workflow**
+
+In `.github/workflows/gideon.yml`, inside the `Run Gideon` step's `env:` block (after the `GIDEON_PUSH_SECRET` line), add:
+
+```yaml
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+(`GITHUB_TOKEN` is auto-provided by Actions — no manual secret needed; it raises the GitHub search rate limit. `REDDIT_CLIENT_ID`/`REDDIT_CLIENT_SECRET` must be added manually in repo Settings → Secrets from a free Reddit "script" app at https://www.reddit.com/prefs/apps.) Commit: `git add .github/workflows/gideon.yml && git commit -m "ci(gideon): pass Reddit OAuth + GitHub token to cron"`
 
 - [ ] **Step 1: Real end-to-end run against a non-prod / scratch Supabase**
 
@@ -545,7 +594,7 @@ Expected: a `Counter` showing ≥ 3 distinct sources, ideally including `reddit`
 In `CLAUDE.md`, replace the Gideon paragraph (currently starting `Python cron at `gideon/` runs via GitHub Actions ... every 4 hours. Fetches from HN Algolia API + dev.to API + Lobsters ...`) with:
 
 ```markdown
-Python cron at `gideon/` runs via GitHub Actions (`.github/workflows/gideon.yml`) every 6 hours. Fetches from 6 sources per genre — HN Algolia API, dev.to API, Lobsters (`gideon/sources/lobsters.py`), Reddit (`gideon/sources/reddit.py`, public `hot.json` per subreddit), arXiv (`gideon/sources/arxiv.py`, newest papers, AI-ish genres only), and GitHub (`gideon/sources/github.py`, repo search by topic). Each source fails safe (returns `[]` on error). Posts are ranked by `merge_normalized` (per-source 0–1 score so big-number sources like GitHub/Reddit don't drown out arXiv), deduplicated by URL + normalized title, then up to `GIDEON_MAX_POSTS_PER_GENRE` (default 5) inserted with `is_gideon=true`. Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as GitHub Actions secrets; optional `GITHUB_TOKEN` raises the GitHub search rate limit.
+Python cron at `gideon/` runs via GitHub Actions (`.github/workflows/gideon.yml`) every 6 hours. Fetches from 6 sources per genre — HN Algolia API, dev.to API, Lobsters (`gideon/sources/lobsters.py`), Reddit (`gideon/sources/reddit.py`, app-only OAuth via `oauth.reddit.com` per subreddit — the public `.json` host 403-blocks datacenter IPs), arXiv (`gideon/sources/arxiv.py`, newest papers, AI-ish genres only), and GitHub (`gideon/sources/github.py`, repo search by topic). Each source fails safe (returns `[]` on error). Posts are ranked by `merge_normalized` (per-source 0–1 score so big-number sources like GitHub/Reddit don't drown out arXiv), deduplicated by URL + normalized title, then up to `GIDEON_MAX_POSTS_PER_GENRE` (default 5) inserted with `is_gideon=true`. Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as GitHub Actions secrets; Reddit needs `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` (free "script" app — without them the Reddit source no-ops); `GITHUB_TOKEN` (auto-provided by Actions) raises the GitHub search rate limit.
 ```
 
 - [ ] **Step 4: Commit docs**
