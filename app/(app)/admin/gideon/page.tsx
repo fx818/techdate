@@ -15,6 +15,10 @@ export default async function AdminGideonPage() {
 
   const { data: config } = await (supabase as any).rpc('gideon_judge_config_get')
 
+  const { count: rejectCount } = await (supabase as any)
+    .from('gideon_rejections')
+    .select('id', { count: 'exact', head: true })
+
   if (!config) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-7">
@@ -32,6 +36,11 @@ export default async function AdminGideonPage() {
           the ranked top picks unfiltered.
         </p>
       </div>
+      <a href="/admin/gideon/rejections"
+        className="card p-4 flex items-center justify-between hover:border-clay transition-colors">
+        <span className="text-ink font-medium flex items-center gap-2">🗂️ Rejected queue</span>
+        <span className="text-ink-faint">{rejectCount ?? 0} ›</span>
+      </a>
       <JudgeConfigForm initial={config} />
     </div>
   )
