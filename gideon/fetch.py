@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import uuid
+from datetime import datetime, timedelta, timezone
 import httpx
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -75,13 +76,17 @@ def unique_slug(supabase: Client, title: str) -> str:
         slug = f"{slug}-{uuid.uuid4().hex[:6]}"
     return slug
 
-def dedup_candidates(posts: list, existing_urls: set, existing_title_keys: set) -> list:
-    """Filter candidates to those with a title+url that aren't URL dupes or
-    same-title near-dupes (within the batch and against what's already stored).
-    Mutates the two sets so later candidates see earlier ones."""
+def dedup_candidates(posts: list, existing_urls: set, existing_title_keys: set,
+                     dismissed: set | None = None) -> list:
+    """Filter candidates to those with a title+url that aren't URL dupes,
+    same-title near-dupes, or tombstoned (dismissed) URLs. Mutates the two
+    dedup sets so later candidates see earlier ones."""
+    dismissed = dismissed or set()
     unique: list = []
     for post in posts:
         if not post.get("title") or not post.get("url"):
+            continue
+        if post["url"] in dismissed:
             continue
         if post["url"] in existing_urls:
             continue
@@ -92,6 +97,65 @@ def dedup_candidates(posts: list, existing_urls: set, existing_title_keys: set) 
         existing_title_keys.add(title_key)
         unique.append(post)
     return unique
+
+
+def load_dismissed_urls(supabase: Client) -> set:
+    """All tombstoned URLs — excluded from both the feed and the reject queue."""
+    res = supabase.table("gideon_dismissed_urls").select("url").execute()
+    return {row["url"] for row in res.data if row.get("url")}
+
+
+def load_queued_reject_urls(supabase: Client) -> set:
+    """URLs already sitting in the reject queue (from prior runs)."""
+    res = supabase.table("gideon_rejections").select("url").execute()
+    return {row["url"] for row in res.data if row.get("url")}
+
+
+def load_live_gideon_urls(supabase: Client) -> set:
+    """URLs already live as Gideon posts (any genre) — never re-queue these."""
+    res = supabase.table("posts").select("url").eq("is_gideon", True).execute()
+    return {row["url"] for row in res.data if row.get("url")}
+
+
+def filter_new_rejections(dropped: list, skip_urls: set) -> list:
+    """From judge drops, keep only entries whose URL isn't already in skip_urls
+    (or missing), deduped within the batch. Mutates skip_urls so a URL dropped
+    under one genre isn't re-queued under another in the same run. skip_urls is
+    seeded with both queued-reject and live-post URLs by the caller; dismissed
+    URLs are already excluded upstream by dedup_candidates."""
+    out: list = []
+    for d in dropped:
+        url = d["post"].get("url")
+        if not url or url in skip_urls:
+            continue
+        skip_urls.add(url)
+        out.append(d)
+    return out
+
+
+def record_rejections(supabase: Client, dropped: list, genre: str, skip_urls: set) -> int:
+    """Insert the judge's drops into gideon_rejections (skipping URLs already
+    queued or live). Returns how many were recorded."""
+    rows = filter_new_rejections(dropped, skip_urls)
+    for d in rows:
+        p = d["post"]
+        supabase.table("gideon_rejections").insert({
+            "title": p["title"],
+            "url": p["url"],
+            "content": p.get("content") or None,
+            "image_url": p.get("image_url"),
+            "genre": genre,
+            "source": p["source"],
+            "score": d["score"],
+            "reason": d["reason"],
+        }).execute()
+    return len(rows)
+
+
+def purge_expired_rejections(supabase: Client) -> None:
+    """Delete un-actioned rejects older than 14 days (does NOT tombstone)."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
+    supabase.table("gideon_rejections").delete().lt("created_at", cutoff).execute()
 
 
 def insert_records(supabase: Client, posts: list, genre: str) -> tuple[int, list]:
@@ -160,6 +224,16 @@ def run():
         judge_active = False
     print(f"  judge: {'ACTIVE' if judge_active else 'inactive'}")
 
+    # Reject-queue state: tombstoned URLs (excluded everywhere) + the set of
+    # URLs a new reject must not duplicate (already queued OR already live).
+    # Purge stale rejects once per run.
+    dismissed_urls = load_dismissed_urls(supabase)
+    reject_skip_urls = (
+        load_queued_reject_urls(supabase) | load_live_gideon_urls(supabase)
+        if judge_active else set()
+    )
+    purge_expired_rejections(supabase)
+
     if os.environ.get("GIDEON_RESET", "").lower() in ("1", "true", "yes"):
         reset_gideon_posts(supabase)
 
@@ -179,11 +253,14 @@ def run():
             reddit_posts, arxiv_posts, github_posts,
         ])
 
-        unique = dedup_candidates(all_posts, existing_urls, existing_title_keys)
+        unique = dedup_candidates(all_posts, existing_urls, existing_title_keys, dismissed_urls)
         if judge_active:
-            selected = select_with_judge(
+            selected, dropped = select_with_judge(
                 unique, MAX_POSTS_PER_GENRE, lambda c: judge_post(c, judge_config)
             )
+            recorded = record_rejections(supabase, dropped, genre_id, reject_skip_urls)
+            if recorded:
+                print(f"  Queued {recorded} rejected posts for {genre_id}")
         else:
             selected = unique[:MAX_POSTS_PER_GENRE]
 
