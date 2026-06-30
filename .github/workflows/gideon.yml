@@ -32,4 +32,7 @@ jobs:
           GIDEON_RESET: ${{ inputs.reset }}
           APP_URL: ${{ secrets.APP_URL }}
           GIDEON_PUSH_SECRET: ${{ secrets.GIDEON_PUSH_SECRET }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python gideon/fetch.py
