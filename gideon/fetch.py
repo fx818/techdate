@@ -9,6 +9,9 @@ from supabase import create_client, Client
 from sources.hackernews import fetch_hn_posts
 from sources.devto import fetch_devto_posts
 from sources.lobsters import fetch_lobsters_posts
+from sources.reddit import fetch_reddit_posts
+from sources.arxiv import fetch_arxiv_posts
+from sources.github import fetch_github_posts
 
 load_dotenv()
 
@@ -123,6 +126,25 @@ def reset_gideon_posts(supabase: Client) -> None:
     supabase.table("posts").delete().eq("is_gideon", True).execute()
     print("  done.")
 
+def merge_normalized(source_lists: list) -> list:
+    """Per source, normalize points to 0-1 relative to that source's own max, then
+    merge and sort by the normalized score. A source whose max is 0 (e.g. arXiv) gets
+    a flat 0.5 so it still competes instead of always sinking last under a raw-points
+    sort. The `_score` key is internal-only; insert_posts builds an explicit row dict
+    so it never reaches the DB."""
+    scored = []
+    for posts in source_lists:
+        if not posts:
+            continue
+        mx = max((p.get("points", 0) or 0) for p in posts)
+        for p in posts:
+            pts = p.get("points", 0) or 0
+            p["_score"] = (pts / mx) if mx > 0 else 0.5
+            scored.append(p)
+    scored.sort(key=lambda p: p.get("_score", 0), reverse=True)
+    return scored
+
+
 def run():
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     genres = load_genres()
@@ -139,9 +161,14 @@ def run():
         hn_posts = fetch_hn_posts(config["hn_query"], config["hn_tags"])
         devto_posts = fetch_devto_posts(config["devto_tags"])
         lobsters_posts = fetch_lobsters_posts(config.get("lobsters_tags", []))
+        reddit_posts = fetch_reddit_posts(config.get("subreddits", []))
+        arxiv_posts = fetch_arxiv_posts(config.get("arxiv_query", ""))
+        github_posts = fetch_github_posts(config.get("github_query", ""))
 
-        all_posts = hn_posts + devto_posts + lobsters_posts
-        all_posts.sort(key=lambda p: p.get("points", 0), reverse=True)
+        all_posts = merge_normalized([
+            hn_posts, devto_posts, lobsters_posts,
+            reddit_posts, arxiv_posts, github_posts,
+        ])
 
         inserted, new_post_records = insert_posts(supabase, all_posts, genre_id,
                                                   existing_urls, existing_title_keys)
