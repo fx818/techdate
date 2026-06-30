@@ -1,14 +1,14 @@
 ---
 type: architecture
 title: Database
-description: Supabase/Postgres, RLS, migrations 001–029, type-cast + PostgREST gotchas
+description: Supabase/Postgres, RLS, migrations 001–030, type-cast + PostgREST gotchas
 tags: [database, supabase, postgres, rls, migrations, redis]
 timestamp: 2026-06-30T00:00:00Z
 ---
 
 # Database
 
-Supabase Postgres. Migrations in `supabase/migrations/`, run in order, **001 → 029**. All tables have RLS enabled. App server routes use the **anon-key client (cookie auth)**, not the service role key. The **push send path** uses a separate service-role client (`lib/supabase/admin.ts`) to read other users' `device_tokens`.
+Supabase Postgres. Migrations in `supabase/migrations/`, run in order, **001 → 030**. All tables have RLS enabled. App server routes use the **anon-key client (cookie auth)**, not the service role key. The **push send path** uses a separate service-role client (`lib/supabase/admin.ts`) to read other users' `device_tokens`.
 
 ## Core tables (origin migrations)
 - `001_users` — profile, `interest_vector` (jsonb), `xp`, `dating_unlocked`, `is_premium`
@@ -22,6 +22,7 @@ Later migrations add: company email/verify (007), streak storage (008), requests
 
 - **024_admin_report_triage** — `users.is_admin` (bool, set manually), `reports.status` ('open'|'resolved'), `is_admin()` SECURITY DEFINER fn, RLS letting admins read/update all reports. **Applied to prod 2026-06-30** (was never applied until then — prod had lagged the repo here; see log). Founder account `admin@admin.com` seeded directly with `is_admin=true` (app signup can't create it — fake email fails verification). Password login needs an `auth.identities` row (email provider, `identity_data.sub`=uid) alongside `auth.users`, or GoTrue rejects the credentials.
 - **025_admin_metrics** — `admin_metrics()` SECURITY DEFINER fn returning kill-test KPIs (signups, posters, repeat posters, 7d-active, pings, matches, rolling week-1→week-4 retention cohort) as JSON; admin-gated. Surfaced at `/admin/metrics` and `/admin/reports`. **Applied to prod 2026-06-30** (alongside 024). See [moderation](arch-moderation.md).
+- **030_admin_metrics_engagement** — create-or-replace `admin_metrics()` adding engagement + composition keys (`active_today`, `messages_total`/`_7d`, `comments_total`/`_7d`, `likes_total`/`_7d`, `gideon_posts_total`); existing keys preserved (additive — page reads by key name). Same `is_admin()` gate + grant. **Applied to prod 2026-06-30.**
 - **026_device_tokens** — `device_tokens(id uuid PK, user_id → users, token text, platform text default 'android', created_at)`, unique `(user_id, token)`, RLS own-rows-only, index on `user_id`. See [push](arch-push.md).
 - **027_allow_lobsters_source** — widened `posts_source_check` to allow `'lobsters'` (was `hackernews|devto|xcom|user`). The Lobsters source was added to Gideon 2026-06-19 but the constraint was never updated, so every Gideon run **crashed** (postgrest 23514) the moment it tried to insert a Lobsters post. See [gideon](arch-gideon.md).
 - **028_notifications** — added `notifications` table (stored event-sourced bell; single-column `id` PK to avoid the 023 two-FK junction trap; RLS select/update/delete-own, NO insert policy → inserts via service-role admin client) and **dropped `dismissed_notifications`** (obsolete; dismissal now sets `notifications.dismissed_at`). See [notifications](arch-notifications.md).
